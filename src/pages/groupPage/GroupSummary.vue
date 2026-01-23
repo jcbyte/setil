@@ -1,27 +1,28 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
-import type { GroupData, GroupUserData } from "@/firebase/types";
+import type { Group } from "@/composables/useLiveGroup";
+import { PHOTO_URL } from "@/CONST_USE";
+import type { GroupUserData } from "@/firebase/types";
 import { getBalanceStr } from "@/util/currency";
 import { computed } from "vue";
 
 const props = defineProps<{
-	groupData: GroupData;
-	users: Record<string, GroupUserData>;
+	group: Group;
 }>();
 
 const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 	return Object.fromEntries(
-		Object.entries(props.users).map(([userId, user]) => [
+		Object.entries(props.group.users).map(([userId, user]) => [
 			userId,
 			getBalanceStr(
 				user.balance,
-				props.groupData.currency,
+				props.group.data.currency,
 				(b) => `is owed ${b}`,
 				(b) => `owes ${b}`,
-				() => "is in balance"
+				() => "is in balance",
 			),
-		])
+		]),
 	);
 });
 </script>
@@ -34,18 +35,14 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 		</div>
 		<div class="flex flex-col gap-2">
 			<div
-				v-if="users"
+				v-if="group.users"
 				v-for="(user, userId) in Object.fromEntries(
-					Object.entries(users).filter(([, user]) => user.status !== 'history')
+					Object.entries(group.users).filter(([, user]) => user.status !== 'history'),
 				) as Record<string, GroupUserData>"
 				class="flex justify-between items-center"
 			>
 				<div class="flex justify-center items-center gap-1">
-					<Avatar
-						:src="user.photoURL"
-						:name="user.name"
-						:class="`size-9 ${user.status !== 'active' && 'opacity-70'}`"
-					/>
+					<Avatar :src="PHOTO_URL" :name="user.name" :class="`size-9 ${user.status !== 'active' && 'opacity-70'}`" />
 					<span :class="`${user.status !== 'active' && 'text-muted-foreground'}`">{{ user.name }}</span>
 					<span v-if="user.status !== 'active'" class="text-xs place-self-end text-muted-foreground italic">
 						(Left)
