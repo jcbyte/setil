@@ -21,12 +21,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import { useGroup } from "@/composables/useGroup";
+import { useLiveGroup } from "@/composables/useLiveGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
+import { PHOTO_URL } from "@/CONST_USE";
 import { createTransaction } from "@/firebase/firestore/transaction";
 import { getPaymentDetails } from "@/firebase/firestore/user";
 import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/firebase/types";
+import { noGroup } from "@/util/app";
 import {
 	CurrencySettings,
 	formatCurrency,
@@ -50,10 +52,13 @@ const { toast } = useToast();
 const { currentUser } = useCurrentUser();
 const { breakpointSplit } = useScreenSize();
 
-const routeGroupId = getRouteParam(route.params.groupId);
-const { groupId, groupData, users } = useGroup(routeGroupId, () => {
-	setFieldValue("from", currentUser.value!.uid);
-});
+const groupId = getRouteParam(route.params.groupId);
+
+if (!groupId) {
+	noGroup();
+	throw "No groupId";
+}
+const group = useLiveGroup(groupId, noGroup);
 
 interface SimpleTransaction {
 	from: string;
@@ -71,7 +76,7 @@ function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
 			else if (resolvedDebt < 0) debtors.push(userId);
 			return { creditors, debtors };
 		},
-		{ creditors: [], debtors: [] }
+		{ creditors: [], debtors: [] },
 	);
 
 	const newDebts: { from: string; to: string; amount: number }[] = [];
@@ -102,29 +107,29 @@ function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
 	return newDebts;
 }
 
-const usersPayments = computed<SimpleTransaction[] | undefined>(() =>
-	users.value
+const usersPayments = computed<SimpleTransaction[] | null>(() =>
+	group.value
 		? resolveGroupDebts(
-				Object.fromEntries(Object.entries(users.value).map(([userId, userData]) => [userId, userData.balance]))
-		  )
-		: undefined
+				Object.fromEntries(Object.entries(group.value.users).map(([userId, userData]) => [userId, userData.balance])),
+			)
+		: null,
 );
 
-const allowedPaymentUsers = computed<string[] | undefined>(() =>
-	users.value
-		? Object.entries(users.value)
+const allowedPaymentUsers = computed<string[] | null>(() =>
+	group.value
+		? Object.entries(group.value.users)
 				.filter(([, user]) => user.status !== "history")
 				.map(([userId]) => userId)
-		: undefined
+		: null,
 );
 
 function getPaymentBalanceStr(bal: number): BalanceStr {
 	return getBalanceStr(
 		bal,
-		groupData.value!.currency,
+		group.value!.data.currency,
 		(bal) => `receives ${bal}`,
 		(bal) => `owes ${bal}`,
-		() => "in balance"
+		() => "in balance",
 	);
 }
 
@@ -134,14 +139,17 @@ const formSchema = toTypedSchema(
 	z.object({
 		from: z
 			.string()
-			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
-		to: z.string().refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
+			.refine((val) => group.value && Object.keys(group.value.users).includes(val), "Must select a valid member"),
+		to: z
+			.string()
+			.refine((val) => group.value && Object.keys(group.value.users).includes(val), "Must select a valid member"),
 		amount: z.number().refine((val) => val > 0, "An amount is required"),
-	})
+	}),
 );
 
-const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm({
+const { isFieldDirty, handleSubmit, setValues, values } = useForm({
 	validationSchema: formSchema,
+	initialValues: { from: currentUser.value?.uid },
 });
 
 const recordPaymentPulser = useTemplateRef("record-payment-pulser");
@@ -159,7 +167,7 @@ async function scrollToElement(element: HTMLElement): Promise<void> {
 					resolve();
 				}
 			},
-			{ threshold: 0.5 }
+			{ threshold: 0.5 },
 		);
 
 		observer.observe(element);
@@ -170,7 +178,7 @@ async function fillForm(userPayment: SimpleTransaction) {
 	setValues({
 		from: userPayment.from,
 		to: userPayment.to,
-		amount: fromFirestoreAmount(userPayment.amount, groupData.value?.currency ?? "gbp"),
+		amount: fromFirestoreAmount(userPayment.amount, group.value?.data.currency ?? "gbp"),
 	});
 
 	if (!recordPaymentPulser.value) return;
@@ -180,7 +188,8 @@ async function fillForm(userPayment: SimpleTransaction) {
 }
 
 const onSubmit = handleSubmit(async (values) => {
-	if (!groupId.value) return;
+	if (!groupId) return;
+	if (!group.value) return;
 
 	isMakingPayment.value = true;
 
@@ -188,25 +197,25 @@ const onSubmit = handleSubmit(async (values) => {
 		title: "Setil Up",
 		from: values.from,
 		date: Timestamp.now(),
-		to: { [values.to]: toFirestoreAmount(values.amount, groupData.value!.currency) },
+		to: { [values.to]: toFirestoreAmount(values.amount, group.value.data.currency) },
 		category: "payment",
 	};
-	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
+	const leftUsers = getLeftUsersInTransaction(transaction, group.value.users);
 
 	try {
-		await createTransaction(groupId.value, transaction, leftUsers);
+		await createTransaction(groupId, transaction, leftUsers);
 		toast({ title: "Payment Recorded", description: "Someone's about to be rich!", duration: 5000 });
 		sendNotification(
-			groupId.value,
-			groupData.value!.name,
-			`${users.value![values.from].name} paid ${users.value![values.to].name} ${formatCurrency(
+			groupId,
+			group.value.data.name,
+			`${group.value.users[values.from].name} paid ${group.value.users[values.to].name} ${formatCurrency(
 				values.amount,
-				groupData.value!.currency,
-				false
+				group.value.data.currency,
+				false,
 			)}.`,
-			`/group/${groupId.value}?tab=summary`
+			`/group/${groupId}?tab=summary`,
 		);
-		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
+		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
 	} catch (e) {
 		toast({ title: "Error Saving Payment", description: String(e), variant: "destructive", duration: 5000 });
 	}
@@ -221,18 +230,19 @@ const bankDetails = ref<PaymentDetails | null>(null);
 watch(isBankDetailsDialogOpen, async () => {
 	bankDetailsLoading.value = true;
 
-	if (!values.to || !groupId.value) bankDetails.value = null;
-	else bankDetails.value = await getPaymentDetails(values.to, groupId.value);
+	if (!values.to || !groupId) bankDetails.value = null;
+	else bankDetails.value = await getPaymentDetails(values.to, groupId);
 
 	bankDetailsLoading.value = false;
 });
+// todo should this be a dialog composable thing???
 </script>
 
 <template>
 	<div class="w-full flex flex-col gap-4 items-center">
 		<div class="w-full flex justify-between items-center">
 			<div class="flex gap-2 justify-center items-center">
-				<Button variant="ghost" class="size-9" @click="router.push(`/group/${routeGroupId}`)">
+				<Button variant="ghost" class="size-9" @click="router.push(`/group/${groupId}`)">
 					<ArrowLeft class="!size-6" />
 				</Button>
 				<span class="text-lg font-semibold">Setil Up</span>
@@ -253,19 +263,15 @@ watch(isBankDetailsDialogOpen, async () => {
 
 				<div class="flex flex-col gap-2">
 					<div
-						v-if="groupId"
+						v-if="group"
 						v-for="userPayment in usersPayments"
 						class="flex flex-col border border-border rounded-lg gap-4 p-4"
 					>
 						<div class="flex flex-col sm:flex-row justify-between items-center gap-2">
 							<div class="flex items-center gap-2">
-								<Avatar
-									:src="users![userPayment.from].photoURL"
-									:name="users![userPayment.from].name"
-									class="size-10"
-								/>
+								<Avatar :src="PHOTO_URL" :name="group.users[userPayment.from].name" class="size-10" />
 								<div class="flex flex-col gap-1">
-									<span class="text-sm">{{ users![userPayment.from].name }}</span>
+									<span class="text-sm">{{ group.users[userPayment.from].name }}</span>
 									<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-userPayment.amount)" />
 								</div>
 							</div>
@@ -274,10 +280,10 @@ watch(isBankDetailsDialogOpen, async () => {
 							</div>
 							<div class="flex items-center gap-2">
 								<div class="flex flex-col gap-1 text-right">
-									<span class="text-sm">{{ users![userPayment.to].name }}</span>
+									<span class="text-sm">{{ group.users[userPayment.to].name }}</span>
 									<BalanceStrBadge :balanceStr="getPaymentBalanceStr(userPayment.amount)" />
 								</div>
-								<Avatar :src="users![userPayment.to].photoURL" :name="users![userPayment.to].name" class="size-10" />
+								<Avatar :src="PHOTO_URL" :name="group.users[userPayment.to].name" class="size-10" />
 							</div>
 						</div>
 						<Button variant="outline" @click="fillForm(userPayment)">Record this payment</Button>
@@ -289,7 +295,7 @@ watch(isBankDetailsDialogOpen, async () => {
 				</div>
 			</div>
 
-			<div v-if="groupId" class="border border-border rounded-lg flex flex-col gap-6 p-4 relative">
+			<div v-if="group" class="border border-border rounded-lg flex flex-col gap-6 p-4 relative">
 				<div
 					class="absolute inset-0 bg-zinc-100 rounded-lg pointer-events-none opacity-0"
 					ref="record-payment-pulser"
@@ -310,13 +316,9 @@ watch(isBankDetailsDialogOpen, async () => {
 										<FormControl>
 											<SelectTrigger>
 												<SelectValue placeholder="Select a member">
-													<div v-if="groupId && values.from" class="flex items-center gap-2">
-														<Avatar
-															:src="users![values.from].photoURL"
-															:name="users![values.from].name"
-															class="size-6"
-														/>
-														<span>{{ users![values.from!].name }} </span>
+													<div v-if="values.from" class="flex items-center gap-2">
+														<Avatar :src="PHOTO_URL" :name="group.users[values.from].name" class="size-6" />
+														<span>{{ group.users[values.from].name }} </span>
 													</div>
 												</SelectValue>
 											</SelectTrigger>
@@ -325,12 +327,12 @@ watch(isBankDetailsDialogOpen, async () => {
 											<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
 												<div class="flex items-center gap-2">
 													<Avatar
-														:src="users?.[userId].photoURL ?? null"
-														:name="users?.[userId].name ?? 'Unloaded User'"
-														:class="`size-5 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
+														:src="PHOTO_URL"
+														:name="group.users[userId].name"
+														:class="`size-5 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 													/>
-													<span :class="`${users?.[userId].status !== 'active' && 'text-muted-foreground'}`">
-														{{ users?.[userId].name ?? "Unloaded User" }}
+													<span :class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`">
+														{{ group.users[userId].name }}
 													</span>
 												</div>
 											</SelectItem>
@@ -347,9 +349,9 @@ watch(isBankDetailsDialogOpen, async () => {
 										<FormControl>
 											<SelectTrigger>
 												<SelectValue placeholder="Select a member">
-													<div v-if="groupId && values.to" class="flex items-center gap-2">
-														<Avatar :src="users![values.to].photoURL" :name="users![values.to].name" class="size-6" />
-														<span>{{ users![values.to!].name }} </span>
+													<div v-if="values.to" class="flex items-center gap-2">
+														<Avatar :src="PHOTO_URL" :name="group.users[values.to].name" class="size-6" />
+														<span>{{ group.users[values.to!].name }} </span>
 													</div>
 												</SelectValue>
 											</SelectTrigger>
@@ -358,12 +360,12 @@ watch(isBankDetailsDialogOpen, async () => {
 											<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
 												<div class="flex items-center gap-2">
 													<Avatar
-														:src="users?.[userId].photoURL ?? null"
-														:name="users?.[userId].name ?? 'Unloaded User'"
-														:class="`size-5 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
+														:src="PHOTO_URL"
+														:name="group.users[userId].name"
+														:class="`size-5 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 													/>
-													<span :class="`${users?.[userId].status !== 'active' && 'text-muted-foreground'}`">
-														{{ users?.[userId].name ?? "Unloaded User" }}
+													<span :class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`">
+														{{ group.users[userId].name }}
 													</span>
 												</div>
 											</SelectItem>
@@ -382,14 +384,14 @@ watch(isBankDetailsDialogOpen, async () => {
 										<Input
 											type="number"
 											class="pl-6"
-											:placeholder="(0).toFixed(CurrencySettings[groupData!.currency].decimals)"
-											:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
+											:placeholder="(0).toFixed(CurrencySettings[group.data.currency].decimals)"
+											:step="Math.pow(10, -CurrencySettings[group.data.currency].decimals)"
 											:disabled="isMakingPayment"
 											v-bind="componentField"
 										/>
 									</FormControl>
 									<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
-										{{ CurrencySettings[groupData!.currency].symbol }}
+										{{ CurrencySettings[group.data.currency].symbol }}
 									</span>
 								</div>
 								<FormMessage />
@@ -408,9 +410,7 @@ watch(isBankDetailsDialogOpen, async () => {
 							<DialogContent>
 								<DialogHeader>
 									<DialogTitle>Bank Details</DialogTitle>
-									<DialogDescription>
-										Where {{ users?.[values.to!].name ?? "Unloaded User" }} would like payment.
-									</DialogDescription>
+									<DialogDescription> Where {{ group.users[values.to!].name }} would like payment. </DialogDescription>
 								</DialogHeader>
 
 								<Skeleton v-if="bankDetailsLoading" class="w-full h-[160px]" />
@@ -418,7 +418,7 @@ watch(isBankDetailsDialogOpen, async () => {
 									v-else-if="!bankDetails"
 									class="text-center text-muted-foreground p-4 border border-border rounded-lg"
 								>
-									Looks like {{ users?.[values.to!].name ?? "Unloaded User" }} hasn't added their bank info yet.
+									Looks like {{ group.users[values.to!].name }} hasn't added their bank info yet.
 								</div>
 								<div v-else class="mx-2 py-2 border border-border rounded-lg">
 									<div v-if="bankDetails.type === 'UK'" class="grid grid-cols-2 gap-y-1 gap-x-2 items-center">
