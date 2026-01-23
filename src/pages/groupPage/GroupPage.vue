@@ -119,14 +119,8 @@ watch(currentTab, (newTab, oldTab) => {
 				</Tabs>
 				<div v-if="group" class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
 					<Transition :name="tabTransition" mode="out-in">
-						<GroupSummary v-if="currentTab === 'summary'" :group-data="group.data" :users="group.users" />
-						<GroupActivity
-							v-else-if="currentTab === 'activity'"
-							:group-id="groupId"
-							:group-data="group.data"
-							:users="group.users"
-							:transactions="group.transactions"
-						/>
+						<GroupSummary v-if="currentTab === 'summary'" :group="group" />
+						<GroupActivity v-else-if="currentTab === 'activity'" :group-id="groupId" :group="group" />
 					</Transition>
 				</div>
 				<Skeleton v-else class="w-full h-96" />

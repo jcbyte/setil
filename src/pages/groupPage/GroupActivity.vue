@@ -19,8 +19,9 @@ import {
 import Separator from "@/components/ui/separator/Separator.vue";
 import { useToast } from "@/components/ui/toast";
 import { useControlledDialog } from "@/composables/useControlledDialog";
+import type { Group } from "@/composables/useLiveGroup";
 import { deleteTransaction } from "@/firebase/firestore/transaction";
-import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
+import type { Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction, sumRecord } from "@/util/util";
@@ -30,9 +31,7 @@ import { useRouter } from "vue-router";
 
 const props = defineProps<{
 	groupId: string;
-	groupData: GroupData;
-	users: Record<string, GroupUserData>;
-	transactions: Record<string, Transaction>;
+	group: Group;
 }>();
 
 const router = useRouter();
@@ -48,17 +47,20 @@ const {
 } = useControlledDialog<{ transactionId: string }>();
 
 const sortedTransactions = computed(() => {
-	return Object.entries(props.transactions).sort(
+	return Object.entries(props.group.transactions).sort(
 		([, transactionA]: [string, Transaction], [, transactionB]: [string, Transaction]) => {
 			return transactionB.date.seconds - transactionA.date.seconds;
-		}
+		},
 	);
 });
 
 async function handleDeleteTransaction() {
 	startDeleteConfirmDialogProcessing();
 
-	const leftUsers = getLeftUsersInTransaction(props.transactions[deleteDialogData.value!.transactionId], props.users);
+	const leftUsers = getLeftUsersInTransaction(
+		props.group.transactions[deleteDialogData.value!.transactionId],
+		props.group.users,
+	);
 	try {
 		await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
 		toast({ title: "Expense Deleted", description: "It's like it never happened.", duration: 5000 });
@@ -96,14 +98,16 @@ async function handleDeleteTransaction() {
 										</div>
 										<div class="flex items-center gap-1">
 											<UserRound class="!size-4 text-muted-foreground" />
-											<span class="text-sm text-muted-foreground text-nowrap">{{ users[transaction.from].name }}</span>
+											<span class="text-sm text-muted-foreground text-nowrap">{{
+												props.group.users[transaction.from].name
+											}}</span>
 										</div>
 									</div>
 								</div>
 							</div>
 							<div class="flex justify-center items-center gap-2">
 								<span class="text-lg">
-									{{ formatCurrency(sumRecord(transaction.to), groupData.currency) }}
+									{{ formatCurrency(sumRecord(transaction.to), props.group.data.currency) }}
 								</span>
 								<DropdownMenu>
 									<DropdownMenuTrigger as-child>
