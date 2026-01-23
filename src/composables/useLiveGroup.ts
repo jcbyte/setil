@@ -1,14 +1,14 @@
 import { app } from "@/firebase/firebase";
-import type { GroupData, Transaction, UserData } from "@/firebase/types";
+import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { collection, CollectionReference, doc, DocumentReference, getFirestore } from "firebase/firestore";
 import { computed, type Ref } from "vue";
 import { useLiveCollection } from "./useLiveCollection";
 import { useLiveDoc } from "./useLiveDoc";
 
-interface Group {
+export interface Group {
 	data: GroupData;
-	users: Record<string, Readonly<UserData>>;
-	transactions: Record<string, Readonly<Transaction>>;
+	users: Record<string, GroupUserData>;
+	transactions: Record<string, Transaction>;
 }
 
 export function useLiveGroup(groupId: string, onError?: () => void): Ref<Group | null> {
@@ -16,7 +16,7 @@ export function useLiveGroup(groupId: string, onError?: () => void): Ref<Group |
 
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const liveGroupData = useLiveDoc(groupRef, onError);
-	const groupUsersRef = collection(groupRef, "users") as CollectionReference<UserData>;
+	const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
 	const liveGroupUsers = useLiveCollection(groupUsersRef, onError);
 	const groupTransactionsRef = collection(groupRef, "transactions") as CollectionReference<Transaction>;
 	const liveGroupTransactions = useLiveCollection(groupTransactionsRef, onError);

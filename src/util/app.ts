@@ -2,6 +2,7 @@ import { useToast } from "@/components/ui/toast";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { firebaseSignOut, signInWithGoogle } from "@/firebase/auth";
 import { cleanupInvites, invite } from "@/firebase/firestore/group";
+import { useRouter } from "vue-router";
 
 export async function signIn() {
 	const { toast } = useToast();
@@ -65,4 +66,18 @@ export async function inviteUser(groupId: string, groupName: string) {
 			});
 		});
 	}
+}
+
+export function noGroup() {
+	const { toast } = useToast();
+	const router = useRouter();
+
+	toast({
+		title: "Group Not Found",
+		description: "Ensure you are a member of this group.",
+		variant: "destructive",
+		duration: 5000,
+	});
+
+	router.replace("/");
 }
