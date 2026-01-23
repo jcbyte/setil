@@ -109,11 +109,11 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 					};
 
 					return [id, data];
-				})
+				}),
 			)
 		)
 			// Filter out null values
-			.filter((group) => group !== null)
+			.filter((group) => group !== null),
 	);
 
 	// Remove unknown groups from the user's data if required
@@ -134,7 +134,7 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
  */
 export async function getLeftUserStatus(
 	groupUserRef: DocumentReference,
-	forceLeft: boolean
+	forceLeft: boolean,
 ): Promise<"left" | "history" | null> {
 	const groupUserSnap = await getDoc(groupUserRef);
 	const groupUser = groupUserSnap.data() as GroupUserData;
@@ -159,7 +159,7 @@ export async function getLeftUserStatus(
 export async function updateLeftUsersStatus(
 	groupUsersRef: CollectionReference,
 	batch: WriteBatch,
-	leftUsers: string[]
+	leftUsers: string[],
 ) {
 	await Promise.all(
 		leftUsers.map(async (userId) => {
@@ -170,7 +170,7 @@ export async function updateLeftUsersStatus(
 
 			// If the status needs to be changed add this update
 			if (newStatus) batch.update(leftUserRef, { status: newStatus });
-		})
+		}),
 	);
 }
 

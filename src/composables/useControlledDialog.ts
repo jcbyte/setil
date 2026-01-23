@@ -1,7 +1,7 @@
 import { ref, type Ref } from "vue";
 
 export function useControlledDialog<T = undefined>(
-	data?: T
+	data?: T,
 ): {
 	open: Ref<boolean>;
 	processing: Ref<boolean>;
@@ -26,7 +26,7 @@ export function useControlledDialog<T = undefined>(
 	}
 
 	function finishDialogProcessing() {
-		processing.value = true;
+		processing.value = false;
 	}
 
 	function closeDialog() {
