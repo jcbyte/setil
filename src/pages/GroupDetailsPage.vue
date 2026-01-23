@@ -76,9 +76,10 @@ let loaded = false;
 watch(
 	group,
 	(groupValue) => {
-		if (!loaded && !newGroup && groupValue) {
-			loaded = true;
+		if (loaded || !groupValue) return;
+		loaded = true;
 
+		if (!newGroup) {
 			setValues({
 				name: groupValue.data.name,
 				description: groupValue.data.description ?? undefined,

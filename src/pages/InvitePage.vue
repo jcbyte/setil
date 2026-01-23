@@ -35,7 +35,7 @@ onMounted(async () => {
 				routeGroupId,
 				groupData.name,
 				`${userData.name} just joined the group!`,
-				`/group/${routeGroupId}`
+				`/group/${routeGroupId}`,
 			);
 		}
 		router.push(`/group/${routeGroupId}`);

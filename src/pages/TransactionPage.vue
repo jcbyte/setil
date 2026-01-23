@@ -13,10 +13,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import { useGroup } from "@/composables/useGroup";
+import { useLiveGroup } from "@/composables/useLiveGroup";
+import { PHOTO_URL } from "@/CONST_USE";
 import { createTransaction, updateTransaction } from "@/firebase/firestore/transaction";
 import { sendNotification } from "@/firebase/messaging";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
+import { noGroup } from "@/util/app";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, fromFirestoreAmount, toFirestoreAmount } from "@/util/currency";
 import { gcdN } from "@/util/math";
@@ -27,7 +29,7 @@ import { Timestamp } from "firebase/firestore";
 import { ArrowLeft, CalendarIcon, Plus, Save } from "lucide-vue-next";
 import { toDate } from "reka-ui/date";
 import { useForm } from "vee-validate";
-import { computed, ref } from "vue";
+import { computed, ref, toRaw, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 
@@ -38,64 +40,77 @@ const { toast } = useToast();
 
 const isTransactionUpdating = ref<boolean>(false);
 
-const routeGroupId = getRouteParam(route.params.groupId);
-const routeTransactionId = getRouteParam(route.params.transactionId);
+const groupId = getRouteParam(route.params.groupId);
+const transactionId = getRouteParam(route.params.transactionId);
+const newTransaction = transactionId === null;
 
-const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () => {
-	if (!groupId.value) return;
+if (!groupId) {
+	noGroup();
+	throw "No groupId";
+}
+const group = useLiveGroup(groupId, noGroup);
 
-	if (routeTransactionId) {
-		const transaction = transactions.value![routeTransactionId];
+let loaded = false;
+watch(
+	group,
+	(groupValue) => {
+		if (loaded || !groupValue) return;
+		loaded = true;
 
-		const transactionDate = transaction.date.toDate();
-		const transactionCalendarDate = new CalendarDate(
-			transactionDate.getFullYear(),
-			transactionDate.getMonth() + 1,
-			transactionDate.getDate()
-		);
+		if (newTransaction) {
+			setValues({
+				date: today(getLocalTimeZone()).toString(),
+				from: currentUser.value!.uid,
+				category: "expense",
+				to: {
+					type: "equal",
+					// Only include active members
+					people: Object.fromEntries(
+						Object.entries(groupValue.users)
+							.filter(([, user]) => user.status === "active")
+							.map(([userId]) => [userId, { selected: false, num: undefined }]),
+					),
+				},
+			});
+		} else {
+			const transaction = groupValue.transactions[transactionId];
 
-		// Only include active members (Unless this transaction contains an inactive member)
-		const transactionTo = Object.fromEntries(
-			Object.entries(users.value!)
-				.filter(([userId, user]) => user.status === "active" || transaction.to[userId] || userId === transaction.from)
-				.map(([userId]) => [userId, transaction.to[userId]])
-		);
-		// Remove the `undefined` and `0` values in gcd calculation
-		const transactionGcd = gcdN(Object.values(transactionTo).filter((v) => v));
+			const transactionDate = transaction.date.toDate();
+			const transactionCalendarDate = new CalendarDate(
+				transactionDate.getFullYear(),
+				transactionDate.getMonth() + 1,
+				transactionDate.getDate(),
+			);
 
-		setValues({
-			title: transaction.title,
-			date: transactionCalendarDate.toString(),
-			from: transaction.from,
-			amount: fromFirestoreAmount(sumRecord(transaction.to), groupData.value!.currency),
-			category: transaction.category,
-			to: {
-				type: "ratio",
-				people: Object.fromEntries(
-					Object.entries(transactionTo).map(([userId, amount]) => [
-						userId,
-						{ selected: Boolean(amount), num: amount ? amount / transactionGcd : undefined },
-					])
-				),
-			},
-		});
-	} else {
-		setValues({
-			date: today(getLocalTimeZone()).toString(),
-			from: currentUser.value!.uid,
-			category: "expense",
-			to: {
-				type: "equal",
-				// Only include active members
-				people: Object.fromEntries(
-					Object.entries(users.value!)
-						.filter(([, user]) => user.status === "active")
-						.map(([userId]) => [userId, { selected: false, num: undefined }])
-				),
-			},
-		});
-	}
-});
+			// Only include active members (Unless this transaction contains an inactive member)
+			const transactionTo = Object.fromEntries(
+				Object.entries(groupValue.users)
+					.filter(([userId, user]) => user.status === "active" || transaction.to[userId] || userId === transaction.from)
+					.map(([userId]) => [userId, transaction.to[userId]]),
+			);
+			// Remove the `undefined` and `0` values in gcd calculation
+			const transactionGcd = gcdN(Object.values(transactionTo).filter((v) => v));
+
+			setValues({
+				title: transaction.title,
+				date: transactionCalendarDate.toString(),
+				from: transaction.from,
+				amount: fromFirestoreAmount(sumRecord(transaction.to), groupValue.data.currency),
+				category: transaction.category,
+				to: {
+					type: "ratio",
+					people: Object.fromEntries(
+						Object.entries(transactionTo).map(([userId, amount]) => [
+							userId,
+							{ selected: Boolean(amount), num: amount ? amount / transactionGcd : undefined },
+						]),
+					),
+				},
+			});
+		}
+	},
+	{ immediate: true },
+);
 
 const df = new DateFormatter(navigator.language, { dateStyle: "long" });
 
@@ -113,7 +128,7 @@ const formSchema = toTypedSchema(
 		category: z.string().refine((val) => Object.keys(CategorySettings).includes(val), "Must select a valid category"),
 		from: z
 			.string()
-			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
+			.refine((val) => group.value && Object.keys(group.value.users).includes(val), "Must select a valid member"),
 		to: z
 			.object({
 				type: z.enum(["equal", "unequal", "ratio"]).default("equal"),
@@ -123,45 +138,49 @@ const formSchema = toTypedSchema(
 						z.object({
 							selected: z.boolean(),
 							num: z.number().optional(),
-						})
+						}),
 					)
 					.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient"),
 			})
 			.refine(
 				(v) => v.type === "equal" || !Object.values(v.people).some((vo) => vo.selected && !vo.num),
-				"An amount is required for a selected member"
+				"An amount is required for a selected member",
 			),
-	})
+	}),
 );
 
-const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm({
+const { isFieldDirty, handleSubmit, setValues, values, setFieldValue, validateField } = useForm({
 	validationSchema: formSchema,
 });
 
+watch(values, (v) => console.log(toRaw(v.to)));
+
 function resolveBalances(): Record<string, number> {
+	if (!group.value) return {};
+
 	if (!values.to?.people) return {};
 
 	if (values.to.type === "equal") {
 		return splitAmountEven(
-			toFirestoreAmount(values.amount ?? 0, groupData.value?.currency ?? "gbp"),
+			toFirestoreAmount(values.amount ?? 0, group.value.data.currency ?? "gbp"),
 			Object.entries(values.to.people)
 				.filter(([, userData]) => userData!.selected)
-				.map(([userId]) => userId)
+				.map(([userId]) => userId),
 		);
 	} else if (values.to.type === "unequal") {
 		return Object.fromEntries(
 			Object.entries(values.to.people)
 				.filter(([, userData]) => userData!.selected)
-				.map(([userId, userData]) => [userId, toFirestoreAmount(userData!.num!, groupData.value?.currency ?? "gbp")])
+				.map(([userId, userData]) => [userId, toFirestoreAmount(userData!.num ?? 0, group.value!.data.currency)]),
 		);
 	} else if (values.to.type === "ratio") {
 		return splitAmountRatio(
-			toFirestoreAmount(values.amount ?? 0, groupData.value?.currency ?? "gbp"),
+			toFirestoreAmount(values.amount ?? 0, group.value!.data.currency),
 			Object.fromEntries(
 				Object.entries(values.to.people)
 					.filter(([, userData]) => userData!.selected)
-					.map(([userId, userData]) => [userId, userData!.num ?? 0])
-			)
+					.map(([userId, userData]) => [userId, userData!.num ?? 0]),
+			),
 		);
 	}
 
@@ -176,11 +195,11 @@ const dateValue = computed({
 const toValue = computed<Record<string, number>>(resolveBalances);
 
 const allSelected = computed<boolean>(
-	() => !Object.values(values.to?.people ?? {}).some((userData) => !userData?.selected)
+	() => !Object.values(values.to?.people ?? {}).some((userData) => !userData!.selected),
 );
 
 const onSubmit = handleSubmit(async (values) => {
-	if (!groupId.value) return;
+	if (!groupId) return;
 
 	isTransactionUpdating.value = true;
 
@@ -192,32 +211,32 @@ const onSubmit = handleSubmit(async (values) => {
 		category: values.category as TransactionCategory,
 	};
 
-	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
+	const leftUsers = getLeftUsersInTransaction(transaction, group.value!.users);
 
 	try {
-		if (routeTransactionId) {
-			await updateTransaction(groupId.value, routeTransactionId, transaction, leftUsers);
+		if (newTransaction) {
+			await createTransaction(groupId, transaction, leftUsers);
+			toast({ title: "Expense Created", description: "It's on the group's tab.", duration: 5000 });
+			sendNotification(
+				groupId,
+				group.value!.data.name,
+				`${group.value!.users[values.from].name} added expense ${values.title} for ${formatCurrency(
+					values.amount,
+					group.value!.data.currency,
+					false,
+				)}.`,
+				`/group/${groupId}?tab=activity`,
+			);
+		} else {
+			await updateTransaction(groupId, transactionId, transaction, leftUsers);
 			toast({
 				title: "Expense Details Updated",
 				description: "Your expense got a makeover, and it's ready to slay.",
 				duration: 5000,
 			});
-		} else {
-			await createTransaction(groupId.value, transaction, leftUsers);
-			toast({ title: "Expense Created", description: "It's on the group's tab.", duration: 5000 });
-			sendNotification(
-				groupId.value,
-				groupData.value!.name,
-				`${users.value![values.from].name} added expense ${values.title} for ${formatCurrency(
-					values.amount,
-					groupData.value!.currency,
-					false
-				)}.`,
-				`/group/${groupId.value}?tab=activity`
-			);
 		}
 
-		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
+		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
 	} catch (e) {
 		toast({ title: "Error Saving Expense Details", description: String(e), variant: "destructive", duration: 5000 });
 	}
@@ -233,21 +252,21 @@ const onSubmit = handleSubmit(async (values) => {
 				<Button
 					variant="ghost"
 					class="size-9"
-					@click="router.push({ path: `/group/${routeGroupId}`, query: { tab: 'activity' } })"
+					@click="router.push({ path: `/group/${groupId}`, query: { tab: 'activity' } })"
 				>
 					<ArrowLeft class="!size-6" />
 				</Button>
-				<span class="text-lg font-semibold">{{ routeTransactionId ? "Edit Expense" : "New Expense" }}</span>
+				<span class="text-lg font-semibold">{{ newTransaction ? "New Expense" : "Edit Expense" }}</span>
 			</div>
 			<YourAccountSettings />
 		</div>
 
-		<div v-if="groupId" class="w-full max-w-[32rem] flex flex-col gap-4">
+		<div v-if="group" class="w-full max-w-[32rem] flex flex-col gap-4">
 			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Expense Details</span>
 					<span class="text-sm text-muted-foreground">{{
-						routeTransactionId ? "Update details of this expense" : "Add a new expense to your group"
+						newTransaction ? "Add a new expense to your group" : "Update details of this expense"
 					}}</span>
 				</div>
 
@@ -277,14 +296,14 @@ const onSubmit = handleSubmit(async (values) => {
 											<Input
 												type="number"
 												class="pl-6"
-												:placeholder="(0).toFixed(CurrencySettings[groupData!.currency].decimals)"
-												:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
+												:placeholder="(0).toFixed(CurrencySettings[group.data.currency].decimals)"
+												:step="Math.pow(10, -CurrencySettings[group.data.currency].decimals)"
 												:disabled="isTransactionUpdating || values.to?.type === 'unequal'"
 												v-bind="componentField"
 											/>
 										</FormControl>
 										<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
-											{{ CurrencySettings[groupData!.currency].symbol }}
+											{{ CurrencySettings[group.data.currency].symbol }}
 										</span>
 									</div>
 									<FormMessage />
@@ -353,9 +372,9 @@ const onSubmit = handleSubmit(async (values) => {
 									<FormControl>
 										<SelectTrigger>
 											<SelectValue>
-												<div v-if="groupId && values.from" class="flex items-center gap-2">
-													<Avatar :src="users![values.from].photoURL" :name="users![values.from].name" class="size-6" />
-													<span>{{ users![values.from!].name }} </span>
+												<div v-if="values.from" class="flex items-center gap-2">
+													<Avatar :src="PHOTO_URL" :name="group.users[values.from].name" class="size-6" />
+													<span>{{ group.users[values.from!].name }} </span>
 												</div>
 											</SelectValue>
 										</SelectTrigger>
@@ -363,17 +382,17 @@ const onSubmit = handleSubmit(async (values) => {
 									<SelectContent>
 										<SelectItem
 											v-if="values.to?.people"
-											v-for="userId in Object.keys(values.to?.people)"
+											v-for="userId in Object.keys(values.to.people)"
 											:value="userId"
 										>
 											<div class="flex items-center gap-2">
 												<Avatar
-													:src="users?.[userId].photoURL ?? null"
-													:name="users?.[userId].name ?? 'Unloaded User'"
-													:class="`size-6 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
+													:src="PHOTO_URL"
+													:name="group.users[userId].name"
+													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>
-												<span :class="`${users?.[userId].status !== 'active' && 'text-muted-foreground'}`">
-													{{ users?.[userId].name ?? "Unloaded User" }}
+												<span :class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`">
+													{{ group.users[userId].name }}
 												</span>
 											</div>
 										</SelectItem>
@@ -390,7 +409,7 @@ const onSubmit = handleSubmit(async (values) => {
 								<div class="flex flex-col gap-2 border border-border rounded-lg p-2">
 									<Tabs
 										:model-value="values.to?.type"
-										@update:modelValue="(val) => setFieldValue('to.type', val as 'equal'|'unequal'|'ratio')"
+										@update:modelValue="(val) => setFieldValue('to.type', val as 'equal' | 'unequal' | 'ratio')"
 									>
 										<TabsList class="grid w-full grid-cols-3">
 											<TabsTrigger value="equal" :disabled="isTransactionUpdating"> Equal </TabsTrigger>
@@ -404,29 +423,38 @@ const onSubmit = handleSubmit(async (values) => {
 											<Checkbox
 												:id="`user-${userId}`"
 												:model-value="userData?.selected ?? false"
-												@update:modelValue="(val) => setFieldValue(`to.people.${userId}.selected`, Boolean(val))"
+												@update:modelValue="
+													(val) => {
+														setFieldValue(`to.people.${userId}.selected`, Boolean(val));
+														validateField('to');
+													}
+												"
 												:disabled="isTransactionUpdating"
 											/>
 											<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
 												<Avatar
-													:src="users?.[userId].photoURL ?? null"
-													:name="users?.[userId].name ?? 'Unloaded User'"
-													:class="`size-6 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
+													:src="PHOTO_URL"
+													:name="group.users[userId].name"
+													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>
 												<span
 													:class="`text-sm text-nowrap ${
-														users?.[userId].status !== 'active' && 'text-muted-foreground'
+														group.users[userId].status !== 'active' && 'text-muted-foreground'
 													}`"
 												>
-													{{ users?.[userId].name ?? "Unloaded User" }}
+													{{ group.users[userId].name }}
 												</span>
 											</label>
 											<div v-if="values.to?.type !== 'equal'" class="relative items-center">
 												<Input
 													type="number"
 													:class="values.to?.type !== 'ratio' && 'pl-6'"
-													:placeholder="values.to?.type !== 'ratio' ? (0).toFixed(CurrencySettings[groupData!.currency].decimals) : '0'"
-													:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
+													:placeholder="
+														values.to?.type !== 'ratio'
+															? (0).toFixed(CurrencySettings[group.data.currency].decimals)
+															: '0'
+													"
+													:step="Math.pow(10, -CurrencySettings[group.data.currency].decimals)"
 													:model-value="userData?.num"
 													@update:modelValue="(val) => setFieldValue(`to.people.${userId}.num`, Number(val))"
 													:disabled="isTransactionUpdating || !userData?.selected"
@@ -435,11 +463,11 @@ const onSubmit = handleSubmit(async (values) => {
 													v-if="values.to?.type !== 'ratio'"
 													class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground"
 												>
-													{{ CurrencySettings[groupData!.currency].symbol }}
+													{{ CurrencySettings[group.data.currency].symbol }}
 												</span>
 											</div>
 											<span v-if="values.to?.type !== 'unequal'" class="text-sm text-muted-foreground">
-												{{ formatCurrency(toValue[userId] ?? 0, groupData?.currency ?? "usd") }}
+												{{ formatCurrency(toValue[userId] ?? 0, group.data.currency) }}
 											</span>
 										</div>
 									</div>
@@ -465,8 +493,8 @@ const onSubmit = handleSubmit(async (values) => {
 					</div>
 
 					<Button type="submit" :disabled="isTransactionUpdating" class="w-fit place-self-end">
-						<LoaderIcon :icon="routeTransactionId ? Save : Plus" :loading="isTransactionUpdating" />
-						<span>{{ routeTransactionId ? "Save Changes" : "Add Expense" }}</span>
+						<LoaderIcon :icon="newTransaction ? Plus : Save" :loading="isTransactionUpdating" />
+						<span>{{ newTransaction ? "Add Expense" : "Save Changes" }}</span>
 					</Button>
 				</form>
 			</div>
