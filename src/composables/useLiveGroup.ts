@@ -11,7 +11,9 @@ export interface Group {
 	transactions: Record<string, Transaction>;
 }
 
-export function useLiveGroup(groupId: string, onError?: () => void): Ref<Group | null> {
+export function useLiveGroup(groupId: string | null, onError?: () => void): Ref<Group | null> {
+	if (!groupId) return computed(() => null); // ? This requires `groupId` to be static
+
 	const db = getFirestore(app);
 
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;

@@ -70,7 +70,7 @@ const groupId = getRouteParam(route.params.groupId);
 const newGroup = groupId === null;
 const { currentUser } = useCurrentUser();
 const { toast } = useToast();
-const group = computed(() => (newGroup ? null : useLiveGroup(groupId, noGroup).value));
+const group = useLiveGroup(groupId, groupId ? noGroup : () => {});
 
 let loaded = false;
 watch(
@@ -134,8 +134,6 @@ const { isFieldDirty, handleSubmit, setValues } = useForm({
 });
 
 const onSubmit = handleSubmit(async (values) => {
-	if (!groupId) return;
-
 	isGroupDetailsUpdating.value = true;
 
 	try {
