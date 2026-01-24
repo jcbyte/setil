@@ -24,7 +24,7 @@ export interface GroupData {
 }
 
 export interface GroupUserData {
-	name: string; // todo should be nickname
+	nickname: string;
 	status: "active" | "left" | "history";
 	balance: number;
 	lastUpdate: Timestamp;

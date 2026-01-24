@@ -86,7 +86,7 @@ watch(
 				currency: groupValue.data.currency,
 			});
 
-			myDisplayName.value = groupValue.users[currentUser.value!.uid].name;
+			myDisplayName.value = groupValue.users[currentUser.value!.uid].nickname;
 		}
 	},
 	{ immediate: true },
@@ -198,53 +198,53 @@ async function updateDisplayName() {
 	isMyDisplayNameUpdating.value = false;
 }
 
-const memberNewName = ref<Record<string, { updating: boolean; name: string; processing: boolean; errors?: string }>>(
-	{},
-);
+const memberNewNickname = ref<
+	Record<string, { updating: boolean; nickname: string; processing: boolean; errors?: string }>
+>({});
 
 function validateMemberName(userId: string) {
-	const parsedName = displayNameValidation.safeParse(memberNewName.value[userId].name);
-	memberNewName.value[userId].errors = parsedName.success ? undefined : parsedName.error.issues[0].message;
+	const parsedName = displayNameValidation.safeParse(memberNewNickname.value[userId].nickname);
+	memberNewNickname.value[userId].errors = parsedName.success ? undefined : parsedName.error.issues[0].message;
 }
 
 function startRename(userId: string) {
-	memberNewName.value[userId] = {
+	memberNewNickname.value[userId] = {
 		updating: true,
-		name: group.value?.users[userId].name ?? AC_NAME,
+		nickname: group.value?.users[userId].nickname ?? AC_NAME,
 		processing: false,
 	};
 }
 
 function cancelRename(userId: string) {
-	memberNewName.value[userId].updating = false;
+	memberNewNickname.value[userId].updating = false;
 }
 
 async function acceptRename(userId: string) {
 	if (!groupId) return;
 	if (!group.value) return;
 
-	const parsedName = displayNameValidation.safeParse(memberNewName.value[userId].name);
+	const parsedName = displayNameValidation.safeParse(memberNewNickname.value[userId].nickname);
 	if (!parsedName.success) return;
 
-	memberNewName.value[userId].processing = true;
+	memberNewNickname.value[userId].processing = true;
 
 	try {
 		await changeUserNickname(groupId, userId, parsedName.data);
 		toast({
-			title: `${group.value.users[userId].name}'s Name Updated`,
+			title: `${group.value.users[userId].nickname}'s Name Updated`,
 			description: "Identity crisis averted.",
 			duration: 5000,
 		});
 	} catch (e) {
 		toast({
-			title: `Error Updating ${group.value.users[userId].name}'s Name`,
+			title: `Error Updating ${group.value.users[userId].nickname}'s Name`,
 			description: String(e),
 			variant: "destructive",
 			duration: 5000,
 		});
 	}
 
-	memberNewName.value[userId].updating = false;
+	memberNewNickname.value[userId].updating = false;
 }
 
 async function promoteMember() {
@@ -257,13 +257,13 @@ async function promoteMember() {
 	try {
 		await promoteUser(groupId, promoteDialogData.value.userId);
 		toast({
-			title: `${group.value.users[promoteDialogData.value.userId].name} Promoted`,
+			title: `${group.value.users[promoteDialogData.value.userId].nickname} Promoted`,
 			description: "Long live the new king.",
 			duration: 5000,
 		});
 	} catch (e) {
 		toast({
-			title: `Error Promoting ${group.value.users[promoteDialogData.value.userId].name}`,
+			title: `Error Promoting ${group.value.users[promoteDialogData.value.userId].nickname}`,
 			description: String(e),
 			variant: "destructive",
 			duration: 5000,
@@ -282,13 +282,13 @@ async function removeMember(userId: string) {
 	try {
 		await removeUser(groupId, userId);
 		toast({
-			title: `Removed ${group.value.users[userId].name}`,
+			title: `Removed ${group.value.users[userId].nickname}`,
 			description: "They've been erased from existence... well, at least the group.",
 			duration: 5000,
 		});
 	} catch (e) {
 		toast({
-			title: `Error Removing ${group.value.users[userId].name}`,
+			title: `Error Removing ${group.value.users[userId].nickname}`,
 			description: String(e),
 			variant: "destructive",
 			duration: 5000,
@@ -433,9 +433,9 @@ async function deleteGroup() {
 						<span class="text-sm text-muted-foreground">How others see you in this group</span>
 					</div>
 					<div v-if="group && currentGroupUser" class="flex items-center gap-2">
-						<Avatar :src="PHOTO_URL" :name="currentGroupUser.name" class="size-9" />
+						<Avatar :src="PHOTO_URL" :name="currentGroupUser.nickname" class="size-9" />
 						<div class="flex flex-col">
-							<span>{{ currentGroupUser.name }}</span>
+							<span>{{ currentGroupUser.nickname }}</span>
 							<span class="text-sm text-muted-foreground">
 								{{ currentUser!.uid === group.data.owner ? "Owner" : "Member" }}
 							</span>
@@ -486,11 +486,11 @@ async function deleteGroup() {
 								<div class="flex items-center gap-2 flex-1">
 									<Avatar
 										:src="PHOTO_URL"
-										:name="user.name"
+										:name="user.nickname"
 										:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
 									/>
-									<div v-if="!(memberNewName[userId]?.updating ?? false)" class="flex flex-col">
-										<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
+									<div v-if="!(memberNewNickname[userId]?.updating ?? false)" class="flex flex-col">
+										<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.nickname }}</span>
 										<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
 											{{
 												user.status === "active" ? (userId === group!.data.owner ? "Owner" : "Member") : "Left Group"
@@ -499,28 +499,32 @@ async function deleteGroup() {
 									</div>
 									<div v-else class="flex-1 flex gap-2">
 										<Input
-											v-model:model-value="memberNewName[userId].name"
+											v-model:model-value="memberNewNickname[userId].nickname"
 											autocomplete="off"
 											type="text"
 											placeholder="Name"
-											:disabled="memberNewName[userId].processing"
+											:disabled="memberNewNickname[userId].processing"
 											@update:model-value="validateMemberName(userId)"
 										/>
-										<Button class="size-9" @click="acceptRename(userId)" :disabled="memberNewName[userId].processing">
-											<LoaderIcon :icon="Check" :loading="memberNewName[userId].processing" />
+										<Button
+											class="size-9"
+											@click="acceptRename(userId)"
+											:disabled="memberNewNickname[userId].processing"
+										>
+											<LoaderIcon :icon="Check" :loading="memberNewNickname[userId].processing" />
 										</Button>
 										<Button
 											variant="outline"
 											class="size-9"
 											@click="cancelRename(userId)"
-											:disabled="memberNewName[userId].processing"
+											:disabled="memberNewNickname[userId].processing"
 										>
 											<X />
 										</Button>
 									</div>
 								</div>
 								<DropdownMenu
-									v-if="currentUser?.uid === group.data.owner && !(memberNewName[userId]?.updating ?? false)"
+									v-if="currentUser?.uid === group.data.owner && !(memberNewNickname[userId]?.updating ?? false)"
 								>
 									<DropdownMenuTrigger as-child>
 										<Button
@@ -560,8 +564,8 @@ async function deleteGroup() {
 									</DropdownMenuContent>
 								</DropdownMenu>
 							</div>
-							<span v-if="memberNewName[userId]?.errors ?? false" class="text-[12.8px] ml-11 text-destructive">
-								{{ memberNewName[userId].errors }}
+							<span v-if="memberNewNickname[userId]?.errors ?? false" class="text-[12.8px] ml-11 text-destructive">
+								{{ memberNewNickname[userId].errors }}
 							</span>
 						</div>
 
@@ -615,7 +619,7 @@ async function deleteGroup() {
 					<AlertDialogDescription>
 						Promoting
 						<span class="font-semibold">
-							{{ group!.users[promoteDialogData!.userId].name }}
+							{{ group!.users[promoteDialogData!.userId].nickname }}
 						</span>
 						to Owner will change your role to Member.
 					</AlertDialogDescription>

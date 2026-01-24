@@ -220,7 +220,7 @@ const onSubmit = handleSubmit(async (values) => {
 			sendNotification(
 				groupId,
 				group.value!.data.name,
-				`${group.value!.users[values.from].name} added expense ${values.title} for ${formatCurrency(
+				`${group.value!.users[values.from].nickname} added expense ${values.title} for ${formatCurrency(
 					values.amount,
 					group.value!.data.currency,
 					false,
@@ -373,8 +373,8 @@ const onSubmit = handleSubmit(async (values) => {
 										<SelectTrigger>
 											<SelectValue>
 												<div v-if="values.from" class="flex items-center gap-2">
-													<Avatar :src="PHOTO_URL" :name="group.users[values.from].name" class="size-6" />
-													<span>{{ group.users[values.from!].name }} </span>
+													<Avatar :src="PHOTO_URL" :name="group.users[values.from].nickname" class="size-6" />
+													<span>{{ group.users[values.from!].nickname }} </span>
 												</div>
 											</SelectValue>
 										</SelectTrigger>
@@ -388,11 +388,11 @@ const onSubmit = handleSubmit(async (values) => {
 											<div class="flex items-center gap-2">
 												<Avatar
 													:src="PHOTO_URL"
-													:name="group.users[userId].name"
+													:name="group.users[userId].nickname"
 													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>
 												<span :class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`">
-													{{ group.users[userId].name }}
+													{{ group.users[userId].nickname }}
 												</span>
 											</div>
 										</SelectItem>
@@ -434,7 +434,7 @@ const onSubmit = handleSubmit(async (values) => {
 											<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
 												<Avatar
 													:src="PHOTO_URL"
-													:name="group.users[userId].name"
+													:name="group.users[userId].nickname"
 													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>
 												<span
@@ -442,7 +442,7 @@ const onSubmit = handleSubmit(async (values) => {
 														group.users[userId].status !== 'active' && 'text-muted-foreground'
 													}`"
 												>
-													{{ group.users[userId].name }}
+													{{ group.users[userId].nickname }}
 												</span>
 											</label>
 											<div v-if="values.to?.type !== 'equal'" class="relative items-center">

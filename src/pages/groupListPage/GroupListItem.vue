@@ -53,7 +53,7 @@ const yourBalanceStr = computed<BalanceStr>(() =>
 		</div>
 		<AvatarStack
 			avatar-class="border border-background"
-			:avatars="group.topUsers.map((topUser) => ({ src: PHOTO_URL, name: topUser.name }))"
+			:avatars="group.topUsers.map((topUser) => ({ src: PHOTO_URL, name: topUser.nickname }))"
 			:total-count="group.userCount"
 		/>
 		<span class="text-sm text-muted-foreground">{{ lastUpdatedStr }}</span>

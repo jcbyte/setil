@@ -27,7 +27,7 @@ import { getUser } from "./util";
 const db = getFirestore(app);
 
 const templateNewUser = (user: User): GroupUserData => ({
-	name: user.displayName ?? "Unknown User",
+	nickname: user.displayName ?? "Unknown User",
 	photoURL: user.photoURL,
 	status: "active",
 	balance: 0,

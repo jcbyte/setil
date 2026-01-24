@@ -47,9 +47,12 @@ watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
 const isAddingMember = ref<boolean>(false);
 
 async function addMember() {
+	if (!groupId) return;
+	if (!group.value) return;
+
 	isAddingMember.value = true;
 	try {
-		await inviteUser(groupId!, group.value!.data.name);
+		await inviteUser(groupId, group.value.data.name);
 	} catch (e) {
 		toast({ title: "Error Creating Invite Link", description: String(e), variant: "destructive", duration: 5000 });
 	}
@@ -177,8 +180,8 @@ watch(currentTab, (newTab, oldTab) => {
 							v-for="user in Object.values(group.users).filter((user) => user.status === 'active')"
 							class="flex gap-1 justify-center items-center"
 						>
-							<Avatar :src="PHOTO_URL" :name="user.name" class="size-7" />
-							<span class="text-sm">{{ user.name }}</span>
+							<Avatar :src="PHOTO_URL" :name="user.nickname" class="size-7" />
+							<span class="text-sm">{{ user.nickname }}</span>
 						</div>
 					</div>
 				</div>

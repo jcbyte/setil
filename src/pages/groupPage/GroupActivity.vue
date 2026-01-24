@@ -99,7 +99,7 @@ async function handleDeleteTransaction() {
 										<div class="flex items-center gap-1">
 											<UserRound class="!size-4 text-muted-foreground" />
 											<span class="text-sm text-muted-foreground text-nowrap">{{
-												props.group.users[transaction.from].name
+												props.group.users[transaction.from].nickname
 											}}</span>
 										</div>
 									</div>

@@ -42,8 +42,12 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 				class="flex justify-between items-center"
 			>
 				<div class="flex justify-center items-center gap-1">
-					<Avatar :src="PHOTO_URL" :name="user.name" :class="`size-9 ${user.status !== 'active' && 'opacity-70'}`" />
-					<span :class="`${user.status !== 'active' && 'text-muted-foreground'}`">{{ user.name }}</span>
+					<Avatar
+						:src="PHOTO_URL"
+						:name="user.nickname"
+						:class="`size-9 ${user.status !== 'active' && 'opacity-70'}`"
+					/>
+					<span :class="`${user.status !== 'active' && 'text-muted-foreground'}`">{{ user.nickname }}</span>
 					<span v-if="user.status !== 'active'" class="text-xs place-self-end text-muted-foreground italic">
 						(Left)
 					</span>
