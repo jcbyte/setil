@@ -8,9 +8,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { signOut } from "@/util/app";
-import { LogOut } from "lucide-vue-next";
+import { LogOut, Settings } from "lucide-vue-next";
+import { useRouter } from "vue-router";
 
 const { currentUser } = useCurrentUser();
+const router = useRouter();
 </script>
 
 <template>
@@ -24,6 +26,12 @@ const { currentUser } = useCurrentUser();
 			/>
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
+			<DropdownMenuItem @click="router.push('/settings')">
+				<div class="w-full flex justify-between items-center">
+					<span>Settings</span>
+					<Settings class="!size-5" />
+				</div>
+			</DropdownMenuItem>
 			<DropdownMenuItem @click="signOut">
 				<div class="w-full flex justify-between items-center">
 					<span class="text-red-400">Sign Out</span>

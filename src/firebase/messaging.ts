@@ -39,8 +39,9 @@ export async function sendNotification(groupId: string, title: string, body: str
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
+			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-		body: JSON.stringify({ jwt: await user.getIdToken(), groupId: groupId, title, body, ...(route && { route }) }),
+		body: JSON.stringify({ groupId: groupId, title, body, ...(route && { route }) }),
 	}).then((res) => res.json());
 
 	return res.success;

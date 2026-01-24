@@ -10,7 +10,12 @@ export default async function (req, res) {
 	}
 
 	// Extract parameters
-	const { jwt, groupId, title, body, route } = req.body;
+	const authHeader = req.headers.authorization;
+	let jwt;
+	if (authHeader && authHeader.startsWith("Bearer ")) {
+		jwt = authHeader.split(" ")[1];
+	}
+	const { groupId, title, body, route } = req.body;
 	if (!jwt || !groupId || !title || !body) {
 		return res.status(400).json({ success: false, error: "Missing parameters" });
 	}

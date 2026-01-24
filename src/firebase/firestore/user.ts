@@ -1,3 +1,4 @@
+import type { PaymentDetails } from "@/util/paymentDetails";
 import {
 	arrayRemove,
 	arrayUnion,
@@ -48,7 +49,7 @@ export interface ExtendedGroupData extends GroupData {
 }
 
 /**
- * Get a list of the user's groups, including there extended data.
+ * Get a list of the user's groups, including their extended data.
  * @param removeUnknownGroups if true, groups that the user does not have access to or have been deleted will be removed from the user.
  * @returns a list of the user's groups, including there data.
  * @throws an error if the user does not exist.
@@ -185,4 +186,55 @@ export async function addFwcToken(fcmToken: string): Promise<void> {
 	await updateDoc(userRef, {
 		fcmTokens: arrayUnion(fcmToken),
 	});
+}
+
+/**
+ * Get the payment details of a user.
+ * @param userId the userId of bank details to retrieve (if omitted will get ourselves).
+ * @param groupId the shared groupId between us and the userId (not needed when getting ourselves).
+ * @returns the payment details of the specified user.
+ */
+export async function getPaymentDetails(userId?: string, groupId?: string): Promise<PaymentDetails | null> {
+	const user = getUser();
+
+	const queryParams = new URLSearchParams({
+		userId: userId ?? user.uid,
+		...(groupId ? { groupId } : {}),
+	});
+
+	const res = await fetch(`/api/get-payment-details?${queryParams.toString()}`, {
+		method: "GET",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${await user.getIdToken()}`,
+		},
+	}).then((res) => res.json());
+
+	// If the response is incorrect return that no details have been set
+	try {
+		const details = JSON.parse(res.paymentDetails) as PaymentDetails | null;
+		return details;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Set our own payment details (or clear them).
+ * @param details the payment details to set.
+ * @returns true if it was successful.
+ */
+export async function setPaymentDetails(details: PaymentDetails | null): Promise<boolean> {
+	const user = getUser();
+
+	const res = await fetch("/api/set-payment-details", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${await user.getIdToken()}`,
+		},
+		body: JSON.stringify({ paymentDetails: JSON.stringify(details) }),
+	}).then((res) => res.json());
+
+	return res.success;
 }

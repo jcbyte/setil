@@ -6,12 +6,18 @@ import InvitePage from "./pages/InvitePage.vue";
 import NotFoundPage from "./pages/NotFoundPage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
 import TransactionPage from "./pages/TransactionPage.vue";
+import UserSettingsPage from "./pages/UserSettingsPage.vue";
 
 const routes = [
 	{
 		path: "/",
 		component: GroupListPage,
 		name: "GroupListPage",
+	},
+	{
+		path: "/settings",
+		component: UserSettingsPage,
+		name: "UserSettingsPage",
 	},
 	{
 		path: "/create",

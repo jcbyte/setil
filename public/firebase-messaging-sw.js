@@ -47,7 +47,6 @@ self.addEventListener("notificationclick", (event) => {
 			// If there's already an open client (window) then focus on it
 			const openClient = clientList.find((client) => new URL(client.url).origin === url);
 			if (openClient) {
-				console.log(openClient);
 				openClient.focus();
 				// if (wantedRoute) openClient.navigate(wantedRoute); // ! This causes issues as the `openClient` is not being controlled by this sw
 			} else {

@@ -33,11 +33,13 @@ export function formatCurrency(amount: number, currency: Currency, firebaseAmoun
 }
 
 export function fromFirestoreAmount(amount: number, currency: Currency) {
-	return Math.floor(amount) / Math.pow(10, CurrencySettings[currency].decimals);
+	const decimalMultiplier = Math.pow(10, CurrencySettings[currency].decimals);
+	return Math.floor(amount) / decimalMultiplier;
 }
 
 export function toFirestoreAmount(amount: number, currency: Currency): number {
-	return Math.floor(amount * Math.pow(10, CurrencySettings[currency].decimals));
+	const decimalMultiplier = Math.pow(10, CurrencySettings[currency].decimals);
+	return Math.round(amount * decimalMultiplier);
 }
 
 export function getBalanceStr(

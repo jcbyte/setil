@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
+import CopyButton from "@/components/CopyButton.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +24,7 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore/transaction";
+import { getPaymentDetails } from "@/firebase/firestore/user";
 import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/firebase/types";
 import {
@@ -22,12 +34,13 @@ import {
 	getBalanceStr,
 	toFirestoreAmount,
 } from "@/util/currency";
+import { type PaymentDetails } from "@/util/paymentDetails";
 import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowDown, ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
+import { ArrowDown, ArrowLeft, ArrowRight, Landmark, Wallet } from "lucide-vue-next";
 import { useForm } from "vee-validate";
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 
@@ -200,6 +213,19 @@ const onSubmit = handleSubmit(async (values) => {
 
 	isMakingPayment.value = false;
 });
+
+const isBankDetailsDialogOpen = ref<boolean>(false);
+const bankDetailsLoading = ref<boolean>(false);
+const bankDetails = ref<PaymentDetails | null>(null);
+
+watch(isBankDetailsDialogOpen, async () => {
+	bankDetailsLoading.value = true;
+
+	if (!values.to || !groupId.value) bankDetails.value = null;
+	else bankDetails.value = await getPaymentDetails(values.to, groupId.value);
+
+	bankDetailsLoading.value = false;
+});
 </script>
 
 <template>
@@ -371,10 +397,85 @@ const onSubmit = handleSubmit(async (values) => {
 						</FormField>
 					</div>
 
-					<Button type="submit" :disabled="isMakingPayment" class="w-fit place-self-end">
-						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
-						<span>Record Payment</span>
-					</Button>
+					<div class="flex gap-2 justify-between items-center">
+						<Dialog v-model:open="isBankDetailsDialogOpen">
+							<DialogTrigger as-child>
+								<Button type="button" :disabled="!values.to" class="w-fit" variant="outline">
+									<Landmark />
+									<span>View Bank Details</span>
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Bank Details</DialogTitle>
+									<DialogDescription>
+										Where {{ users?.[values.to!].name ?? "Unloaded User" }} would like payment.
+									</DialogDescription>
+								</DialogHeader>
+
+								<Skeleton v-if="bankDetailsLoading" class="w-full h-[160px]" />
+								<div
+									v-else-if="!bankDetails"
+									class="text-center text-muted-foreground p-4 border border-border rounded-lg"
+								>
+									Looks like {{ users?.[values.to!].name ?? "Unloaded User" }} hasn't added their bank info yet.
+								</div>
+								<div v-else class="mx-2 py-2 border border-border rounded-lg">
+									<div v-if="bankDetails.type === 'UK'" class="grid grid-cols-2 gap-y-1 gap-x-2 items-center">
+										<span class="col-span-2 text-center font-medium mb-2">UK Bank Account</span>
+										<span class="text-right text-sm">Name:</span>
+										<CopyButton :text="bankDetails.name" />
+										<span class="text-right text-sm">Sort Code:</span>
+										<CopyButton :text="bankDetails.sortCode" />
+										<span class="text-right text-sm">Account Number:</span>
+										<CopyButton :text="bankDetails.accountNumber" />
+									</div>
+									<div v-else-if="bankDetails.type === 'US'" class="grid grid-cols-2 gap-1 items-center">
+										<span class="col-span-2 text-center font-medium mb-2">US Bank Account</span>
+										<span class="text-right text-sm">Name:</span>
+										<CopyButton :text="bankDetails.name" />
+										<span class="text-right text-sm">Routing Number:</span>
+										<CopyButton :text="bankDetails.routingNumber" />
+										<span class="text-right text-sm">Account Number:</span>
+										<CopyButton :text="bankDetails.accountNumber" />
+									</div>
+									<div v-else-if="bankDetails.type === 'SEPA'" class="grid grid-cols-2 gap-1 items-center">
+										<span class="col-span-2 text-center font-medium mb-2">SEPA Details</span>
+										<span class="text-right text-sm">Name:</span>
+										<CopyButton :text="bankDetails.name" />
+										<span class="text-right text-sm">IBAN:</span>
+										<CopyButton :text="bankDetails.IBAN" />
+										<span v-if="bankDetails.BIC" class="text-right text-sm">BIC / SWIFT Code:</span>
+										<CopyButton v-if="bankDetails.BIC" :text="bankDetails.BIC" />
+									</div>
+									<div v-else-if="bankDetails.type === 'SWIFT'" class="grid grid-cols-2 gap-1 items-center">
+										<span class="col-span-2 text-center font-medium mb-2">SWIFT Details</span>
+										<span class="text-right text-sm">Name:</span>
+										<CopyButton :text="bankDetails.name" />
+										<span class="text-right text-sm">BIC / SWIFT Code:</span>
+										<CopyButton :text="bankDetails.SWIFT" />
+										<span class="text-right text-sm">Account Number / IBAN:</span>
+										<CopyButton :text="bankDetails.IBAN" />
+										<span v-if="bankDetails.bankName" class="text-right text-sm">Bank Name:</span>
+										<CopyButton v-if="bankDetails.bankName" :text="bankDetails.bankName" />
+										<span v-if="bankDetails.bankAddress" class="text-right text-sm">Bank Address:</span>
+										<CopyButton v-if="bankDetails.bankAddress" :text="bankDetails.bankAddress" />
+									</div>
+								</div>
+
+								<DialogFooter>
+									<DialogClose as-child>
+										<Button type="button">Close</Button>
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+
+						<Button type="submit" :disabled="isMakingPayment" class="w-fit">
+							<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
+							<span>Record Payment</span>
+						</Button>
+					</div>
 				</form>
 			</div>
 			<Skeleton v-else class="w-full max-w-[32rem] h-72" />
