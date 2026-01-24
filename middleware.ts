@@ -1,9 +1,10 @@
 import { next, rewrite } from "@vercel/edge";
 
 export default async function middleware(req: Request) {
+	const dev = process.env.VERCEL_ENV !== "production";
 	const underMaintenance = process.env.UNDER_MAINTENANCE?.toUpperCase() === "TRUE";
 
-	if (underMaintenance) {
+	if (underMaintenance && !dev) {
 		const url = new URL(req.url);
 		url.pathname = "/maintenance.html";
 		return rewrite(url);
