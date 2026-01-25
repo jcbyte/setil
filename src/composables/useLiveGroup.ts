@@ -1,6 +1,6 @@
-import { app } from "@/firebase/firebase";
+import { db } from "@/firebase/firebase";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
-import { collection, CollectionReference, doc, DocumentReference, getFirestore } from "firebase/firestore";
+import { collection, CollectionReference, doc, DocumentReference } from "firebase/firestore";
 import { computed, type Ref } from "vue";
 import { useLiveCollection } from "./useLiveCollection";
 import { useLiveDoc } from "./useLiveDoc";
@@ -13,8 +13,6 @@ export interface Group {
 
 export function useLiveGroup(groupId: string | null, onError?: () => void): Ref<Group | null> {
 	if (!groupId) return computed(() => null); // ? This requires `groupId` to be static
-
-	const db = getFirestore(app);
 
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const liveGroupData = useLiveDoc(groupRef, onError);

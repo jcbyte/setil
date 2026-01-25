@@ -9,7 +9,6 @@ import {
 	getCountFromServer,
 	getDoc,
 	getDocs,
-	getFirestore,
 	limit,
 	orderBy,
 	query,
@@ -18,11 +17,9 @@ import {
 	where,
 	WriteBatch,
 } from "firebase/firestore";
-import { app } from "../firebase";
+import { db } from "../firebase";
 import type { GroupData, GroupUserData, UserData } from "../types";
 import { getUser } from "./util";
-
-const db = getFirestore(app);
 
 /**
  * Initialise the users data area if is does not exist.

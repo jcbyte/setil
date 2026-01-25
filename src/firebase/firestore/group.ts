@@ -9,7 +9,6 @@ import {
 	DocumentReference,
 	getDoc,
 	getDocs,
-	getFirestore,
 	limit,
 	query,
 	setDoc,
@@ -19,12 +18,10 @@ import {
 	writeBatch,
 	WriteBatch,
 } from "firebase/firestore";
-import { app } from "../firebase";
+import { db } from "../firebase";
 import type { GroupData, GroupUserData, Invite } from "../types";
 import { getLeftUserStatus } from "./user";
 import { getUser } from "./util";
-
-const db = getFirestore(app);
 
 const templateNewUser = (user: User): GroupUserData => ({
 	nickname: user.displayName ?? "Unknown User",
