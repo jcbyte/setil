@@ -12,7 +12,7 @@ export interface Group {
 }
 
 export function useLiveGroup(groupId: string | null, onError?: () => void): Ref<Group | null> {
-	if (!groupId) return computed(() => null); // ? This requires `groupId` to be static
+	if (!groupId) return computed(() => null);
 
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const liveGroupData = useLiveDoc(groupRef, onError);
