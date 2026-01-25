@@ -13,8 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import { useLiveGroup } from "@/composables/useLiveGroup";
-import { PHOTO_URL } from "@/CONST_USE";
+import useLiveGroupWithUserPublic from "@/composables/useLiveUserGroupWithUserPublic";
 import { createTransaction, updateTransaction } from "@/firebase/firestore/transaction";
 import { sendNotification } from "@/firebase/messaging";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
@@ -48,7 +47,7 @@ if (!groupId) {
 	noGroup();
 	throw "No groupId";
 }
-const group = useLiveGroup(groupId, noGroup);
+const group = useLiveGroupWithUserPublic(groupId, noGroup);
 
 let loaded = false;
 watch(
@@ -373,7 +372,11 @@ const onSubmit = handleSubmit(async (values) => {
 										<SelectTrigger>
 											<SelectValue>
 												<div v-if="values.from" class="flex items-center gap-2">
-													<Avatar :src="PHOTO_URL" :name="group.users[values.from].nickname" class="size-6" />
+													<Avatar
+														:src="group.users[values.from].public?.photoURL ?? null"
+														:name="group.users[values.from].nickname"
+														class="size-6"
+													/>
 													<span>{{ group.users[values.from!].nickname }} </span>
 												</div>
 											</SelectValue>
@@ -387,7 +390,7 @@ const onSubmit = handleSubmit(async (values) => {
 										>
 											<div class="flex items-center gap-2">
 												<Avatar
-													:src="PHOTO_URL"
+													:src="group.users[userId].public?.photoURL ?? null"
 													:name="group.users[userId].nickname"
 													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>
@@ -433,7 +436,7 @@ const onSubmit = handleSubmit(async (values) => {
 											/>
 											<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
 												<Avatar
-													:src="PHOTO_URL"
+													:src="group.users[userId].public?.photoURL ?? null"
 													:name="group.users[userId].nickname"
 													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>

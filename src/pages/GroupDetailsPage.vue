@@ -27,8 +27,7 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import { useLiveGroup } from "@/composables/useLiveGroup";
-import { AC_NAME, PHOTO_URL } from "@/CONST_USE";
+import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveUserGroupWithUserPublic";
 import {
 	changeUserNickname,
 	createGroup,
@@ -38,7 +37,6 @@ import {
 	removeUser,
 	updateGroup,
 } from "@/firebase/firestore/group";
-import type { GroupUserData } from "@/firebase/types";
 import { type Currency } from "@/firebase/types";
 import { inviteUser, noGroup } from "@/util/app";
 import { CurrencySettings } from "@/util/currency";
@@ -70,7 +68,7 @@ const groupId = getRouteParam(route.params.groupId);
 const newGroup = groupId === null;
 const { currentUser } = useCurrentUser();
 const { toast } = useToast();
-const group = useLiveGroup(groupId, groupId ? noGroup : () => {});
+const group = useLiveGroupWithUserPublic(groupId, groupId ? noGroup : () => {});
 
 let loaded = false;
 watch(
@@ -164,7 +162,9 @@ const onSubmit = handleSubmit(async (values) => {
 	isGroupDetailsUpdating.value = false;
 });
 
-const currentGroupUser = computed<GroupUserData | null>(() => group.value?.users[currentUser.value!.uid] ?? null);
+const currentGroupUser = computed<GroupUserDataWithPublic | null>(
+	() => group.value?.users[currentUser.value!.uid] ?? null,
+);
 
 const myDisplayName = ref<string | undefined>();
 const myDisplayNameErrors = ref<string | undefined>();
@@ -208,9 +208,11 @@ function validateMemberName(userId: string) {
 }
 
 function startRename(userId: string) {
+	if (!group.value) return;
+
 	memberNewNickname.value[userId] = {
 		updating: true,
-		nickname: group.value?.users[userId].nickname ?? AC_NAME,
+		nickname: group.value.users[userId].nickname,
 		processing: false,
 	};
 }
@@ -433,7 +435,7 @@ async function deleteGroup() {
 						<span class="text-sm text-muted-foreground">How others see you in this group</span>
 					</div>
 					<div v-if="group && currentGroupUser" class="flex items-center gap-2">
-						<Avatar :src="PHOTO_URL" :name="currentGroupUser.nickname" class="size-9" />
+						<Avatar :src="currentGroupUser.public?.photoURL ?? null" :name="currentGroupUser.nickname" class="size-9" />
 						<div class="flex flex-col">
 							<span>{{ currentGroupUser.nickname }}</span>
 							<span class="text-sm text-muted-foreground">
@@ -479,13 +481,13 @@ async function deleteGroup() {
 							v-if="group.users"
 							v-for="(user, userId) in Object.fromEntries(
 								Object.entries(group.users).filter(([, user]) => user.status !== 'history'),
-							) as Record<string, GroupUserData>"
+							)"
 							class="flex flex-col gap-2"
 						>
 							<div class="flex justify-between items-center gap-2">
 								<div class="flex items-center gap-2 flex-1">
 									<Avatar
-										:src="PHOTO_URL"
+										:src="user.public?.photoURL ?? null"
 										:name="user.nickname"
 										:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
 									/>

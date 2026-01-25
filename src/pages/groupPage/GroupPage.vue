@@ -7,8 +7,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Tabs from "@/components/ui/tabs/Tabs.vue";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { useLiveGroup } from "@/composables/useLiveGroup";
-import { PHOTO_URL } from "@/CONST_USE";
+import useLiveGroupWithUserPublic from "@/composables/useLiveUserGroupWithUserPublic";
 import { inviteUser, noGroup } from "@/util/app";
 import { getRouteParam } from "@/util/util";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
@@ -27,8 +26,7 @@ if (!groupId) {
 	throw "No groupId";
 }
 
-// const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
-const group = useLiveGroup(groupId, noGroup);
+const group = useLiveGroupWithUserPublic(groupId, noGroup);
 
 type Tab = "summary" | "activity";
 const tabSettings: Record<Tab, { title: string }> = {
@@ -180,7 +178,7 @@ watch(currentTab, (newTab, oldTab) => {
 							v-for="user in Object.values(group.users).filter((user) => user.status === 'active')"
 							class="flex gap-1 justify-center items-center"
 						>
-							<Avatar :src="PHOTO_URL" :name="user.nickname" class="size-7" />
+							<Avatar :src="user.public?.photoURL ?? null" :name="user.nickname" class="size-7" />
 							<span class="text-sm">{{ user.nickname }}</span>
 						</div>
 					</div>

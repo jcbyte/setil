@@ -3,8 +3,9 @@ import { computed, type Ref } from "vue";
 import { useLiveGroup, type Group } from "./useLiveGroup";
 import useUserCollection from "./useUserCollection";
 
+export type GroupUserDataWithPublic = GroupUserData & { public: PublicUserData | null };
 export type GroupWithUserPublic = Omit<Group, "users"> & {
-	users: Record<string, GroupUserData & { public: PublicUserData | null }>;
+	users: Record<string, GroupUserDataWithPublic>;
 };
 
 export default function useLiveGroupWithUserPublic(

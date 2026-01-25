@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AvatarStack from "@/components/AvatarStack.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
-import { PHOTO_URL } from "@/CONST_USE";
 import type { ExtendedGroupData } from "@/firebase/firestore/user";
 import { getBalanceStr } from "@/util/currency";
 import { Timestamp } from "firebase/firestore";
@@ -45,6 +44,8 @@ const yourBalanceStr = computed<BalanceStr>(() =>
 );
 </script>
 
+<!-- todo photo url -->
+
 <template>
 	<div class="flex flex-col gap-2 border border-border rounded-lg p-4 relative">
 		<div class="flex flex-col">
@@ -53,7 +54,7 @@ const yourBalanceStr = computed<BalanceStr>(() =>
 		</div>
 		<AvatarStack
 			avatar-class="border border-background"
-			:avatars="group.topUsers.map((topUser) => ({ src: PHOTO_URL, name: topUser.nickname }))"
+			:avatars="group.topUsers.map((topUser) => ({ src: null, name: topUser.nickname }))"
 			:total-count="group.userCount"
 		/>
 		<span class="text-sm text-muted-foreground">{{ lastUpdatedStr }}</span>

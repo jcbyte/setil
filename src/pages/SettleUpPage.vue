@@ -21,9 +21,8 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import { useLiveGroup } from "@/composables/useLiveGroup";
+import useLiveGroupWithUserPublic from "@/composables/useLiveUserGroupWithUserPublic";
 import { useScreenSize } from "@/composables/useScreenSize";
-import { PHOTO_URL } from "@/CONST_USE";
 import { createTransaction } from "@/firebase/firestore/transaction";
 import { getPaymentDetails } from "@/firebase/firestore/user";
 import { sendNotification } from "@/firebase/messaging";
@@ -58,7 +57,7 @@ if (!groupId) {
 	noGroup();
 	throw "No groupId";
 }
-const group = useLiveGroup(groupId, noGroup);
+const group = useLiveGroupWithUserPublic(groupId, noGroup);
 
 interface SimpleTransaction {
 	from: string;
@@ -243,6 +242,8 @@ async function openBankDetailsDialog() {
 }
 </script>
 
+<!-- todo only show bank details when bank details exist -->
+
 <template>
 	<div>
 		<div class="w-full flex flex-col gap-4 items-center">
@@ -275,7 +276,11 @@ async function openBankDetailsDialog() {
 						>
 							<div class="flex flex-col sm:flex-row justify-between items-center gap-2">
 								<div class="flex items-center gap-2">
-									<Avatar :src="PHOTO_URL" :name="group.users[userPayment.from].nickname" class="size-10" />
+									<Avatar
+										:src="group.users[userPayment.from].public?.photoURL ?? null"
+										:name="group.users[userPayment.from].nickname"
+										class="size-10"
+									/>
 									<div class="flex flex-col gap-1">
 										<span class="text-sm">{{ group.users[userPayment.from].nickname }}</span>
 										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-userPayment.amount)" />
@@ -289,7 +294,11 @@ async function openBankDetailsDialog() {
 										<span class="text-sm">{{ group.users[userPayment.to].nickname }}</span>
 										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(userPayment.amount)" />
 									</div>
-									<Avatar :src="PHOTO_URL" :name="group.users[userPayment.to].nickname" class="size-10" />
+									<Avatar
+										:src="group.users[userPayment.to].public?.photoURL ?? null"
+										:name="group.users[userPayment.to].nickname"
+										class="size-10"
+									/>
 								</div>
 							</div>
 							<Button variant="outline" @click="fillForm(userPayment)">Record this payment</Button>
@@ -323,7 +332,11 @@ async function openBankDetailsDialog() {
 												<SelectTrigger>
 													<SelectValue placeholder="Select a member">
 														<div v-if="values.from" class="flex items-center gap-2">
-															<Avatar :src="PHOTO_URL" :name="group.users[values.from].nickname" class="size-6" />
+															<Avatar
+																:src="group.users[values.from].public?.photoURL ?? null"
+																:name="group.users[values.from].nickname"
+																class="size-6"
+															/>
 															<span>{{ group.users[values.from].nickname }} </span>
 														</div>
 													</SelectValue>
@@ -333,7 +346,7 @@ async function openBankDetailsDialog() {
 												<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
 													<div class="flex items-center gap-2">
 														<Avatar
-															:src="PHOTO_URL"
+															:src="group.users[userId].public?.photoURL ?? null"
 															:name="group.users[userId].nickname"
 															:class="`size-5 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 														/>
@@ -356,7 +369,11 @@ async function openBankDetailsDialog() {
 												<SelectTrigger>
 													<SelectValue placeholder="Select a member">
 														<div v-if="values.to" class="flex items-center gap-2">
-															<Avatar :src="PHOTO_URL" :name="group.users[values.to].nickname" class="size-6" />
+															<Avatar
+																:src="group.users[values.to].public?.photoURL ?? null"
+																:name="group.users[values.to].nickname"
+																class="size-6"
+															/>
 															<span>{{ group.users[values.to!].nickname }} </span>
 														</div>
 													</SelectValue>
@@ -366,7 +383,7 @@ async function openBankDetailsDialog() {
 												<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
 													<div class="flex items-center gap-2">
 														<Avatar
-															:src="PHOTO_URL"
+															:src="group.users[userId].public?.photoURL ?? null"
 															:name="group.users[userId].nickname"
 															:class="`size-5 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 														/>

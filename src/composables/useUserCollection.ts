@@ -12,7 +12,7 @@ export default function useUserCollection(
 		Object.fromEntries(
 			userIds.value.map((userId) => {
 				const userPublicRef = doc(db, "users", userId, "public", "data") as DocumentReference<PublicUserData>;
-				const ref = useLiveDoc(userPublicRef, () => onError?.(userId));
+				const ref = useLiveDoc(userPublicRef, () => onError?.(userId)); // todo // ! we shouldn't place a composable inside a `computed` as it breaks vue lifecycle
 				return [userId, ref];
 			}),
 		),

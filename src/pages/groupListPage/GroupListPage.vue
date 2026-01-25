@@ -17,15 +17,17 @@ const groups = computed<[string, ExtendedGroupData][] | null>(() =>
 		? Object.entries(groupList.value).sort(
 				([, transactionA]: [string, ExtendedGroupData], [, transactionB]: [string, ExtendedGroupData]) => {
 					return transactionB.lastUpdate.seconds - transactionA.lastUpdate.seconds;
-				}
-		  )
-		: null
+				},
+			)
+		: null,
 );
 
 onMounted(() => {
 	refreshList();
 });
 </script>
+
+<!-- todo can we retrieve groups using the new live group system? -->
 
 <template>
 	<div class="w-full flex flex-col gap-4">

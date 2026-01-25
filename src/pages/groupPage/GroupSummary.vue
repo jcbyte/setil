@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
-import type { Group } from "@/composables/useLiveGroup";
-import { PHOTO_URL } from "@/CONST_USE";
-import type { GroupUserData } from "@/firebase/types";
+import type { GroupWithUserPublic } from "@/composables/useLiveUserGroupWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
 import { computed } from "vue";
 
 const props = defineProps<{
-	group: Group;
+	group: GroupWithUserPublic;
 }>();
 
 const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
@@ -38,12 +36,12 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 				v-if="group.users"
 				v-for="(user, userId) in Object.fromEntries(
 					Object.entries(group.users).filter(([, user]) => user.status !== 'history'),
-				) as Record<string, GroupUserData>"
+				)"
 				class="flex justify-between items-center"
 			>
 				<div class="flex justify-center items-center gap-1">
 					<Avatar
-						:src="PHOTO_URL"
+						:src="user.public?.photoURL ?? null"
 						:name="user.nickname"
 						:class="`size-9 ${user.status !== 'active' && 'opacity-70'}`"
 					/>
