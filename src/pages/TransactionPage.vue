@@ -67,7 +67,7 @@ watch(
 					people: Object.fromEntries(
 						Object.entries(groupValue.users)
 							.filter(([, user]) => user.status === "active")
-							.map(([userId]) => [userId, { selected: false, num: undefined }]),
+							.map(([userId]) => [userId, { selected: false, num: undefined }])
 					),
 				},
 			});
@@ -78,14 +78,14 @@ watch(
 			const transactionCalendarDate = new CalendarDate(
 				transactionDate.getFullYear(),
 				transactionDate.getMonth() + 1,
-				transactionDate.getDate(),
+				transactionDate.getDate()
 			);
 
 			// Only include active members (Unless this transaction contains an inactive member)
 			const transactionTo = Object.fromEntries(
 				Object.entries(groupValue.users)
 					.filter(([userId, user]) => user.status === "active" || transaction.to[userId] || userId === transaction.from)
-					.map(([userId]) => [userId, transaction.to[userId]]),
+					.map(([userId]) => [userId, transaction.to[userId]])
 			);
 			// Remove the `undefined` and `0` values in gcd calculation
 			const transactionGcd = gcdN(Object.values(transactionTo).filter((v) => v));
@@ -102,13 +102,13 @@ watch(
 						Object.entries(transactionTo).map(([userId, amount]) => [
 							userId,
 							{ selected: Boolean(amount), num: amount ? amount / transactionGcd : undefined },
-						]),
+						])
 					),
 				},
 			});
 		}
 	},
-	{ immediate: true },
+	{ immediate: true }
 );
 
 const df = new DateFormatter(navigator.language, { dateStyle: "long" });
@@ -137,15 +137,15 @@ const formSchema = toTypedSchema(
 						z.object({
 							selected: z.boolean(),
 							num: z.number().optional(),
-						}),
+						})
 					)
 					.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient"),
 			})
 			.refine(
 				(v) => v.type === "equal" || !Object.values(v.people).some((vo) => vo.selected && !vo.num),
-				"An amount is required for a selected member",
+				"An amount is required for a selected member"
 			),
-	}),
+	})
 );
 
 const { isFieldDirty, handleSubmit, setValues, values, setFieldValue, validateField } = useForm({
@@ -164,13 +164,13 @@ function resolveBalances(): Record<string, number> {
 			toFirestoreAmount(values.amount ?? 0, group.value.data.currency ?? "gbp"),
 			Object.entries(values.to.people)
 				.filter(([, userData]) => userData!.selected)
-				.map(([userId]) => userId),
+				.map(([userId]) => userId)
 		);
 	} else if (values.to.type === "unequal") {
 		return Object.fromEntries(
 			Object.entries(values.to.people)
 				.filter(([, userData]) => userData!.selected)
-				.map(([userId, userData]) => [userId, toFirestoreAmount(userData!.num ?? 0, group.value!.data.currency)]),
+				.map(([userId, userData]) => [userId, toFirestoreAmount(userData!.num ?? 0, group.value!.data.currency)])
 		);
 	} else if (values.to.type === "ratio") {
 		return splitAmountRatio(
@@ -178,8 +178,8 @@ function resolveBalances(): Record<string, number> {
 			Object.fromEntries(
 				Object.entries(values.to.people)
 					.filter(([, userData]) => userData!.selected)
-					.map(([userId, userData]) => [userId, userData!.num ?? 0]),
-			),
+					.map(([userId, userData]) => [userId, userData!.num ?? 0])
+			)
 		);
 	}
 
@@ -194,7 +194,7 @@ const dateValue = computed({
 const toValue = computed<Record<string, number>>(resolveBalances);
 
 const allSelected = computed<boolean>(
-	() => !Object.values(values.to?.people ?? {}).some((userData) => !userData!.selected),
+	() => !Object.values(values.to?.people ?? {}).some((userData) => !userData!.selected)
 );
 
 const onSubmit = handleSubmit(async (values) => {
@@ -222,9 +222,9 @@ const onSubmit = handleSubmit(async (values) => {
 				`${group.value!.users[values.from].nickname} added expense ${values.title} for ${formatCurrency(
 					values.amount,
 					group.value!.data.currency,
-					false,
+					false
 				)}.`,
-				`/group/${groupId}?tab=activity`,
+				`/group/${groupId}?tab=activity`
 			);
 		} else {
 			await updateTransaction(groupId, transactionId, transaction, leftUsers);
@@ -373,7 +373,7 @@ const onSubmit = handleSubmit(async (values) => {
 											<SelectValue>
 												<div v-if="values.from" class="flex items-center gap-2">
 													<Avatar
-														:src="group.users[values.from].public?.photoURL ?? null"
+														:src="group.users[values.from].public?.photoUrl ?? null"
 														:name="group.users[values.from].nickname"
 														class="size-6"
 													/>
@@ -390,7 +390,7 @@ const onSubmit = handleSubmit(async (values) => {
 										>
 											<div class="flex items-center gap-2">
 												<Avatar
-													:src="group.users[userId].public?.photoURL ?? null"
+													:src="group.users[userId].public?.photoUrl ?? null"
 													:name="group.users[userId].nickname"
 													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>
@@ -436,7 +436,7 @@ const onSubmit = handleSubmit(async (values) => {
 											/>
 											<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
 												<Avatar
-													:src="group.users[userId].public?.photoURL ?? null"
+													:src="group.users[userId].public?.photoUrl ?? null"
 													:name="group.users[userId].nickname"
 													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>

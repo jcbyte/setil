@@ -18,9 +18,9 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 				props.group.data.currency,
 				(b) => `is owed ${b}`,
 				(b) => `owes ${b}`,
-				() => "is in balance",
+				() => "is in balance"
 			),
-		]),
+		])
 	);
 });
 </script>
@@ -35,13 +35,13 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 			<div
 				v-if="group.users"
 				v-for="(user, userId) in Object.fromEntries(
-					Object.entries(group.users).filter(([, user]) => user.status !== 'history'),
+					Object.entries(group.users).filter(([, user]) => user.status !== 'history')
 				)"
 				class="flex justify-between items-center"
 			>
 				<div class="flex justify-center items-center gap-1">
 					<Avatar
-						:src="user.public?.photoURL ?? null"
+						:src="user.public?.photoUrl ?? null"
 						:name="user.nickname"
 						:class="`size-9 ${user.status !== 'active' && 'opacity-70'}`"
 					/>

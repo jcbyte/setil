@@ -7,12 +7,13 @@ import { useLiveDoc } from "./useLiveDoc";
 export default function useUserCollection(
 	userIds: Ref<string[]>,
 	onError?: (userId: string) => void
-): Ref<Record<string, Ref<null | PublicUserData>>> {
+): Ref<Record<string, Ref<PublicUserData | null>>> {
 	const publicUserData = ref<Record<string, Ref<PublicUserData | null>>>({});
 	const docReleasers = new Map<string, () => void>();
 
 	onUnmounted(() => {
 		docReleasers.forEach((release) => release());
+		docReleasers.clear();
 	});
 
 	watch(userIds, (requestedIds) => {
@@ -35,16 +36,6 @@ export default function useUserCollection(
 			docReleasers.delete(userId);
 		});
 	});
-
-	// const publicUserData = computed(() =>
-	// 	Object.fromEntries(
-	// 		userIds.value.map((userId) => {
-	// 			const userPublicRef = doc(db, "users", userId, "public", "data") as DocumentReference<PublicUserData>;
-	// 			const ref = useLiveDoc(userPublicRef, () => onError?.(userId)); // todo // ! we shouldn't place a composable inside a `computed` as it breaks vue lifecycle
-	// 			return [userId, ref];
-	// 		}),
-	// 	),
-	// );
 
 	return publicUserData;
 }

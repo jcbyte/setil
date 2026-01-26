@@ -11,7 +11,7 @@ export interface UserData {
 
 export interface PublicUserData {
 	name: string;
-	photoURL: string | null;
+	photoUrl: string | null;
 	hasBankDetails: boolean;
 }
 

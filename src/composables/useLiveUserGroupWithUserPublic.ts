@@ -1,5 +1,5 @@
 import type { GroupUserData, PublicUserData } from "@/firebase/types";
-import { computed, type Ref } from "vue";
+import { computed, unref, type Ref } from "vue";
 import { useLiveGroup, type Group } from "./useLiveGroup";
 import useUserCollection from "./useUserCollection";
 
@@ -20,12 +20,21 @@ export default function useLiveGroupWithUserPublic(
 	const liveGroupWithUserPublic = computed(() => {
 		if (!liveGroup.value) return null;
 
-		const mergedUserData = Object.fromEntries(
+		const mergedUserData: Record<string, GroupUserDataWithPublic> = Object.fromEntries(
 			Object.entries(liveGroup.value.users).map(([userId, groupUserData]) => [
 				userId,
-				{ ...groupUserData, public: userPublic.value[userId]?.value ?? null },
+				{
+					...groupUserData,
+					public: null,
+				},
 			])
 		);
+
+		console.log(userPublic.value);
+
+		Object.entries(userPublic.value).forEach(([userId, publicData]) => {
+			if (mergedUserData[userId]) mergedUserData[userId].public = unref(publicData);
+		});
 
 		return { ...liveGroup.value, users: mergedUserData };
 	});

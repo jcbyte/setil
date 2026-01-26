@@ -75,7 +75,7 @@ function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
 			else if (resolvedDebt < 0) debtors.push(userId);
 			return { creditors, debtors };
 		},
-		{ creditors: [], debtors: [] },
+		{ creditors: [], debtors: [] }
 	);
 
 	const newDebts: { from: string; to: string; amount: number }[] = [];
@@ -109,9 +109,9 @@ function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
 const usersPayments = computed<SimpleTransaction[] | null>(() =>
 	group.value
 		? resolveGroupDebts(
-				Object.fromEntries(Object.entries(group.value.users).map(([userId, userData]) => [userId, userData.balance])),
-			)
-		: null,
+				Object.fromEntries(Object.entries(group.value.users).map(([userId, userData]) => [userId, userData.balance]))
+		  )
+		: null
 );
 
 const allowedPaymentUsers = computed<string[] | null>(() =>
@@ -119,7 +119,7 @@ const allowedPaymentUsers = computed<string[] | null>(() =>
 		? Object.entries(group.value.users)
 				.filter(([, user]) => user.status !== "history")
 				.map(([userId]) => userId)
-		: null,
+		: null
 );
 
 function getPaymentBalanceStr(bal: number): BalanceStr {
@@ -128,7 +128,7 @@ function getPaymentBalanceStr(bal: number): BalanceStr {
 		group.value!.data.currency,
 		(bal) => `receives ${bal}`,
 		(bal) => `owes ${bal}`,
-		() => "in balance",
+		() => "in balance"
 	);
 }
 
@@ -143,7 +143,7 @@ const formSchema = toTypedSchema(
 			.string()
 			.refine((val) => group.value && Object.keys(group.value.users).includes(val), "Must select a valid member"),
 		amount: z.number().refine((val) => val > 0, "An amount is required"),
-	}),
+	})
 );
 
 const { isFieldDirty, handleSubmit, setValues, values } = useForm({
@@ -166,7 +166,7 @@ async function scrollToElement(element: HTMLElement): Promise<void> {
 					resolve();
 				}
 			},
-			{ threshold: 0.5 },
+			{ threshold: 0.5 }
 		);
 
 		observer.observe(element);
@@ -210,9 +210,9 @@ const onSubmit = handleSubmit(async (values) => {
 			`${group.value.users[values.from].nickname} paid ${group.value.users[values.to].nickname} ${formatCurrency(
 				values.amount,
 				group.value.data.currency,
-				false,
+				false
 			)}.`,
-			`/group/${groupId}?tab=summary`,
+			`/group/${groupId}?tab=summary`
 		);
 		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
 	} catch (e) {
@@ -277,7 +277,7 @@ async function openBankDetailsDialog() {
 							<div class="flex flex-col sm:flex-row justify-between items-center gap-2">
 								<div class="flex items-center gap-2">
 									<Avatar
-										:src="group.users[userPayment.from].public?.photoURL ?? null"
+										:src="group.users[userPayment.from].public?.photoUrl ?? null"
 										:name="group.users[userPayment.from].nickname"
 										class="size-10"
 									/>
@@ -295,7 +295,7 @@ async function openBankDetailsDialog() {
 										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(userPayment.amount)" />
 									</div>
 									<Avatar
-										:src="group.users[userPayment.to].public?.photoURL ?? null"
+										:src="group.users[userPayment.to].public?.photoUrl ?? null"
 										:name="group.users[userPayment.to].nickname"
 										class="size-10"
 									/>
@@ -333,7 +333,7 @@ async function openBankDetailsDialog() {
 													<SelectValue placeholder="Select a member">
 														<div v-if="values.from" class="flex items-center gap-2">
 															<Avatar
-																:src="group.users[values.from].public?.photoURL ?? null"
+																:src="group.users[values.from].public?.photoUrl ?? null"
 																:name="group.users[values.from].nickname"
 																class="size-6"
 															/>
@@ -346,7 +346,7 @@ async function openBankDetailsDialog() {
 												<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
 													<div class="flex items-center gap-2">
 														<Avatar
-															:src="group.users[userId].public?.photoURL ?? null"
+															:src="group.users[userId].public?.photoUrl ?? null"
 															:name="group.users[userId].nickname"
 															:class="`size-5 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 														/>
@@ -370,7 +370,7 @@ async function openBankDetailsDialog() {
 													<SelectValue placeholder="Select a member">
 														<div v-if="values.to" class="flex items-center gap-2">
 															<Avatar
-																:src="group.users[values.to].public?.photoURL ?? null"
+																:src="group.users[values.to].public?.photoUrl ?? null"
 																:name="group.users[values.to].nickname"
 																class="size-6"
 															/>
@@ -383,7 +383,7 @@ async function openBankDetailsDialog() {
 												<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
 													<div class="flex items-center gap-2">
 														<Avatar
-															:src="group.users[userId].public?.photoURL ?? null"
+															:src="group.users[userId].public?.photoUrl ?? null"
 															:name="group.users[userId].nickname"
 															:class="`size-5 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 														/>

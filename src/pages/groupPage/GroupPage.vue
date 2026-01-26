@@ -25,7 +25,6 @@ if (!groupId) {
 	noGroup();
 	throw "No groupId";
 }
-
 const group = useLiveGroupWithUserPublic(groupId, noGroup);
 
 type Tab = "summary" | "activity";
@@ -37,7 +36,7 @@ const tabOrder: Tab[] = ["summary", "activity"];
 const currentTab = ref<Tab>(
 	typeof route.query.tab === "string" && tabOrder.includes(route.query.tab as Tab)
 		? (route.query.tab as Tab)
-		: tabOrder[0],
+		: tabOrder[0]
 );
 
 watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
@@ -170,7 +169,10 @@ watch(currentTab, (newTab, oldTab) => {
 				</div>
 				<div class="flex flex-col gap-1">
 					<span class="text-sm text-muted-foreground font-semibold">
-						Members ({{ Object.values(group.users).filter((user) => user.status === "active").length }})
+						Joel public photourl "{{ group?.users["kJDi3KR9RoWRJtTXchRx6uA9XcM2"]?.public?.photoUrl ?? "null" }}"
+						Members macy public photourl "{{
+							group?.users["akLGUEXA73gbrmDTmeGPCDXQ4da2"]?.public?.photoUrl ?? "null"
+						}}" Members ({{ Object.values(group.users).filter((user) => user.status === "active").length }})
 					</span>
 					<div class="flex gap-2 flex-wrap">
 						<div
@@ -178,7 +180,7 @@ watch(currentTab, (newTab, oldTab) => {
 							v-for="user in Object.values(group.users).filter((user) => user.status === 'active')"
 							class="flex gap-1 justify-center items-center"
 						>
-							<Avatar :src="user.public?.photoURL ?? null" :name="user.nickname" class="size-7" />
+							<Avatar :src="user.public?.photoUrl ?? null" :name="user.nickname" class="size-7" />
 							<span class="text-sm">{{ user.nickname }}</span>
 						</div>
 					</div>
