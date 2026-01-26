@@ -1,5 +1,5 @@
 import { onSnapshot, type DocumentReference, type Unsubscribe } from "firebase/firestore";
-import { onUnmounted, shallowRef, type Ref } from "vue";
+import { shallowRef, type Ref } from "vue";
 
 interface CachedLiveDoc {
 	ref: Ref<any>;
@@ -8,10 +8,13 @@ interface CachedLiveDoc {
 }
 const liveDocs = new Map<string, CachedLiveDoc>();
 
-export function useLiveDoc<T>(docRef: DocumentReference<T>, onError?: () => void): Ref<T | null> {
+export function useLiveDoc<T>(
+	docRef: DocumentReference<T>,
+	onError?: () => void
+): { data: Ref<T | null>; release: () => void } {
 	const docKey = docRef.path;
 
-	onUnmounted(() => {
+	function release() {
 		const liveDocRef = liveDocs.get(docKey);
 		if (!liveDocRef) return;
 
@@ -20,12 +23,12 @@ export function useLiveDoc<T>(docRef: DocumentReference<T>, onError?: () => void
 			liveDocRef.unsubscribe();
 			liveDocs.delete(docKey);
 		}
-	});
+	}
 
 	const cachedLiveDoc = liveDocs.get(docKey);
 	if (cachedLiveDoc) {
 		cachedLiveDoc.refCount++;
-		return cachedLiveDoc.ref;
+		return { data: cachedLiveDoc.ref, release };
 	}
 
 	const dataRef = shallowRef<T | null>(null);
@@ -43,10 +46,10 @@ export function useLiveDoc<T>(docRef: DocumentReference<T>, onError?: () => void
 		},
 		(_error) => {
 			onError?.();
-		},
+		}
 	);
 
 	liveDocs.set(docKey, { ref: dataRef, unsubscribe, refCount: 1 });
 
-	return dataRef;
+	return { data: dataRef, release };
 }

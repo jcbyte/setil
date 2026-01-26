@@ -1,7 +1,7 @@
 import { db } from "@/firebase/firebase";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { collection, CollectionReference, doc, DocumentReference } from "firebase/firestore";
-import { computed, type Ref } from "vue";
+import { computed, onUnmounted, type Ref } from "vue";
 import { useLiveCollection } from "./useLiveCollection";
 import { useLiveDoc } from "./useLiveDoc";
 
@@ -15,11 +15,20 @@ export function useLiveGroup(groupId: string | null, onError?: () => void): Ref<
 	if (!groupId) return computed(() => null);
 
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
-	const liveGroupData = useLiveDoc(groupRef, onError);
+	const { data: liveGroupData, release: releaseGroupData } = useLiveDoc(groupRef, onError);
 	const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
-	const liveGroupUsers = useLiveCollection(groupUsersRef, onError);
+	const { items: liveGroupUsers, release: releaseGroupUsers } = useLiveCollection(groupUsersRef, onError);
 	const groupTransactionsRef = collection(groupRef, "transactions") as CollectionReference<Transaction>;
-	const liveGroupTransactions = useLiveCollection(groupTransactionsRef, onError);
+	const { items: liveGroupTransactions, release: releaseGroupTransactions } = useLiveCollection(
+		groupTransactionsRef,
+		onError
+	);
+
+	onUnmounted(() => {
+		releaseGroupData();
+		releaseGroupUsers();
+		releaseGroupTransactions();
+	});
 
 	const group = computed<Group | null>(() => {
 		if (liveGroupData.value === null || liveGroupUsers.value === null || liveGroupTransactions.value === null)

@@ -10,7 +10,7 @@ export type GroupWithUserPublic = Omit<Group, "users"> & {
 
 export default function useLiveGroupWithUserPublic(
 	groupId: string | null,
-	onError?: (userId?: string) => void,
+	onError?: (userId?: string) => void
 ): Ref<GroupWithUserPublic | null> {
 	const liveGroup = useLiveGroup(groupId, onError);
 
@@ -23,8 +23,8 @@ export default function useLiveGroupWithUserPublic(
 		const mergedUserData = Object.fromEntries(
 			Object.entries(liveGroup.value.users).map(([userId, groupUserData]) => [
 				userId,
-				{ ...groupUserData, public: userPublic.value[userId].value },
-			]),
+				{ ...groupUserData, public: userPublic.value[userId]?.value ?? null },
+			])
 		);
 
 		return { ...liveGroup.value, users: mergedUserData };

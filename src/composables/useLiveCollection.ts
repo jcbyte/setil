@@ -1,5 +1,5 @@
 import { CollectionReference, onSnapshot, type Unsubscribe } from "firebase/firestore";
-import { onUnmounted, ref, type Ref } from "vue";
+import { ref, type Ref } from "vue";
 
 interface CachedLiveCollection {
 	ref: Ref<any>;
@@ -10,11 +10,11 @@ const liveCollections = new Map<string, CachedLiveCollection>();
 
 export function useLiveCollection<T>(
 	colRef: CollectionReference<T>,
-	onError?: () => void,
-): Ref<Record<string, T> | null> {
+	onError?: () => void
+): { items: Ref<Record<string, T> | null>; release: () => void } {
 	const colKey = colRef.path;
 
-	onUnmounted(() => {
+	function release() {
 		const liveColRef = liveCollections.get(colKey);
 		if (!liveColRef) return;
 
@@ -23,12 +23,12 @@ export function useLiveCollection<T>(
 			liveColRef.unsubscribe();
 			liveCollections.delete(colKey);
 		}
-	});
+	}
 
 	const cachedColRef = liveCollections.get(colKey);
 	if (cachedColRef) {
 		cachedColRef.refCount++;
-		return cachedColRef.ref;
+		return { items: cachedColRef.ref, release };
 	}
 
 	const itemsRef = ref<Record<string, T> | null>(null);
@@ -50,10 +50,10 @@ export function useLiveCollection<T>(
 		},
 		(_error) => {
 			onError?.();
-		},
+		}
 	);
 
 	liveCollections.set(colKey, { ref: itemsRef, unsubscribe, refCount: 1 });
 
-	return itemsRef;
+	return { items: itemsRef, release };
 }
