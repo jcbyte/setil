@@ -1,7 +1,7 @@
 import type { GroupUserData, PublicUserData } from "@/firebase/types";
 import { computed, unref, type Ref } from "vue";
 import { useLiveGroup, type Group } from "./useLiveGroup";
-import useUserCollection from "./useUserCollection";
+import useLiveUserCollection from "./useLiveUserCollection";
 
 export type GroupUserDataWithPublic = GroupUserData & { public: PublicUserData | null };
 export type GroupWithUserPublic = Omit<Group, "users"> & {
@@ -15,7 +15,7 @@ export default function useLiveGroupWithUserPublic(
 	const liveGroup = useLiveGroup(groupId, onError);
 
 	const userIds = computed(() => (liveGroup.value ? Object.keys(liveGroup.value.users) : []));
-	const userPublic = useUserCollection(userIds, onError);
+	const userPublic = useLiveUserCollection(userIds, onError);
 
 	const liveGroupWithUserPublic = computed(() => {
 		if (!liveGroup.value) return null;

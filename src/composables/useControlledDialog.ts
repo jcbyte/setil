@@ -34,8 +34,8 @@ export function useControlledDialog<T = undefined>(
 	}
 
 	return {
-		open: open,
-		processing: processing,
+		open,
+		processing,
 		openDialog,
 		startDialogProcessing,
 		finishDialogProcessing,

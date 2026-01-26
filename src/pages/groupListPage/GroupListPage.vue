@@ -2,32 +2,30 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { useGroupList } from "@/composables/useGroupList";
-import type { ExtendedGroupData } from "@/firebase/firestore/user";
+import useLiveGroupList, { type GroupListData } from "@/composables/useLiveGroupList";
 import { Plus } from "lucide-vue-next";
-import { computed, onMounted } from "vue";
+import { computed, unref, type Ref } from "vue";
 import { useRouter } from "vue-router";
 import GroupListItem from "./GroupListItem.vue";
 
 const router = useRouter();
 
-const { groupList, refreshList } = useGroupList();
-const groups = computed<[string, ExtendedGroupData][] | null>(() =>
-	groupList.value
-		? Object.entries(groupList.value).sort(
-				([, transactionA]: [string, ExtendedGroupData], [, transactionB]: [string, ExtendedGroupData]) => {
-					return transactionB.lastUpdate.seconds - transactionA.lastUpdate.seconds;
-				},
+const groupList = useLiveGroupList();
+
+const sortedGroups = computed(() =>
+	(
+		Object.entries(groupList)
+			.map(
+				([groupId, group]: [string, Ref<GroupListData | null>]) =>
+					// ? Unsure as why unref is needed here, potentially Vue does auto-unwrapping
+					[groupId, unref(group)] as [string, GroupListData | null],
 			)
-		: null,
+			.filter(([, group]) => group !== null) as [string, GroupListData][]
+	).sort(([, groupA], [, groupB]) => {
+		return groupB.group.lastUpdate.seconds - groupA.group.lastUpdate.seconds;
+	}),
 );
-
-onMounted(() => {
-	refreshList();
-});
 </script>
-
-<!-- todo can we retrieve groups using the new live group system? -->
 
 <template>
 	<div class="w-full flex flex-col gap-4">
@@ -35,6 +33,7 @@ onMounted(() => {
 			<span class="text-lg font-semibold">My Groups</span>
 			<div class="flex gap-2 justify-center items-center">
 				<YourAccountSettings />
+
 				<Button @click="router.push('/create')">
 					<Plus :stroke-width="3" />
 					<span class="font-semibold">New Group</span>
@@ -43,10 +42,13 @@ onMounted(() => {
 		</div>
 
 		<div class="flex justify-center items-center">
-			<div v-if="!groups || Object.keys(groups).length > 0" class="flex flex-wrap gap-4 justify-center w-full">
+			<div
+				v-if="!sortedGroups || Object.keys(sortedGroups).length > 0"
+				class="flex flex-wrap gap-4 justify-center w-full"
+			>
 				<GroupListItem
-					v-if="groups"
-					v-for="[groupId, group] in groups"
+					v-if="sortedGroups"
+					v-for="[groupId, group] in sortedGroups"
 					:group="group"
 					@click="router.push(`/group/${groupId}`)"
 					class="max-w-[26rem] w-full"

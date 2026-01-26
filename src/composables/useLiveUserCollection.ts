@@ -4,11 +4,11 @@ import { doc, DocumentReference } from "firebase/firestore";
 import { onUnmounted, ref, watch, type Ref } from "vue";
 import { useLiveDoc } from "./useLiveDoc";
 
-export default function useUserCollection(
+export default function useLiveUserCollection(
 	userIds: Ref<string[]>,
-	onError?: (userId: string) => void
+	onError?: (userId: string) => void,
 ): Ref<Record<string, Ref<PublicUserData | null>>> {
-	const publicUserData = ref<Record<string, Ref<PublicUserData | null>>>({});
+	const publicUserData = ref<Record<string, Ref<PublicUserData | null>>>({}); // todo this should be a reactive
 	const docReleasers = new Map<string, () => void>();
 
 	onUnmounted(() => {
