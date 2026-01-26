@@ -75,7 +75,7 @@ function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
 			else if (resolvedDebt < 0) debtors.push(userId);
 			return { creditors, debtors };
 		},
-		{ creditors: [], debtors: [] }
+		{ creditors: [], debtors: [] },
 	);
 
 	const newDebts: { from: string; to: string; amount: number }[] = [];
@@ -109,9 +109,9 @@ function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
 const usersPayments = computed<SimpleTransaction[] | null>(() =>
 	group.value
 		? resolveGroupDebts(
-				Object.fromEntries(Object.entries(group.value.users).map(([userId, userData]) => [userId, userData.balance]))
-		  )
-		: null
+				Object.fromEntries(Object.entries(group.value.users).map(([userId, userData]) => [userId, userData.balance])),
+			)
+		: null,
 );
 
 const allowedPaymentUsers = computed<string[] | null>(() =>
@@ -119,7 +119,7 @@ const allowedPaymentUsers = computed<string[] | null>(() =>
 		? Object.entries(group.value.users)
 				.filter(([, user]) => user.status !== "history")
 				.map(([userId]) => userId)
-		: null
+		: null,
 );
 
 function getPaymentBalanceStr(bal: number): BalanceStr {
@@ -128,7 +128,7 @@ function getPaymentBalanceStr(bal: number): BalanceStr {
 		group.value!.data.currency,
 		(bal) => `receives ${bal}`,
 		(bal) => `owes ${bal}`,
-		() => "in balance"
+		() => "in balance",
 	);
 }
 
@@ -143,7 +143,7 @@ const formSchema = toTypedSchema(
 			.string()
 			.refine((val) => group.value && Object.keys(group.value.users).includes(val), "Must select a valid member"),
 		amount: z.number().refine((val) => val > 0, "An amount is required"),
-	})
+	}),
 );
 
 const { isFieldDirty, handleSubmit, setValues, values } = useForm({
@@ -166,7 +166,7 @@ async function scrollToElement(element: HTMLElement): Promise<void> {
 					resolve();
 				}
 			},
-			{ threshold: 0.5 }
+			{ threshold: 0.5 },
 		);
 
 		observer.observe(element);
@@ -210,9 +210,9 @@ const onSubmit = handleSubmit(async (values) => {
 			`${group.value.users[values.from].nickname} paid ${group.value.users[values.to].nickname} ${formatCurrency(
 				values.amount,
 				group.value.data.currency,
-				false
+				false,
 			)}.`,
-			`/group/${groupId}?tab=summary`
+			`/group/${groupId}?tab=summary`,
 		);
 		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
 	} catch (e) {
@@ -241,8 +241,6 @@ async function openBankDetailsDialog() {
 	finishBankDetailsDialogProcessing();
 }
 </script>
-
-<!-- todo only show bank details when bank details exist -->
 
 <template>
 	<div>
@@ -422,21 +420,21 @@ async function openBankDetailsDialog() {
 							</FormField>
 						</div>
 
-						<div class="flex gap-2 justify-between items-center">
+						<div class="flex gap-2 flex-row-reverse justify-between items-center">
+							<Button type="submit" :disabled="isMakingPayment" class="w-fit">
+								<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
+								<span>Record Payment</span>
+							</Button>
+
 							<Button
+								v-if="values.to && group.users[values.to].public?.hasBankDetails"
 								type="button"
-								:disabled="!values.to"
 								class="w-fit"
 								variant="outline"
 								@click="openBankDetailsDialog"
 							>
 								<Landmark />
 								<span>View Bank Details</span>
-							</Button>
-
-							<Button type="submit" :disabled="isMakingPayment" class="w-fit">
-								<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
-								<span>Record Payment</span>
 							</Button>
 						</div>
 					</form>

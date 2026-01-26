@@ -36,7 +36,7 @@ const tabOrder: Tab[] = ["summary", "activity"];
 const currentTab = ref<Tab>(
 	typeof route.query.tab === "string" && tabOrder.includes(route.query.tab as Tab)
 		? (route.query.tab as Tab)
-		: tabOrder[0]
+		: tabOrder[0],
 );
 
 watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
@@ -169,10 +169,7 @@ watch(currentTab, (newTab, oldTab) => {
 				</div>
 				<div class="flex flex-col gap-1">
 					<span class="text-sm text-muted-foreground font-semibold">
-						Joel public photourl "{{ group?.users["kJDi3KR9RoWRJtTXchRx6uA9XcM2"]?.public?.photoUrl ?? "null" }}"
-						Members macy public photourl "{{
-							group?.users["akLGUEXA73gbrmDTmeGPCDXQ4da2"]?.public?.photoUrl ?? "null"
-						}}" Members ({{ Object.values(group.users).filter((user) => user.status === "active").length }})
+						Members ({{ Object.values(group.users).filter((user) => user.status === "active").length }})
 					</span>
 					<div class="flex gap-2 flex-wrap">
 						<div
