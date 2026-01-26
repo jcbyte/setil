@@ -19,6 +19,7 @@ export default async function (req, res) {
 	if (!jwt || !paymentDetails) {
 		return res.status(400).json({ success: false, error: "Missing parameters" });
 	}
+	const paymentDetailsValue = JSON.parse(paymentDetails);
 
 	// Get user who performed the request
 	let user;
@@ -28,10 +29,21 @@ export default async function (req, res) {
 		return res.status(401).json({ success: false, error: "Unauthorized" });
 	}
 
+	const paymentDetailsRef = db.doc(`/users/${user.uid}/private/paymentDetails`);
+	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`);
+
+	// Clear payment details
+	if (paymentDetailsValue === null) {
+		await userPublicDataRef.update({ hasBankDetails: false });
+		await paymentDetailsRef.delete();
+		return res.status(200).json({ success: true });
+	}
+
+	// Encrypt and store payment details
 	const encryptedPaymentDetails = encrypt(paymentDetails);
 
-	const paymentDetailsRef = db.doc(`/users/${user.uid}/private/paymentDetails`);
 	await paymentDetailsRef.set(encryptedPaymentDetails);
+	await userPublicDataRef.update({ hasBankDetails: true });
 
 	return res.status(200).json({ success: true });
 }

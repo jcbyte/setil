@@ -10,7 +10,7 @@ export type GroupWithUserPublic = Omit<Group, "users"> & {
 
 export default function useLiveGroupWithUserPublic(
 	groupId: string | null,
-	onError?: (userId?: string) => void
+	onError?: (userId?: string) => void,
 ): Ref<GroupWithUserPublic | null> {
 	const liveGroup = useLiveGroup(groupId, onError);
 
@@ -27,12 +27,11 @@ export default function useLiveGroupWithUserPublic(
 					...groupUserData,
 					public: null,
 				},
-			])
+			]),
 		);
 
-		console.log(userPublic.value);
-
 		Object.entries(userPublic.value).forEach(([userId, publicData]) => {
+			// ? Unsure as why unref is needed here, potentially Vue does auto-unwrapping
 			if (mergedUserData[userId]) mergedUserData[userId].public = unref(publicData);
 		});
 
