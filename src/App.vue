@@ -1,23 +1,19 @@
 <script setup lang="ts">
 import Toaster from "@/components/ui/toast/Toaster.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
-import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { LoaderCircle } from "lucide-vue-next";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import NotificationRequester from "./components/NotificationRequester.vue";
 import SignInPage from "./pages/SignInPage.vue";
 
 const firebaseLoaded = ref(false);
 const { currentUser, currentUserInitialised } = useCurrentUser();
 
-onMounted(() => {
-	getAuth().onAuthStateChanged(() => {
-		firebaseLoaded.value = true;
-	});
+const auth = getAuth();
+auth.onAuthStateChanged(() => {
+	firebaseLoaded.value = true;
 });
-
-useColorMode().value = "dark";
 </script>
 
 <template>

@@ -7,8 +7,8 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Tabs from "@/components/ui/tabs/Tabs.vue";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { useGroup } from "@/composables/useGroup";
-import { inviteUser } from "@/util/app";
+import useLiveGroupWithUserPublic from "@/composables/useLiveUserGroupWithUserPublic";
+import { inviteUser, noGroup } from "@/util/app";
 import { getRouteParam } from "@/util/util";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
 import { ref, watch } from "vue";
@@ -19,8 +19,13 @@ import GroupSummary from "./GroupSummary.vue";
 const route = useRoute();
 const router = useRouter();
 const { toast } = useToast();
-const routeGroupId = getRouteParam(route.params.groupId);
-const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
+const groupId = getRouteParam(route.params.groupId);
+
+if (!groupId) {
+	noGroup();
+	throw "No groupId";
+}
+const group = useLiveGroupWithUserPublic(groupId, noGroup);
 
 type Tab = "summary" | "activity";
 const tabSettings: Record<Tab, { title: string }> = {
@@ -31,7 +36,7 @@ const tabOrder: Tab[] = ["summary", "activity"];
 const currentTab = ref<Tab>(
 	typeof route.query.tab === "string" && tabOrder.includes(route.query.tab as Tab)
 		? (route.query.tab as Tab)
-		: tabOrder[0]
+		: tabOrder[0],
 );
 
 watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
@@ -39,11 +44,12 @@ watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
 const isAddingMember = ref<boolean>(false);
 
 async function addMember() {
-	if (!groupId.value) return;
+	if (!groupId) return;
+	if (!group.value) return;
 
 	isAddingMember.value = true;
 	try {
-		await inviteUser(groupId.value, groupData.value!.name);
+		await inviteUser(groupId, group.value.data.name);
 	} catch (e) {
 		toast({ title: "Error Creating Invite Link", description: String(e), variant: "destructive", duration: 5000 });
 	}
@@ -93,7 +99,7 @@ watch(currentTab, (newTab, oldTab) => {
 				<Button variant="ghost" class="size-9" @click="router.push('/')">
 					<ArrowLeft class="!size-6" />
 				</Button>
-				<span v-if="groupId" class="text-lg font-semibold">{{ groupData!.name }}</span>
+				<span v-if="group" class="text-lg font-semibold">{{ group.data.name }}</span>
 				<Skeleton v-else class="w-20 h-7" />
 			</div>
 			<div class="flex gap-2 justify-center items-center">
@@ -111,16 +117,10 @@ watch(currentTab, (newTab, oldTab) => {
 						<TabsTrigger v-for="tab in tabOrder" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
 					</TabsList>
 				</Tabs>
-				<div v-if="groupId" class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
+				<div v-if="group" class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
 					<Transition :name="tabTransition" mode="out-in">
-						<GroupSummary v-if="currentTab === 'summary'" :group-data="groupData!" :users="users!" />
-						<GroupActivity
-							v-else-if="currentTab === 'activity'"
-							:group-id="groupId"
-							:group-data="groupData!"
-							:users="users!"
-							:transactions="transactions!"
-						/>
+						<GroupSummary v-if="currentTab === 'summary'" :group="group" />
+						<GroupActivity v-else-if="currentTab === 'activity'" :group-id="groupId" :group="group" />
 					</Transition>
 				</div>
 				<Skeleton v-else class="w-full h-96" />
@@ -159,26 +159,26 @@ watch(currentTab, (newTab, oldTab) => {
 			</div>
 
 			<div
-				v-if="groupId"
+				v-if="group"
 				class="border border-border rounded-lg p-4 flex flex-col gap-2 h-fit w-full md:w-auto md:max-w-72 lg:max-w-96"
 			>
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Info</span>
-					<span v-if="groupData!.description" class="text-sm text-muted-foreground">Description</span>
-					<span v-if="groupData!.description" class="text-sm">{{ groupData!.description }}</span>
+					<span v-if="group.data.description" class="text-sm text-muted-foreground">Description</span>
+					<span v-if="group.data.description" class="text-sm">{{ group.data.description }}</span>
 				</div>
 				<div class="flex flex-col gap-1">
 					<span class="text-sm text-muted-foreground font-semibold">
-						Members ({{ Object.values(users!).filter((user) => user.status === "active").length }})
+						Members ({{ Object.values(group.users).filter((user) => user.status === "active").length }})
 					</span>
 					<div class="flex gap-2 flex-wrap">
 						<div
-							v-if="users"
-							v-for="user in Object.values(users).filter((user) => user.status === 'active')"
+							v-if="group.users"
+							v-for="user in Object.values(group.users).filter((user) => user.status === 'active')"
 							class="flex gap-1 justify-center items-center"
 						>
-							<Avatar :src="user.photoURL" :name="user.name" class="size-7" />
-							<span class="text-sm">{{ user.name }}</span>
+							<Avatar :src="user.public?.photoUrl ?? null" :name="user.nickname" class="size-7" />
+							<span class="text-sm">{{ user.nickname }}</span>
 						</div>
 					</div>
 				</div>

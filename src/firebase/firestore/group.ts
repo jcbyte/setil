@@ -9,7 +9,6 @@ import {
 	DocumentReference,
 	getDoc,
 	getDocs,
-	getFirestore,
 	limit,
 	query,
 	setDoc,
@@ -19,15 +18,13 @@ import {
 	writeBatch,
 	WriteBatch,
 } from "firebase/firestore";
-import { app } from "../firebase";
+import { db } from "../firebase";
 import type { GroupData, GroupUserData, Invite } from "../types";
 import { getLeftUserStatus } from "./user";
 import { getUser } from "./util";
 
-const db = getFirestore(app);
-
 const templateNewUser = (user: User): GroupUserData => ({
-	name: user.displayName ?? "Unknown User",
+	nickname: user.displayName ?? "Unknown User",
 	photoURL: user.photoURL,
 	status: "active",
 	balance: 0,
@@ -155,7 +152,7 @@ export async function cleanupInvites(groupId: string): Promise<void> {
 export async function joinGroup<T extends boolean>(
 	groupId: string,
 	inviteCode: string,
-	getData: T = false as T
+	getData: T = false as T,
 ): Promise<{ new: boolean } & (T extends true ? { user: GroupUserData; group: GroupData } : {})> {
 	const user = getUser();
 	const groupRef = doc(db, "groups", groupId);
@@ -229,13 +226,13 @@ export async function removeUser(groupId: string, userId: string) {
  * Change a users name within a group.
  * @param groupId id of the group.
  * @param userId id of the user to update name.
- * @param name new name to give to the user.
+ * @param nickname new name to give to the user.
  */
-export async function changeUserName(groupId: string, userId: string, name: string) {
+export async function changeUserNickname(groupId: string, userId: string, nickname: string) {
 	const groupUserRef = doc(db, "groups", groupId, "users", userId);
 
 	// Update the name of the user in the group
-	await updateDoc(groupUserRef, { name });
+	await updateDoc(groupUserRef, { name: nickname });
 }
 
 /**

@@ -27,9 +27,9 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import { useGroup } from "@/composables/useGroup";
+import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveUserGroupWithUserPublic";
 import {
-	changeUserName,
+	changeUserNickname,
 	createGroup,
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
@@ -37,9 +37,8 @@ import {
 	removeUser,
 	updateGroup,
 } from "@/firebase/firestore/group";
-import type { GroupUserData } from "@/firebase/types";
 import { type Currency } from "@/firebase/types";
-import { inviteUser } from "@/util/app";
+import { inviteUser, noGroup } from "@/util/app";
 import { CurrencySettings } from "@/util/currency";
 import { getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -59,27 +58,37 @@ import {
 	X,
 } from "lucide-vue-next";
 import { useForm } from "vee-validate";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 
 const router = useRouter();
 const route = useRoute();
-const routeGroupId = getRouteParam(route.params.groupId);
+const groupId = getRouteParam(route.params.groupId);
+const newGroup = groupId === null;
 const { currentUser } = useCurrentUser();
 const { toast } = useToast();
+const group = useLiveGroupWithUserPublic(groupId, groupId ? noGroup : () => {});
 
-const { groupId, groupData, users } = useGroup(routeGroupId, () => {
-	if (!groupId.value) return;
+let loaded = false;
+watch(
+	group,
+	(groupValue) => {
+		if (loaded || !groupValue) return;
+		loaded = true;
 
-	setValues({
-		name: groupData.value!.name,
-		description: groupData.value!.description ?? undefined,
-		currency: groupData.value!.currency,
-	});
+		if (!newGroup) {
+			setValues({
+				name: groupValue.data.name,
+				description: groupValue.data.description ?? undefined,
+				currency: groupValue.data.currency,
+			});
 
-	myDisplayName.value = users.value![currentUser.value!.uid].name;
-});
+			myDisplayName.value = groupValue.users[currentUser.value!.uid].nickname;
+		}
+	},
+	{ immediate: true }
+);
 
 const isGroupDetailsUpdating = ref<boolean>(false);
 const isMyDisplayNameUpdating = ref<boolean>(false);
@@ -127,17 +136,7 @@ const onSubmit = handleSubmit(async (values) => {
 	isGroupDetailsUpdating.value = true;
 
 	try {
-		if (routeGroupId) {
-			if (!groupId.value) return;
-
-			await updateGroup(groupId.value, {
-				name: values.name,
-				description: values.description ?? null,
-				currency: values.currency as Currency,
-			});
-
-			toast({ title: "Group Details Updated", description: "Like a fresh coat of paint.", duration: 5000 });
-		} else {
+		if (newGroup) {
 			const newGroupId = await createGroup({
 				name: values.name,
 				description: values.description ?? null,
@@ -147,6 +146,14 @@ const onSubmit = handleSubmit(async (values) => {
 
 			toast({ title: "Group Created", description: "A fellowship of finances has been forged.", duration: 5000 });
 			router.push(`/group/${newGroupId}`);
+		} else {
+			await updateGroup(groupId, {
+				name: values.name,
+				description: values.description ?? null,
+				currency: values.currency as Currency,
+			});
+
+			toast({ title: "Group Details Updated", description: "Like a fresh coat of paint.", duration: 5000 });
 		}
 	} catch (e) {
 		toast({ title: "Error Saving Group", description: String(e), variant: "destructive", duration: 5000 });
@@ -155,7 +162,9 @@ const onSubmit = handleSubmit(async (values) => {
 	isGroupDetailsUpdating.value = false;
 });
 
-const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
+const currentGroupUser = computed<GroupUserDataWithPublic | null>(
+	() => group.value?.users[currentUser.value!.uid] ?? null
+);
 
 const myDisplayName = ref<string | undefined>();
 const myDisplayNameErrors = ref<string | undefined>();
@@ -167,7 +176,7 @@ function validateMyDisplayName() {
 }
 
 async function updateDisplayName() {
-	if (!groupId.value) return;
+	if (!groupId) return;
 
 	const parsedName = displayNameValidation.safeParse(myDisplayName.value);
 	if (!parsedName.success) return;
@@ -175,7 +184,7 @@ async function updateDisplayName() {
 	isMyDisplayNameUpdating.value = true;
 
 	try {
-		await changeUserName(groupId.value, currentUser.value!.uid, parsedName.data);
+		await changeUserNickname(groupId, currentUser.value!.uid, parsedName.data);
 
 		toast({
 			title: "Name Updated",
@@ -189,65 +198,74 @@ async function updateDisplayName() {
 	isMyDisplayNameUpdating.value = false;
 }
 
-const memberNewName = ref<Record<string, { updating: boolean; name: string; processing: boolean; errors?: string }>>(
-	{}
-);
+const memberNewNickname = ref<
+	Record<string, { updating: boolean; nickname: string; processing: boolean; errors?: string }>
+>({});
 
 function validateMemberName(userId: string) {
-	const parsedName = displayNameValidation.safeParse(memberNewName.value[userId].name);
-	memberNewName.value[userId].errors = parsedName.success ? undefined : parsedName.error.issues[0].message;
+	const parsedName = displayNameValidation.safeParse(memberNewNickname.value[userId].nickname);
+	memberNewNickname.value[userId].errors = parsedName.success ? undefined : parsedName.error.issues[0].message;
 }
 
 function startRename(userId: string) {
-	memberNewName.value[userId] = { updating: true, name: users.value![userId].name, processing: false };
+	if (!group.value) return;
+
+	memberNewNickname.value[userId] = {
+		updating: true,
+		nickname: group.value.users[userId].nickname,
+		processing: false,
+	};
 }
 
 function cancelRename(userId: string) {
-	memberNewName.value[userId].updating = false;
+	memberNewNickname.value[userId].updating = false;
 }
 
 async function acceptRename(userId: string) {
-	if (!groupId.value) return;
+	if (!groupId) return;
+	if (!group.value) return;
 
-	const parsedName = displayNameValidation.safeParse(memberNewName.value[userId].name);
+	const parsedName = displayNameValidation.safeParse(memberNewNickname.value[userId].nickname);
 	if (!parsedName.success) return;
 
-	memberNewName.value[userId].processing = true;
+	memberNewNickname.value[userId].processing = true;
 
 	try {
-		await changeUserName(groupId.value, userId, parsedName.data);
+		await changeUserNickname(groupId, userId, parsedName.data);
 		toast({
-			title: `${users.value![userId].name}'s Name Updated`,
+			title: `${group.value.users[userId].nickname}'s Name Updated`,
 			description: "Identity crisis averted.",
 			duration: 5000,
 		});
 	} catch (e) {
 		toast({
-			title: `Error Updating ${users.value![userId].name}'s Name`,
+			title: `Error Updating ${group.value.users[userId].nickname}'s Name`,
 			description: String(e),
 			variant: "destructive",
 			duration: 5000,
 		});
 	}
 
-	memberNewName.value[userId].updating = false;
+	memberNewNickname.value[userId].updating = false;
 }
 
 async function promoteMember() {
-	if (!groupId.value) return;
+	if (!groupId) return;
+	if (!promoteDialogData.value) return;
+	if (!group.value) return;
 
 	startPromoteDialogProcessing();
 
 	try {
-		await promoteUser(groupId.value, promoteDialogData.value!.userId);
+		await promoteUser(groupId, promoteDialogData.value.userId);
 		toast({
-			title: `${users.value![promoteDialogData.value!.userId].name} Promoted`,
+			title: `${group.value.users[promoteDialogData.value.userId].nickname} Promoted`,
 			description: "Long live the new king.",
 			duration: 5000,
 		});
 	} catch (e) {
 		toast({
-			title: `Error Promoting ${users.value![promoteDialogData.value!.userId].name}`,
+			title: `Error Promoting ${group.value.users[promoteDialogData.value.userId].nickname}`,
 			description: String(e),
 			variant: "destructive",
 			duration: 5000,
@@ -258,20 +276,21 @@ async function promoteMember() {
 }
 
 async function removeMember(userId: string) {
-	if (!groupId.value) return;
+	if (!groupId) return;
+	if (!group.value) return;
 
 	isUpdatingMember.value.push(userId);
 
 	try {
-		await removeUser(groupId.value, userId);
+		await removeUser(groupId, userId);
 		toast({
-			title: `Removed ${users.value![userId].name}`,
+			title: `Removed ${group.value.users[userId].nickname}`,
 			description: "They've been erased from existence... well, at least the group.",
 			duration: 5000,
 		});
 	} catch (e) {
 		toast({
-			title: `Error Removing ${users.value![userId].name}`,
+			title: `Error Removing ${group.value.users[userId].nickname}`,
 			description: String(e),
 			variant: "destructive",
 			duration: 5000,
@@ -282,12 +301,13 @@ async function removeMember(userId: string) {
 }
 
 async function addMember() {
-	if (!groupId.value) return;
+	if (!groupId) return;
+	if (!group.value) return;
 
 	isAddingMember.value = true;
 
 	try {
-		await inviteUser(groupId.value, groupData.value!.name);
+		await inviteUser(groupId, group.value.data.name);
 	} catch (e) {
 		toast({ title: "Error Creating Invite Link", description: String(e), variant: "destructive", duration: 5000 });
 	}
@@ -296,12 +316,12 @@ async function addMember() {
 }
 
 async function leaveGroup() {
-	if (!groupId.value) return;
+	if (!groupId) return;
 
 	startLeaveDialogProcessing();
 
 	try {
-		await firestoreLeaveGroup(groupId.value);
+		await firestoreLeaveGroup(groupId);
 		router.push("/");
 		toast({ title: "Group Left", description: "Your expenses here are now history.", duration: 5000 });
 	} catch (e) {
@@ -312,12 +332,12 @@ async function leaveGroup() {
 }
 
 async function deleteGroup() {
-	if (!groupId.value) return;
+	if (!groupId) return;
 
 	startDeleteDialogProcessing();
 
 	try {
-		await firestoreDeleteGroup(groupId.value);
+		await firestoreDeleteGroup(groupId);
 		toast({ title: "Group Deleted", description: "All data related to this group has been deleted.", duration: 5000 });
 		router.push("/");
 	} catch (e) {
@@ -333,10 +353,10 @@ async function deleteGroup() {
 		<div class="w-full flex flex-col gap-4 items-center">
 			<div class="w-full flex justify-between items-center">
 				<div class="flex gap-2 justify-center items-center">
-					<Button variant="ghost" class="size-9" @click="router.push(routeGroupId ? `/group/${routeGroupId}` : '/')">
+					<Button variant="ghost" class="size-9" @click="router.push(groupId ? `/group/${groupId}` : '/')">
 						<ArrowLeft class="!size-6" />
 					</Button>
-					<span class="text-lg font-semibold">{{ routeGroupId ? "Group Settings" : "New Group" }}</span>
+					<span class="text-lg font-semibold">{{ newGroup ? "New Group" : "Group Settings" }}</span>
 				</div>
 				<YourAccountSettings />
 			</div>
@@ -346,7 +366,7 @@ async function deleteGroup() {
 					<div class="flex flex-col">
 						<span class="text-lg font-semibold">Group Details</span>
 						<span class="text-sm text-muted-foreground">
-							{{ routeGroupId ? "Update your group information" : "Enter your new groups information" }}
+							{{ newGroup ? "Enter your new groups information" : "Update your group information" }}
 						</span>
 					</div>
 
@@ -403,23 +423,23 @@ async function deleteGroup() {
 						</div>
 
 						<Button type="submit" :disabled="isGroupDetailsUpdating" class="w-fit place-self-end">
-							<LoaderIcon :icon="routeGroupId ? Save : Plus" :loading="isGroupDetailsUpdating" />
-							<span>{{ routeGroupId ? "Save Changes" : "Create Group" }}</span>
+							<LoaderIcon :icon="newGroup ? Plus : Save" :loading="isGroupDetailsUpdating" />
+							<span>{{ newGroup ? "Create Group" : "Save Changes" }}</span>
 						</Button>
 					</form>
 				</div>
 
-				<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-4 p-4">
+				<div v-if="!newGroup" class="border border-border rounded-lg flex flex-col gap-4 p-4">
 					<div class="flex flex-col">
 						<span class="text-lg font-semibold">Your Group Profile</span>
 						<span class="text-sm text-muted-foreground">How others see you in this group</span>
 					</div>
-					<div v-if="currentGroupUser" class="flex items-center gap-2">
-						<Avatar :src="currentGroupUser.photoURL" :name="currentGroupUser.name" class="size-9" />
+					<div v-if="group && currentGroupUser" class="flex items-center gap-2">
+						<Avatar :src="currentGroupUser.public?.photoUrl ?? null" :name="currentGroupUser.nickname" class="size-9" />
 						<div class="flex flex-col">
-							<span>{{ currentGroupUser.name }}</span>
+							<span>{{ currentGroupUser.nickname }}</span>
 							<span class="text-sm text-muted-foreground">
-								{{ currentUser?.uid === groupData?.owner ? "Owner" : "Member" }}
+								{{ currentUser!.uid === group.data.owner ? "Owner" : "Member" }}
 							</span>
 						</div>
 					</div>
@@ -450,70 +470,76 @@ async function deleteGroup() {
 					</div>
 				</div>
 
-				<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
+				<div v-if="!newGroup" class="border border-border rounded-lg flex flex-col gap-6 p-4">
 					<div class="flex flex-col">
 						<span class="text-lg font-semibold">Members</span>
 						<span class="text-sm text-muted-foreground">View and manage group members</span>
 					</div>
 
-					<div class="flex flex-col gap-4">
+					<div v-if="group" class="flex flex-col gap-4">
 						<div
-							v-if="users"
+							v-if="group.users"
 							v-for="(user, userId) in Object.fromEntries(
-							Object.entries(users).filter(([, user]) => user.status !== 'history')
-						) as Record<string, GroupUserData>"
+								Object.entries(group.users).filter(([, user]) => user.status !== 'history')
+							)"
 							class="flex flex-col gap-2"
 						>
 							<div class="flex justify-between items-center gap-2">
 								<div class="flex items-center gap-2 flex-1">
 									<Avatar
-										:src="user.photoURL"
-										:name="user.name"
+										:src="user.public?.photoUrl ?? null"
+										:name="user.nickname"
 										:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
 									/>
-									<div v-if="!(memberNewName[userId]?.updating ?? false)" class="flex flex-col">
-										<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
+									<div v-if="!(memberNewNickname[userId]?.updating ?? false)" class="flex flex-col">
+										<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.nickname }}</span>
 										<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
-											{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left Group" }}
+											{{
+												user.status === "active" ? (userId === group!.data.owner ? "Owner" : "Member") : "Left Group"
+											}}
 										</span>
 									</div>
 									<div v-else class="flex-1 flex gap-2">
 										<Input
-											v-model:model-value="memberNewName[userId].name"
+											v-model:model-value="memberNewNickname[userId].nickname"
 											autocomplete="off"
 											type="text"
 											placeholder="Name"
-											:disabled="memberNewName[userId].processing"
+											:disabled="memberNewNickname[userId].processing"
 											@update:model-value="validateMemberName(userId)"
 										/>
-										<Button class="size-9" @click="acceptRename(userId)" :disabled="memberNewName[userId].processing">
-											<LoaderIcon :icon="Check" :loading="memberNewName[userId].processing" />
+										<Button
+											class="size-9"
+											@click="acceptRename(userId)"
+											:disabled="memberNewNickname[userId].processing"
+										>
+											<LoaderIcon :icon="Check" :loading="memberNewNickname[userId].processing" />
 										</Button>
 										<Button
 											variant="outline"
 											class="size-9"
 											@click="cancelRename(userId)"
-											:disabled="memberNewName[userId].processing"
+											:disabled="memberNewNickname[userId].processing"
 										>
 											<X />
 										</Button>
 									</div>
 								</div>
 								<DropdownMenu
-									v-if="currentUser?.uid === groupData?.owner && !(memberNewName[userId]?.updating ?? false)"
+									v-if="currentUser?.uid === group.data.owner && !(memberNewNickname[userId]?.updating ?? false)"
 								>
 									<DropdownMenuTrigger as-child>
 										<Button
 											variant="outline"
-											:disabled="userId === groupData?.owner || isUpdatingMember.includes(userId)"
+											:disabled="userId === group.data.owner || isUpdatingMember.includes(userId)"
 										>
 											<LoaderIcon
-												v-if="userId !== groupData?.owner"
+												v-if="userId !== group.data.owner"
 												:icon="ChevronDown"
 												:loading="isUpdatingMember.includes(userId)"
 											/>
 											<span>
-												{{ userId === groupData?.owner ? "Owner" : "Actions" }}
+												{{ userId === group.data.owner ? "Owner" : "Actions" }}
 											</span>
 										</Button>
 									</DropdownMenuTrigger>
@@ -540,8 +566,8 @@ async function deleteGroup() {
 									</DropdownMenuContent>
 								</DropdownMenu>
 							</div>
-							<span v-if="memberNewName[userId]?.errors ?? false" class="text-[12.8px] ml-11 text-destructive">
-								{{ memberNewName[userId].errors }}
+							<span v-if="memberNewNickname[userId]?.errors ?? false" class="text-[12.8px] ml-11 text-destructive">
+								{{ memberNewNickname[userId].errors }}
 							</span>
 						</div>
 
@@ -550,15 +576,16 @@ async function deleteGroup() {
 							<span>Add Member</span>
 						</Button>
 					</div>
+					<Skeleton v-else class="w-full h-36" />
 				</div>
 
-				<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
+				<div v-if="!newGroup" class="border border-border rounded-lg flex flex-col gap-6 p-4">
 					<div class="flex flex-col">
 						<span class="text-lg font-semibold">Danger Zone</span>
 						<span class="text-sm text-muted-foreground">Dangerous action for this group</span>
 					</div>
 
-					<div class="flex flex-col gap-4">
+					<div v-if="group" class="flex flex-col gap-4">
 						<div class="flex justify-between items-center gap-2">
 							<div class="flex flex-col">
 								<span>Leave Group</span>
@@ -570,8 +597,8 @@ async function deleteGroup() {
 							</Button>
 						</div>
 
-						<Separator v-if="currentUser?.uid === groupData?.owner" />
-						<div v-if="currentUser?.uid === groupData?.owner" class="flex justify-between items-center gap-2">
+						<Separator v-if="currentUser?.uid === group.data.owner" />
+						<div v-if="currentUser?.uid === group.data.owner" class="flex justify-between items-center gap-2">
 							<div class="flex flex-col">
 								<span>Delete Group</span>
 								<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>
@@ -582,6 +609,7 @@ async function deleteGroup() {
 							</Button>
 						</div>
 					</div>
+					<Skeleton v-else class="w-full h-28" />
 				</div>
 			</div>
 		</div>
@@ -593,7 +621,7 @@ async function deleteGroup() {
 					<AlertDialogDescription>
 						Promoting
 						<span class="font-semibold">
-							{{ users![promoteDialogData!.userId].name }}
+							{{ group!.users[promoteDialogData!.userId].nickname }}
 						</span>
 						to Owner will change your role to Member.
 					</AlertDialogDescription>

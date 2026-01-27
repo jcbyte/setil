@@ -34,8 +34,8 @@ onMounted(async () => {
 			sendNotification(
 				routeGroupId,
 				groupData.name,
-				`${userData.name} just joined the group!`,
-				`/group/${routeGroupId}`
+				`${userData.nickname} just joined the group!`,
+				`/group/${routeGroupId}`,
 			);
 		}
 		router.push(`/group/${routeGroupId}`);

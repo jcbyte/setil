@@ -9,6 +9,12 @@ export interface UserData {
 	fcmTokens: string[];
 }
 
+export interface PublicUserData {
+	name: string;
+	photoUrl: string | null;
+	hasBankDetails: boolean;
+}
+
 export interface GroupData {
 	name: string;
 	description: string | null;
@@ -18,8 +24,7 @@ export interface GroupData {
 }
 
 export interface GroupUserData {
-	name: string;
-	photoURL: string | null;
+	nickname: string;
 	status: "active" | "left" | "history";
 	balance: number;
 	lastUpdate: Timestamp;

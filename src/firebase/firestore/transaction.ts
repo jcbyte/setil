@@ -5,17 +5,14 @@ import {
 	doc,
 	DocumentReference,
 	getDoc,
-	getFirestore,
 	increment,
 	WriteBatch,
 	writeBatch,
 } from "firebase/firestore";
-import { app } from "../firebase";
+import { db } from "../firebase";
 import type { Transaction } from "../types";
 import { updateGroupUpdateTime } from "./group";
 import { updateLeftUsersStatus } from "./user";
-
-const db = getFirestore(app);
 
 /**
  * Add firebase updates to a batch to update users balances in a group with the given from and to.
@@ -50,7 +47,7 @@ function updateGroupBalances(groupRef: DocumentReference, batch: WriteBatch, fro
 export async function createTransaction(
 	groupId: string,
 	transaction: Transaction,
-	leftUsers?: string[]
+	leftUsers?: string[],
 ): Promise<string> {
 	const batch = writeBatch(db);
 
@@ -89,7 +86,7 @@ export async function updateTransaction(
 	groupId: string,
 	transactionId: string,
 	transaction: Transaction,
-	leftUsers?: string[]
+	leftUsers?: string[],
 ): Promise<void> {
 	// Get the existing transaction data
 	const groupRef = doc(db, "groups", groupId);
@@ -107,7 +104,7 @@ export async function updateTransaction(
 		groupRef,
 		batch,
 		oldTransaction.from,
-		Object.fromEntries(Object.entries(oldTransaction.to).map(([userId, amount]) => [userId, -amount]))
+		Object.fromEntries(Object.entries(oldTransaction.to).map(([userId, amount]) => [userId, -amount])),
 	);
 	updateGroupBalances(groupRef, batch, transaction.from, transaction.to);
 
@@ -148,7 +145,7 @@ export async function deleteTransaction(groupId: string, transactionId: string, 
 		groupRef,
 		batch,
 		transaction.from,
-		Object.fromEntries(Object.entries(transaction.to).map(([userId, amount]) => [userId, -amount]))
+		Object.fromEntries(Object.entries(transaction.to).map(([userId, amount]) => [userId, -amount])),
 	);
 
 	// Update lastUpdate time
