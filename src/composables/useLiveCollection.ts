@@ -3,7 +3,8 @@ import { type Ref } from "vue";
 import { useLiveQuery } from "./useLiveQuery";
 
 interface CachedLiveCollection {
-	ref: Ref<any>;
+	rec: Record<string, any>;
+	loaded: Ref<boolean>;
 	release: () => void;
 	refCount: number;
 }
@@ -23,12 +24,13 @@ const liveCollections = new Map<string, CachedLiveCollection>();
  *   - network: boolean - true if error is network related, false if access related
  * @returns {Object} Object containing:
  *   - items: Reactive ref containing Record of document IDs to documents, or null if loading
+ *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */
 export function useLiveCollection<T>(
 	colRef: CollectionReference<T>,
 	onError?: (network: boolean) => void,
-): { items: Ref<Record<string, T> | null>; release: () => void } {
+): { items: Record<string, T>; loaded: Ref<boolean>; release: () => void } {
 	const colKey = colRef.path;
 
 	function release() {
@@ -44,15 +46,15 @@ export function useLiveCollection<T>(
 	}
 
 	// Use cached collection if it exists
-	const cachedColRef = liveCollections.get(colKey);
-	if (cachedColRef) {
-		cachedColRef.refCount++;
-		return { items: cachedColRef.ref, release };
+	const cachedCol = liveCollections.get(colKey);
+	if (cachedCol) {
+		cachedCol.refCount++;
+		return { items: cachedCol.rec, loaded: cachedCol.loaded, release };
 	}
 
 	// Get a live query of this collection
-	const { items: itemsRef, release: releaseQuery } = useLiveQuery(colRef, onError);
-	liveCollections.set(colKey, { ref: itemsRef, release: releaseQuery, refCount: 1 });
+	const { items, loaded, release: releaseQuery } = useLiveQuery(colRef, onError);
+	liveCollections.set(colKey, { rec: items, loaded, release: releaseQuery, refCount: 1 });
 
-	return { items: itemsRef, release };
+	return { items: items, loaded, release };
 }

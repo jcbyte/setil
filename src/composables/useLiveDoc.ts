@@ -1,8 +1,9 @@
 import { onSnapshot, type DocumentReference, type Unsubscribe } from "firebase/firestore";
-import { shallowRef, type Ref } from "vue";
+import { ref, shallowRef, type Ref } from "vue";
 
 interface CachedLiveDoc {
 	ref: Ref<any>;
+	loaded: Ref<boolean>;
 	unsubscribe: Unsubscribe;
 	refCount: number;
 }
@@ -21,13 +22,14 @@ const liveDocs = new Map<string, CachedLiveDoc>();
  * @param {Function} [onError] - Optional callback for error handling. Called with:
  *   - network: boolean - true if error is network related, false if access related
  * @returns {Object} Object containing:
- *   - data: Reactive ref containing the document data or null
+ *   - data: Reactive ref containing the document data or null if loading
+ *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */
 export function useLiveDoc<T>(
 	docRef: DocumentReference<T>,
 	onError?: (network: boolean) => void,
-): { data: Ref<T | null>; release: () => void } {
+): { data: Ref<T | null>; loaded: Ref<boolean>; release: () => void } {
 	const docKey = docRef.path;
 
 	function release() {
@@ -46,10 +48,11 @@ export function useLiveDoc<T>(
 	const cachedLiveDoc = liveDocs.get(docKey);
 	if (cachedLiveDoc) {
 		cachedLiveDoc.refCount++;
-		return { data: cachedLiveDoc.ref, release };
+		return { data: cachedLiveDoc.ref, loaded: cachedLiveDoc.loaded, release };
 	}
 
 	const dataRef = shallowRef<T | null>(null);
+	const loaded = ref<boolean>(false);
 
 	// Create a live document with snapshot callback
 	const unsubscribe = onSnapshot(
@@ -62,6 +65,9 @@ export function useLiveDoc<T>(
 			}
 
 			dataRef.value = snapshot.data();
+
+			// Once this is performed once the data has been loaded
+			loaded.value = true;
 		},
 		(error) => {
 			// If the firebase error is not related to network provide `network: false`
@@ -70,7 +76,7 @@ export function useLiveDoc<T>(
 		},
 	);
 
-	liveDocs.set(docKey, { ref: dataRef, unsubscribe, refCount: 1 });
+	liveDocs.set(docKey, { ref: dataRef, loaded, unsubscribe, refCount: 1 });
 
-	return { data: dataRef, release };
+	return { data: dataRef, loaded, release };
 }
