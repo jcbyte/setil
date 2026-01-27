@@ -66,7 +66,7 @@ const router = useRouter();
 const route = useRoute();
 const groupId = getRouteParam(route.params.groupId);
 const newGroup = groupId === null;
-const { currentUser } = useCurrentUser();
+const currentUser = useCurrentUser();
 const { toast } = useToast();
 const group = useLiveGroupWithUserPublic(groupId, () => {
 	if (!groupId) return; // If this is not a group, then do not error
