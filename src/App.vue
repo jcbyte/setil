@@ -5,12 +5,13 @@ import { getAuth } from "firebase/auth";
 import { LoaderCircle } from "lucide-vue-next";
 import { ref } from "vue";
 import NotificationRequester from "./components/NotificationRequester.vue";
+import { app } from "./firebase/firebase";
 import SignInPage from "./pages/SignInPage.vue";
 
 const firebaseLoaded = ref(false);
-const { currentUser, currentUserInitialised } = useCurrentUser();
+const currentUser = useCurrentUser();
 
-const auth = getAuth();
+const auth = getAuth(app);
 auth.onAuthStateChanged(() => {
 	firebaseLoaded.value = true;
 });
@@ -20,7 +21,7 @@ auth.onAuthStateChanged(() => {
 	<Transition name="loader-anim">
 		<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
 			<Transition name="fade-slide" mode="out-in">
-				<SignInPage v-if="!currentUser || !currentUserInitialised" />
+				<SignInPage v-if="!currentUser" />
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-else class="w-full overflow-hidden">
 					<NotificationRequester />

@@ -21,7 +21,7 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import useLiveGroupWithUserPublic from "@/composables/useLiveUserGroupWithUserPublic";
+import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore/transaction";
 import { getPaymentDetails } from "@/firebase/firestore/user";
@@ -48,7 +48,7 @@ import * as z from "zod";
 const router = useRouter();
 const route = useRoute();
 const { toast } = useToast();
-const { currentUser } = useCurrentUser();
+const currentUser = useCurrentUser();
 const { breakpointSplit } = useScreenSize();
 
 const groupId = getRouteParam(route.params.groupId);

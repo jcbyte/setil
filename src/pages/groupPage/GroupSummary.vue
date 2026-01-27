@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
-import type { GroupWithUserPublic } from "@/composables/useLiveUserGroupWithUserPublic";
+import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
 import { computed } from "vue";
 
@@ -18,9 +18,9 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 				props.group.data.currency,
 				(b) => `is owed ${b}`,
 				(b) => `owes ${b}`,
-				() => "is in balance"
+				() => "is in balance",
 			),
-		])
+		]),
 	);
 });
 </script>
@@ -35,7 +35,7 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 			<div
 				v-if="group.users"
 				v-for="(user, userId) in Object.fromEntries(
-					Object.entries(group.users).filter(([, user]) => user.status !== 'history')
+					Object.entries(group.users).filter(([, user]) => user.status !== 'history'),
 				)"
 				class="flex justify-between items-center"
 			>

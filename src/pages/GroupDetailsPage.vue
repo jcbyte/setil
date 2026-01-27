@@ -27,7 +27,7 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveUserGroupWithUserPublic";
+import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic";
 import {
 	changeUserNickname,
 	createGroup,
