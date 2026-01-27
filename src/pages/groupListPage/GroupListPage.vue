@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import useLiveGroupListWithUserPublic, {
-	type GroupListDataWithUserPublic,
-} from "@/composables/useLiveGroupListWithUserPublic";
+import useLiveGroupListWithUserPublic from "@/composables/useLiveGroupListWithUserPublic";
 import { Plus } from "lucide-vue-next";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
@@ -14,11 +11,12 @@ const router = useRouter();
 
 const { groupList, loaded: groupListLoaded } = useLiveGroupListWithUserPublic();
 
-// todo can i show others a skelebobs
 const sortedGroups = computed(() =>
-	(
-		Object.entries(groupList.value).filter(([, group]) => group !== null) as [string, GroupListDataWithUserPublic][]
-	).sort(([, groupA], [, groupB]) => {
+	Object.entries(groupList.value).sort(([, groupA], [, groupB]) => {
+		if (!groupA && !groupB) return 0;
+		if (!groupA) return 1;
+		if (!groupB) return -1;
+
 		return groupB.group.lastUpdate.seconds - groupA.group.lastUpdate.seconds;
 	}),
 );
@@ -40,17 +38,17 @@ const sortedGroups = computed(() =>
 
 		<div class="flex justify-center items-center">
 			<div
-				v-if="!groupListLoaded || Object.keys(groupList).length > 0"
+				v-if="!(groupListLoaded && Object.keys(groupList).length <= 0)"
 				class="flex flex-wrap gap-4 justify-center w-full"
 			>
 				<GroupListItem
-					v-if="groupListLoaded && Object.keys(sortedGroups).length > 0"
+					v-if="groupListLoaded"
 					v-for="[groupId, group] in sortedGroups"
 					:group="group"
 					@click="router.push(`/group/${groupId}`)"
 					class="max-w-[26rem] w-full"
 				/>
-				<Skeleton v-else v-for="_n in 3" class="rounded-lg h-[158px] max-w-[26rem] w-full" />
+				<GroupListItem v-else v-for="_n in 3" :group="null" class="max-w-[26rem] w-full" />
 			</div>
 			<div v-else class="flex flex-col justify-center items-center gap-2 pt-12">
 				<span className="text-xl font-semibold">No groups yet</span>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AvatarStack from "@/components/AvatarStack.vue";
 import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { GroupListDataWithUserPublic } from "@/composables/useLiveGroupListWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
 import { Timestamp } from "firebase/firestore";
@@ -8,10 +9,12 @@ import { ChevronRight } from "lucide-vue-next";
 import { computed } from "vue";
 
 const props = defineProps<{
-	group: GroupListDataWithUserPublic;
+	group: GroupListDataWithUserPublic | null;
 }>();
 
 const lastUpdatedStr = computed(() => {
+	if (!props.group) return null;
+
 	const deltaTime = Timestamp.now().seconds - props.group.group.lastUpdate.seconds;
 
 	const intervals: { label: string; seconds: number }[] = [
@@ -34,6 +37,8 @@ const lastUpdatedStr = computed(() => {
 });
 
 const yourBalanceStr = computed(() => {
+	if (!props.group) return null;
+
 	return getBalanceStr(
 		props.group.myBalance,
 		props.group.group.currency,
@@ -45,7 +50,7 @@ const yourBalanceStr = computed(() => {
 </script>
 
 <template>
-	<div class="flex flex-col justify-between gap-2 border border-border rounded-lg p-4 relative">
+	<div v-if="group" class="flex flex-col justify-between gap-2 border border-border rounded-lg p-4 relative">
 		<div class="flex flex-col gap-2">
 			<div class="flex flex-col">
 				<span class="text-lg font-semibold">{{ group.group.name }}</span>
@@ -64,9 +69,10 @@ const yourBalanceStr = computed(() => {
 		</div>
 
 		<div class="flex justify-between">
-			<span class="text-sm text-muted-foreground">{{ lastUpdatedStr }}</span>
-			<BalanceStrBadge :balance-str="yourBalanceStr" />
+			<span class="text-sm text-muted-foreground">{{ lastUpdatedStr! }}</span>
+			<BalanceStrBadge :balance-str="yourBalanceStr!" />
 		</div>
 		<ChevronRight class="text-muted-foreground absolute top-4 right-4" />
 	</div>
+	<Skeleton v-else class="rounded-lg h-[158px] max-w-[26rem] w-full" />
 </template>
