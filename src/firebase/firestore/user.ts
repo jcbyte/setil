@@ -1,5 +1,6 @@
 import type { PaymentDetails } from "@/util/paymentDetails";
 import {
+	arrayRemove,
 	arrayUnion,
 	CollectionReference,
 	doc,
@@ -10,7 +11,7 @@ import {
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { GroupData, GroupUserData, UserData } from "../types";
+import type { GroupUserData, UserData } from "../types";
 import { getUser } from "./util";
 
 /**
@@ -31,10 +32,11 @@ export async function initialiseUserData(): Promise<boolean> {
 	return true;
 }
 
-export interface ExtendedGroupData extends GroupData {
-	topUsers: GroupUserData[];
-	userCount: number;
-	myself: GroupUserData;
+export async function removeGroupFromUser(groupId: string) {
+	const user = getUser();
+	const userRef = doc(db, "users", user.uid);
+
+	updateDoc(userRef, { groups: arrayRemove(groupId) });
 }
 
 /**

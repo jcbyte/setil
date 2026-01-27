@@ -1,4 +1,5 @@
 import { db } from "@/firebase/firebase";
+import { removeGroupFromUser } from "@/firebase/firestore/user";
 import type { GroupData, GroupUserData, UserData } from "@/firebase/types";
 import { collection, CollectionReference, doc, DocumentReference, query, where } from "firebase/firestore";
 import { computed, onUnmounted, reactive, ref, watch, type Ref } from "vue";
@@ -19,7 +20,6 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 } {
 	const { currentUser } = useCurrentUser();
 
-	// ! BANG in current user here and also below
 	const userRef = doc(db, "users", currentUser.value!.uid) as DocumentReference<UserData>;
 	const { data: userData, release: releaseUserData } = useLiveDoc(userRef, (nw) => onError?.(nw));
 
@@ -49,7 +49,9 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 			newGroups.forEach((groupId) => {
 				const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 				const { data: groupData, release: releaseGroupData } = useLiveDoc(groupRef, (nw) => {
-					// todo this could fail which means that the group does not exist/user was removed, we should remove the group from the user in this case
+					if (nw) return;
+					// Remove the group from the users account
+					removeGroupFromUser(groupId);
 				});
 				const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
 				const activeUsersQuery = query(groupUsersRef, where("status", "==", "active"));
