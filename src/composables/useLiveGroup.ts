@@ -11,7 +11,7 @@ export interface Group {
 	transactions: Record<string, Transaction>;
 }
 
-export function useLiveGroup(groupId: string | null, onError?: () => void): Ref<Group | null> {
+export function useLiveGroup(groupId: string | null, onError?: (network: boolean) => void): Ref<Group | null> {
 	if (!groupId) return computed(() => null);
 
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
@@ -21,7 +21,7 @@ export function useLiveGroup(groupId: string | null, onError?: () => void): Ref<
 	const groupTransactionsRef = collection(groupRef, "transactions") as CollectionReference<Transaction>;
 	const { items: liveGroupTransactions, release: releaseGroupTransactions } = useLiveCollection(
 		groupTransactionsRef,
-		onError
+		onError,
 	);
 
 	onUnmounted(() => {

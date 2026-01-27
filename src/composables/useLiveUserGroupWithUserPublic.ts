@@ -10,12 +10,12 @@ export type GroupWithUserPublic = Omit<Group, "users"> & {
 
 export default function useLiveGroupWithUserPublic(
 	groupId: string | null,
-	onError?: (userId?: string) => void,
+	onError?: (network: boolean, group: boolean, id?: string) => void,
 ): Ref<GroupWithUserPublic | null> {
-	const liveGroup = useLiveGroup(groupId, onError);
+	const liveGroup = useLiveGroup(groupId, (nw) => onError?.(nw, true));
 
 	const userIds = computed(() => (liveGroup.value ? Object.keys(liveGroup.value.users) : []));
-	const userPublic = useLiveUserCollection(userIds, onError);
+	const userPublic = useLiveUserCollection(userIds, (nw, userId) => onError?.(nw, false, userId));
 
 	const liveGroupWithUserPublic = computed(() => {
 		if (!liveGroup.value) return null;

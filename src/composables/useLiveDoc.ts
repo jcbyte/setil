@@ -10,7 +10,7 @@ const liveDocs = new Map<string, CachedLiveDoc>();
 
 export function useLiveDoc<T>(
 	docRef: DocumentReference<T>,
-	onError?: () => void
+	onError?: (network: boolean) => void,
 ): { data: Ref<T | null>; release: () => void } {
 	const docKey = docRef.path;
 
@@ -38,15 +38,15 @@ export function useLiveDoc<T>(
 		(snapshot) => {
 			if (!snapshot.exists()) {
 				dataRef.value = null;
-				onError?.();
+				onError?.(false);
 				return;
 			}
 
 			dataRef.value = snapshot.data();
 		},
 		(_error) => {
-			onError?.();
-		}
+			onError?.(true);
+		},
 	);
 
 	liveDocs.set(docKey, { ref: dataRef, unsubscribe, refCount: 1 });

@@ -6,7 +6,7 @@ import { useLiveDoc } from "./useLiveDoc";
 
 export default function useLiveUserCollection(
 	userIds: Ref<string[]>,
-	onError?: (userId: string) => void,
+	onError?: (network: boolean, userId: string) => void,
 ): Record<string, Ref<PublicUserData | null>> {
 	const publicUserData = reactive<Record<string, Ref<PublicUserData | null>>>({});
 	const docReleasers = new Map<string, () => void>();
@@ -24,7 +24,7 @@ export default function useLiveUserCollection(
 		const newUsers = requestedIds.filter((userId) => !currentIdsSet.has(userId));
 		newUsers.forEach((userId) => {
 			const userPublicRef = doc(db, "users", userId, "public", "data") as DocumentReference<PublicUserData>;
-			const liveDoc = useLiveDoc(userPublicRef, () => onError?.(userId));
+			const liveDoc = useLiveDoc(userPublicRef, (nw) => onError?.(nw, userId));
 			publicUserData[userId] = liveDoc.data;
 			docReleasers.set(userId, liveDoc.release);
 		});

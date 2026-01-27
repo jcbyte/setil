@@ -3,7 +3,7 @@ import { ref, type Ref } from "vue";
 
 export function useLiveQuery<T>(
 	query: Query<T>,
-	onError?: () => void,
+	onError?: (network: boolean) => void,
 ): { items: Ref<Record<string, T> | null>; release: () => void } {
 	const itemsRef = ref<Record<string, T> | null>(null);
 
@@ -23,7 +23,7 @@ export function useLiveQuery<T>(
 			});
 		},
 		(_error) => {
-			onError?.();
+			onError?.(true);
 		},
 	);
 

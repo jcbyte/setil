@@ -11,7 +11,7 @@ const liveCollections = new Map<string, CachedLiveCollection>();
 
 export function useLiveCollection<T>(
 	colRef: CollectionReference<T>,
-	onError?: () => void,
+	onError?: (network: boolean) => void,
 ): { items: Ref<Record<string, T> | null>; release: () => void } {
 	const colKey = colRef.path;
 

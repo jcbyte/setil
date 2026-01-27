@@ -13,7 +13,7 @@ export type GroupListData = {
 	myBalance: number;
 };
 
-export default function useLiveGroupList(onError?: (groupId?: string) => void): {
+export default function useLiveGroupList(onError?: (network: boolean, groupId?: string) => void): {
 	groupList: Record<string, Ref<GroupListData | null>>;
 	loaded: Ref<boolean>;
 } {
@@ -21,7 +21,7 @@ export default function useLiveGroupList(onError?: (groupId?: string) => void): 
 
 	// ! BANG in current user here and also below
 	const userRef = doc(db, "users", currentUser.value!.uid) as DocumentReference<UserData>;
-	const { data: userData, release: releaseUserData } = useLiveDoc(userRef, onError);
+	const { data: userData, release: releaseUserData } = useLiveDoc(userRef, (nw) => onError?.(nw));
 
 	const groupList = reactive<Record<string, Ref<GroupListData | null>>>({});
 	const loaded = ref<boolean>(false);
@@ -48,13 +48,13 @@ export default function useLiveGroupList(onError?: (groupId?: string) => void): 
 			const newGroups = requestedGroups.filter((groupId) => !currentGroupsSet.has(groupId));
 			newGroups.forEach((groupId) => {
 				const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
-				const { data: groupData, release: releaseGroupData } = useLiveDoc(groupRef, () => {
+				const { data: groupData, release: releaseGroupData } = useLiveDoc(groupRef, (nw) => {
 					// todo this could fail which means that the group does not exist/user was removed, we should remove the group from the user in this case
 				});
 				const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
 				const activeUsersQuery = query(groupUsersRef, where("status", "==", "active"));
-				const { items: groupActiveUsers, release: releaseGroupActiveUsers } = useLiveQuery(activeUsersQuery, () =>
-					onError?.(groupId),
+				const { items: groupActiveUsers, release: releaseGroupActiveUsers } = useLiveQuery(activeUsersQuery, (nw) =>
+					onError?.(nw, groupId),
 				);
 
 				const groupListData = computed(() => {
