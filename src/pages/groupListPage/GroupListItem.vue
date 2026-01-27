@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import AvatarStack from "@/components/AvatarStack.vue";
 import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
-import type { GroupListData } from "@/composables/useLiveGroupList";
+import type { GroupListDataWithUserPublic } from "@/composables/useLiveGroupListWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
 import { Timestamp } from "firebase/firestore";
 import { ChevronRight } from "lucide-vue-next";
 import { computed } from "vue";
 
 const props = defineProps<{
-	group: GroupListData;
+	group: GroupListDataWithUserPublic;
 }>();
 
 const lastUpdatedStr = computed(() => {
@@ -44,8 +44,6 @@ const yourBalanceStr = computed(() => {
 });
 </script>
 
-<!-- todo photo url -->
-
 <template>
 	<div class="flex flex-col justify-between gap-2 border border-border rounded-lg p-4 relative">
 		<div class="flex flex-col gap-2">
@@ -55,7 +53,12 @@ const yourBalanceStr = computed(() => {
 			</div>
 			<AvatarStack
 				avatar-class="border border-background"
-				:avatars="group.topUsers.map(([, topUserData]) => ({ src: null, name: topUserData.nickname }))"
+				:avatars="
+					group.topUsers.map(([, topUserData]) => ({
+						src: topUserData.public?.photoUrl ?? null,
+						name: topUserData.nickname,
+					}))
+				"
 				:total-count="group.userCount"
 			/>
 		</div>

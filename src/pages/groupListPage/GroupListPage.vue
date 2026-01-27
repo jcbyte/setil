@@ -2,25 +2,21 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import useLiveGroupList, { type GroupListData } from "@/composables/useLiveGroupList";
+import useLiveGroupListWithUserPublic, {
+	type GroupListDataWithUserPublic,
+} from "@/composables/useLiveGroupListWithUserPublic";
 import { Plus } from "lucide-vue-next";
-import { computed, unref, type Ref } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import GroupListItem from "./GroupListItem.vue";
 
 const router = useRouter();
 
-const groupList = useLiveGroupList();
+const groupList = useLiveGroupListWithUserPublic();
 
 const sortedGroups = computed(() =>
 	(
-		Object.entries(groupList)
-			.map(
-				([groupId, group]: [string, Ref<GroupListData | null>]) =>
-					// ? Unsure as why unref is needed here, potentially Vue does auto-unwrapping
-					[groupId, unref(group)] as [string, GroupListData | null],
-			)
-			.filter(([, group]) => group !== null) as [string, GroupListData][]
+		Object.entries(groupList.value).filter(([, group]) => group !== null) as [string, GroupListDataWithUserPublic][]
 	).sort(([, groupA], [, groupB]) => {
 		return groupB.group.lastUpdate.seconds - groupA.group.lastUpdate.seconds;
 	}),

@@ -44,10 +44,14 @@ export default function useLiveGroupList(
 			const newGroups = requestedGroups.filter((groupId) => !currentGroupsSet.has(groupId));
 			newGroups.forEach((groupId) => {
 				const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
-				const { data: groupData, release: releaseGroupData } = useLiveDoc(groupRef); // todo this could fail which means that the group does not exist/user was removed, we should remove the group from the user in this case
+				const { data: groupData, release: releaseGroupData } = useLiveDoc(groupRef, () => {
+					// todo this could fail which means that the group does not exist/user was removed, we should remove the group from the user in this case
+				});
 				const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
 				const activeUsersQuery = query(groupUsersRef, where("status", "==", "active"));
-				const { items: groupActiveUsers, release: releaseGroupActiveUsers } = useLiveQuery(activeUsersQuery);
+				const { items: groupActiveUsers, release: releaseGroupActiveUsers } = useLiveQuery(activeUsersQuery, () =>
+					onError?.(groupId),
+				);
 
 				const groupListData = computed(() => {
 					if (!groupData.value) return null;
