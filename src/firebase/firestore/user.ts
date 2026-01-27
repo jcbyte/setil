@@ -11,7 +11,7 @@ import {
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { GroupUserData, UserData } from "../types";
+import type { GroupUserData, PublicUserData, UserData } from "../types";
 import { getUser } from "./util";
 
 /**
@@ -28,7 +28,17 @@ export async function initialiseUserData(): Promise<boolean> {
 	if (userDocSnap.exists()) return false;
 
 	// Create the users data area
-	await setDoc(userRef, { groups: [], fcmTokens: [] } as UserData);
+	const userData: UserData = { groups: [], fcmTokens: [] };
+	await setDoc(userRef, userData);
+
+	const userPublicRef = doc(userRef, "public", "data");
+	const publicUserData: PublicUserData = {
+		name: user.displayName ?? "Unknown User",
+		photoUrl: user.photoURL,
+		hasBankDetails: false,
+	};
+	await setDoc(userPublicRef, publicUserData);
+
 	return true;
 }
 

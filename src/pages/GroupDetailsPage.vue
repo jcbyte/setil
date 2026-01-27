@@ -87,7 +87,7 @@ watch(
 			myDisplayName.value = groupValue.users[currentUser.value!.uid].nickname;
 		}
 	},
-	{ immediate: true }
+	{ immediate: true },
 );
 
 const isGroupDetailsUpdating = ref<boolean>(false);
@@ -125,7 +125,7 @@ const formSchema = toTypedSchema(
 		name: z.string().min(1, "Group name is required").max(50, "Group name cannot exceed 50 characters"),
 		description: z.string().optional(),
 		currency: z.string().refine((val) => Object.keys(CurrencySettings).includes(val), "Must select a valid currency"),
-	})
+	}),
 );
 
 const { isFieldDirty, handleSubmit, setValues } = useForm({
@@ -163,7 +163,7 @@ const onSubmit = handleSubmit(async (values) => {
 });
 
 const currentGroupUser = computed<GroupUserDataWithPublic | null>(
-	() => group.value?.users[currentUser.value!.uid] ?? null
+	() => group.value?.users[currentUser.value!.uid] ?? null,
 );
 
 const myDisplayName = ref<string | undefined>();
@@ -480,8 +480,8 @@ async function deleteGroup() {
 						<div
 							v-if="group.users"
 							v-for="(user, userId) in Object.fromEntries(
-								Object.entries(group.users).filter(([, user]) => user.status !== 'history')
-							)"
+								Object.entries(group.users).filter(([, user]) => user.status !== 'history'),
+							) as Record<string, GroupUserDataWithPublic>"
 							class="flex flex-col gap-2"
 						>
 							<div class="flex justify-between items-center gap-2">

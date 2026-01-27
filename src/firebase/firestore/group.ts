@@ -25,7 +25,6 @@ import { getUser } from "./util";
 
 const templateNewUser = (user: User): GroupUserData => ({
 	nickname: user.displayName ?? "Unknown User",
-	photoURL: user.photoURL,
 	status: "active",
 	balance: 0,
 	lastUpdate: Timestamp.now(),
