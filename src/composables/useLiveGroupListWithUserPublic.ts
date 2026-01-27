@@ -9,14 +9,15 @@ export type GroupListDataWithUserPublic = Omit<GroupListData, "topUsers"> & {
 	topUsers: [string, GroupUserDataWithPublic][];
 };
 
-export default function useLiveGroupListWithUserPublic(
-	onError?: (userId?: string) => void,
-): Ref<Record<string, GroupListDataWithUserPublic | null>> {
-	const liveGroupList = useLiveGroupList(onError);
+export default function useLiveGroupListWithUserPublic(onError?: (userId?: string) => void): {
+	groupList: Ref<Record<string, GroupListDataWithUserPublic | null>>;
+	loaded: Ref<boolean>;
+} {
+	const { groupList, loaded } = useLiveGroupList(onError);
 
 	const userIds = computed(() => [
 		...new Set(
-			Object.values(liveGroupList).flatMap((groupRef) => {
+			Object.values(groupList).flatMap((groupRef) => {
 				const group = unref(groupRef);
 				if (!group) return [];
 				return group.topUsers.map(([userId]) => userId);
@@ -27,7 +28,7 @@ export default function useLiveGroupListWithUserPublic(
 
 	const liveGroupListWithUserPublic = computed(() =>
 		Object.fromEntries(
-			Object.entries(liveGroupList).map(([groupId, groupRef]) => {
+			Object.entries(groupList).map(([groupId, groupRef]) => {
 				const group = unref(groupRef);
 				if (!group) return [groupId, group];
 
@@ -41,5 +42,5 @@ export default function useLiveGroupListWithUserPublic(
 		),
 	);
 
-	return liveGroupListWithUserPublic;
+	return { groupList: liveGroupListWithUserPublic, loaded };
 }

@@ -1,7 +1,7 @@
 import { db } from "@/firebase/firebase";
 import type { GroupData, GroupUserData, UserData } from "@/firebase/types";
 import { collection, CollectionReference, doc, DocumentReference, query, where } from "firebase/firestore";
-import { computed, onUnmounted, reactive, watch, type Ref } from "vue";
+import { computed, onUnmounted, reactive, ref, watch, type Ref } from "vue";
 import { useCurrentUser } from "./useCurrentUser";
 import { useLiveDoc } from "./useLiveDoc";
 import { useLiveQuery } from "./useLiveQuery";
@@ -13,16 +13,18 @@ export type GroupListData = {
 	myBalance: number;
 };
 
-export default function useLiveGroupList(
-	onError?: (groupId?: string) => void,
-): Record<string, Ref<GroupListData | null>> {
+export default function useLiveGroupList(onError?: (groupId?: string) => void): {
+	groupList: Record<string, Ref<GroupListData | null>>;
+	loaded: Ref<boolean>;
+} {
 	const { currentUser } = useCurrentUser();
 
 	// ! BANG in current user here and also below
 	const userRef = doc(db, "users", currentUser.value!.uid) as DocumentReference<UserData>;
 	const { data: userData, release: releaseUserData } = useLiveDoc(userRef, onError);
 
-	const groupList = reactive<Record<string, Ref<GroupListData | null>>>({}); // todo this should be null until loaded user group list
+	const groupList = reactive<Record<string, Ref<GroupListData | null>>>({});
+	const loaded = ref<boolean>(false);
 	const docReleasers = new Map<string, () => void>();
 
 	onUnmounted(() => {
@@ -35,6 +37,8 @@ export default function useLiveGroupList(
 		userData,
 		(newUserData) => {
 			if (!newUserData) return;
+
+			loaded.value = true;
 
 			const requestedGroups = newUserData.groups;
 			const requestedGroupsSet = new Set(requestedGroups);
@@ -83,5 +87,5 @@ export default function useLiveGroupList(
 		{ immediate: true },
 	);
 
-	return groupList;
+	return { groupList, loaded };
 }

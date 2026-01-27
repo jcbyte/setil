@@ -12,7 +12,7 @@ import GroupListItem from "./GroupListItem.vue";
 
 const router = useRouter();
 
-const groupList = useLiveGroupListWithUserPublic();
+const { groupList, loaded: groupListLoaded } = useLiveGroupListWithUserPublic();
 
 const sortedGroups = computed(() =>
 	(
@@ -39,11 +39,11 @@ const sortedGroups = computed(() =>
 
 		<div class="flex justify-center items-center">
 			<div
-				v-if="!sortedGroups || Object.keys(sortedGroups).length > 0"
+				v-if="!groupListLoaded || Object.keys(groupList).length > 0"
 				class="flex flex-wrap gap-4 justify-center w-full"
 			>
 				<GroupListItem
-					v-if="sortedGroups"
+					v-if="groupListLoaded && Object.keys(sortedGroups).length > 0"
 					v-for="[groupId, group] in sortedGroups"
 					:group="group"
 					@click="router.push(`/group/${groupId}`)"
