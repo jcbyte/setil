@@ -44,8 +44,9 @@ export function useLiveDoc<T>(
 
 			dataRef.value = snapshot.data();
 		},
-		(_error) => {
-			onError?.(true);
+		(error) => {
+			if (error.code === "not-found" || error.code === "permission-denied") onError?.(false);
+			else onError?.(true);
 		},
 	);
 
