@@ -68,7 +68,11 @@ const groupId = getRouteParam(route.params.groupId);
 const newGroup = groupId === null;
 const { currentUser } = useCurrentUser();
 const { toast } = useToast();
-const group = useLiveGroupWithUserPublic(groupId, groupId ? noGroup : () => {});
+const group = useLiveGroupWithUserPublic(groupId, () => {
+	if (!groupId) return; // If this is not a group, then do not error
+	if (leaveDialogProcessing.value || deleteDialogProcessing.value) return; // If we are currently leaving/deleting, we may not have access to do not error
+	noGroup(router); // An error has actually occurred
+});
 
 let loaded = false;
 watch(
@@ -338,8 +342,8 @@ async function deleteGroup() {
 
 	try {
 		await firestoreDeleteGroup(groupId);
-		toast({ title: "Group Deleted", description: "All data related to this group has been deleted.", duration: 5000 });
 		router.push("/");
+		toast({ title: "Group Deleted", description: "All data related to this group has been deleted.", duration: 5000 });
 	} catch (e) {
 		toast({ title: "Error Deleting Group", description: String(e), variant: "destructive", duration: 5000 });
 	}

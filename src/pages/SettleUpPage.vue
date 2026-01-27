@@ -54,10 +54,10 @@ const { breakpointSplit } = useScreenSize();
 const groupId = getRouteParam(route.params.groupId);
 
 if (!groupId) {
-	noGroup();
+	noGroup(router);
 	throw "No groupId";
 }
-const group = useLiveGroupWithUserPublic(groupId, noGroup);
+const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 
 interface SimpleTransaction {
 	from: string;

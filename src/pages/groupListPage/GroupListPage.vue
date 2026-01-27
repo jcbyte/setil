@@ -14,6 +14,7 @@ const router = useRouter();
 
 const { groupList, loaded: groupListLoaded } = useLiveGroupListWithUserPublic();
 
+// todo can i show others a skelebobs
 const sortedGroups = computed(() =>
 	(
 		Object.entries(groupList.value).filter(([, group]) => group !== null) as [string, GroupListDataWithUserPublic][]

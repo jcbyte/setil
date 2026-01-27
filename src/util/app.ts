@@ -2,7 +2,7 @@ import { useToast } from "@/components/ui/toast";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { firebaseSignOut, signInWithGoogle } from "@/firebase/auth";
 import { cleanupInvites, invite } from "@/firebase/firestore/group";
-import { useRouter } from "vue-router";
+import { type Router } from "vue-router";
 
 export async function signIn() {
 	const { toast } = useToast();
@@ -68,9 +68,8 @@ export async function inviteUser(groupId: string, groupName: string) {
 	}
 }
 
-export function noGroup() {
+export function noGroup(router: Router) {
 	const { toast } = useToast();
-	const router = useRouter();
 
 	toast({
 		title: "Group Not Found",

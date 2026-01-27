@@ -44,10 +44,10 @@ const transactionId = getRouteParam(route.params.transactionId);
 const newTransaction = transactionId === null;
 
 if (!groupId) {
-	noGroup();
+	noGroup(router);
 	throw "No groupId";
 }
-const group = useLiveGroupWithUserPublic(groupId, noGroup);
+const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 
 let loaded = false;
 watch(

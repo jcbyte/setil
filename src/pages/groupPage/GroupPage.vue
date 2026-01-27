@@ -22,10 +22,10 @@ const { toast } = useToast();
 const groupId = getRouteParam(route.params.groupId);
 
 if (!groupId) {
-	noGroup();
+	noGroup(router);
 	throw "No groupId";
 }
-const group = useLiveGroupWithUserPublic(groupId, noGroup);
+const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 
 type Tab = "summary" | "activity";
 const tabSettings: Record<Tab, { title: string }> = {
