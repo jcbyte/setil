@@ -31,12 +31,17 @@ export function useLiveGroup(groupId: string | null, onError?: (network: boolean
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const { data: liveGroupData, release: releaseGroupData } = useLiveDoc(groupRef, onError);
 	const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
-	const { items: liveGroupUsers, release: releaseGroupUsers } = useLiveCollection(groupUsersRef, onError);
+	const {
+		items: liveGroupUsers,
+		loaded: liveGroupUsersLoaded,
+		release: releaseGroupUsers,
+	} = useLiveCollection(groupUsersRef, onError);
 	const groupTransactionsRef = collection(groupRef, "transactions") as CollectionReference<Transaction>;
-	const { items: liveGroupTransactions, release: releaseGroupTransactions } = useLiveCollection(
-		groupTransactionsRef,
-		onError,
-	);
+	const {
+		items: liveGroupTransactions,
+		loaded: liveGroupTransactionsLoaded,
+		release: releaseGroupTransactions,
+	} = useLiveCollection(groupTransactionsRef, onError);
 
 	// Automatically cleanup the live subscribers when going out of scope
 	onUnmounted(() => {
@@ -47,13 +52,12 @@ export function useLiveGroup(groupId: string | null, onError?: (network: boolean
 
 	// Return null until all parts of the group have loaded
 	const group = computed<Group | null>(() => {
-		if (liveGroupData.value === null || liveGroupUsers.value === null || liveGroupTransactions.value === null)
-			return null;
+		if (!liveGroupData.value || !liveGroupUsersLoaded.value || !liveGroupTransactionsLoaded.value) return null;
 
 		return {
-			data: liveGroupData.value,
-			users: liveGroupUsers.value,
-			transactions: liveGroupTransactions.value,
+			data: liveGroupData.value!,
+			users: liveGroupUsers,
+			transactions: liveGroupTransactions,
 		};
 	});
 

@@ -54,8 +54,6 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 		(newUserData) => {
 			if (!newUserData) return;
 
-			loaded.value = true;
-
 			const requestedGroups = newUserData.groups;
 			const requestedGroupsSet = new Set(requestedGroups);
 			const currentGroups = Object.keys(groupList);
@@ -75,22 +73,24 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 				// Get the live active users for the group though a query
 				const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
 				const activeUsersQuery = query(groupUsersRef, where("status", "==", "active"));
-				const { items: groupActiveUsers, release: releaseGroupActiveUsers } = useLiveQuery(activeUsersQuery, (nw) =>
-					onError?.(nw, groupId),
-				);
+				const {
+					items: groupActiveUsers,
+					loaded: groupActiveUsersLoaded,
+					release: releaseGroupActiveUsers,
+				} = useLiveQuery(activeUsersQuery, (nw) => onError?.(nw, groupId));
 
 				const groupListData = computed(() => {
 					if (!groupData.value) return null;
-					if (!groupActiveUsers.value) return null;
+					if (!groupActiveUsersLoaded) return null;
 
 					// Compute user count
-					const userCount = Object.keys(groupActiveUsers.value).length;
+					const userCount = Object.keys(groupActiveUsers).length;
 					// Compute last 3 users to perform updates
-					const topUsers = Object.entries(groupActiveUsers.value)
+					const topUsers = Object.entries(groupActiveUsers)
 						.sort(([, userA], [, userB]) => userB.lastUpdate.toMillis() - userA.lastUpdate.toMillis())
 						.slice(0, 3);
 					// Compute our users balance in the group
-					const myBalance = groupActiveUsers.value[currentUser.value!.uid].balance;
+					const myBalance = groupActiveUsers[currentUser.value!.uid]?.balance ?? null;
 
 					return { group: groupData.value, userCount, topUsers, myBalance };
 				});
@@ -111,6 +111,8 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 				docReleasers.get(groupId)?.();
 				docReleasers.delete(groupId);
 			});
+
+			loaded.value = true;
 		},
 		{ immediate: true },
 	);
