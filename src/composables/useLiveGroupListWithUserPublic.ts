@@ -32,7 +32,7 @@ export default function useLiveGroupListWithUserPublic(
 				if (!group) return [groupId, group];
 
 				const mergedUsers: [string, GroupUserDataWithPublic][] = group.topUsers.map(([userId, userData]) => {
-					const publicRef = userPublic.value[userId];
+					const publicRef = userPublic[userId];
 					return [userId, { ...userData, public: unref(publicRef) }];
 				});
 

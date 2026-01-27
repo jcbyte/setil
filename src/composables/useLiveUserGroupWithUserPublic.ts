@@ -21,19 +21,17 @@ export default function useLiveGroupWithUserPublic(
 		if (!liveGroup.value) return null;
 
 		const mergedUserData: Record<string, GroupUserDataWithPublic> = Object.fromEntries(
-			Object.entries(liveGroup.value.users).map(([userId, groupUserData]) => [
-				userId,
-				{
-					...groupUserData,
-					public: null,
-				},
-			]),
+			Object.entries(liveGroup.value.users).map(([userId, groupUserData]) => {
+				const publicRef = userPublic[userId];
+				return [
+					userId,
+					{
+						...groupUserData,
+						public: unref(publicRef),
+					},
+				];
+			}),
 		);
-
-		Object.entries(userPublic.value).forEach(([userId, publicData]) => {
-			// ? Unsure as why unref is needed here, potentially Vue does auto-unwrapping
-			if (mergedUserData[userId]) mergedUserData[userId].public = unref(publicData);
-		});
 
 		return { ...liveGroup.value, users: mergedUserData };
 	});

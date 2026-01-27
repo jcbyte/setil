@@ -22,7 +22,7 @@ export default function useLiveGroupList(
 	const userRef = doc(db, "users", currentUser.value!.uid) as DocumentReference<UserData>;
 	const { data: userData, release: releaseUserData } = useLiveDoc(userRef, onError);
 
-	const groupList = reactive<Record<string, Ref<GroupListData | null>>>({});
+	const groupList = reactive<Record<string, Ref<GroupListData | null>>>({}); // todo this should be null until loaded user group list
 	const docReleasers = new Map<string, () => void>();
 
 	onUnmounted(() => {
