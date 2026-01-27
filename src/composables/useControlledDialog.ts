@@ -1,5 +1,19 @@
 import { ref, type Ref } from "vue";
 
+/**
+ * Composable for managing the state of a dialog.
+ *
+ * @template T - The type of optional data to pass through the dialog (defaults to undefined)
+ * @param {T} [data] - Optional initial data to store in the dialog
+ * @returns {Object} Dialog control object containing:
+ *   - open: Reactive boolean for dialog visibility
+ *   - processing: Reactive boolean for processing/loading state
+ *   - data: Reactive ref containing the dialog data
+ *   - openDialog: Function to open dialog and optionally set data
+ *   - closeDialog: Function to close the dialog
+ *   - startDialogProcessing: Function to set processing state to true
+ *   - finishDialogProcessing: Function to set processing state to false
+ */
 export function useControlledDialog<T = undefined>(
 	data?: T,
 ): {

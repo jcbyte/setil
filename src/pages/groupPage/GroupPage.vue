@@ -7,7 +7,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Tabs from "@/components/ui/tabs/Tabs.vue";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import useLiveGroupWithUserPublic from "@/composables/useLiveUserGroupWithUserPublic";
+import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { inviteUser, noGroup } from "@/util/app";
 import { getRouteParam } from "@/util/util";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
@@ -22,10 +22,10 @@ const { toast } = useToast();
 const groupId = getRouteParam(route.params.groupId);
 
 if (!groupId) {
-	noGroup();
+	noGroup(router);
 	throw "No groupId";
 }
-const group = useLiveGroupWithUserPublic(groupId, noGroup);
+const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 
 type Tab = "summary" | "activity";
 const tabSettings: Record<Tab, { title: string }> = {

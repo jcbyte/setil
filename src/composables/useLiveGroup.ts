@@ -11,9 +11,23 @@ export interface Group {
 	transactions: Record<string, Transaction>;
 }
 
+/**
+ * Composable for subscribing to a complete group with all its related data.
+ *
+ * Fetches and syncs the group document, all users in the group, and all transactions
+ * in a single reactive object. Automatically handles cleanup of all subscriptions
+ * on component unmount.
+ *
+ * @param {string | null} groupId - The static id of the group to subscribe to, or null
+ * @param {Function} [onError] - Optional callback for error handling. Called with:
+ *   - network: boolean - true if error is network related, false if access related
+ * @returns {Ref<Group | null>} Reactive ref containing the complete group data, or null
+ *   if groupId is null or the group has not loaded yet
+ */
 export function useLiveGroup(groupId: string | null, onError?: (network: boolean) => void): Ref<Group | null> {
 	if (!groupId) return computed(() => null);
 
+	// Get the live data and collections for the group
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const { data: liveGroupData, release: releaseGroupData } = useLiveDoc(groupRef, onError);
 	const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
@@ -24,12 +38,14 @@ export function useLiveGroup(groupId: string | null, onError?: (network: boolean
 		onError,
 	);
 
+	// Automatically cleanup the live subscribers when going out of scope
 	onUnmounted(() => {
 		releaseGroupData();
 		releaseGroupUsers();
 		releaseGroupTransactions();
 	});
 
+	// Return null until all parts of the group have loaded
 	const group = computed<Group | null>(() => {
 		if (liveGroupData.value === null || liveGroupUsers.value === null || liveGroupTransactions.value === null)
 			return null;

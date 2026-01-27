@@ -11,6 +11,13 @@ const breakpointSizes: Record<Breakpoint, number> = {
 	xs: 0,
 };
 
+/**
+ * Provides reactive current breakpoint detection.
+ *
+ * @returns {Object} Object containing:
+ *   - currentBreakpoint: Computed ref with current breakpoint `Breakpoint`
+ *   - breakpointSplit: Function to choose a value based on breakpoint threshold
+ */
 export function useScreenSize() {
 	const { width } = useWindowSize();
 
@@ -20,7 +27,7 @@ export function useScreenSize() {
 				width.value > size && size > breakpointSizes[currentBreakpoint]
 					? (breakpointSize as Breakpoint)
 					: currentBreakpoint,
-			"xs"
+			"xs",
 		);
 	});
 

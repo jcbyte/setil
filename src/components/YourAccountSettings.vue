@@ -11,7 +11,7 @@ import { signOut } from "@/util/app";
 import { LogOut, Settings } from "lucide-vue-next";
 import { useRouter } from "vue-router";
 
-const { currentUser } = useCurrentUser();
+const currentUser = useCurrentUser();
 const router = useRouter();
 </script>
 

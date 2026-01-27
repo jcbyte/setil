@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import useLiveGroupWithUserPublic from "@/composables/useLiveUserGroupWithUserPublic";
+import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { createTransaction, updateTransaction } from "@/firebase/firestore/transaction";
 import { sendNotification } from "@/firebase/messaging";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
@@ -34,7 +34,7 @@ import * as z from "zod";
 
 const router = useRouter();
 const route = useRoute();
-const { currentUser } = useCurrentUser();
+const currentUser = useCurrentUser();
 const { toast } = useToast();
 
 const isTransactionUpdating = ref<boolean>(false);
@@ -44,10 +44,10 @@ const transactionId = getRouteParam(route.params.transactionId);
 const newTransaction = transactionId === null;
 
 if (!groupId) {
-	noGroup();
+	noGroup(router);
 	throw "No groupId";
 }
-const group = useLiveGroupWithUserPublic(groupId, noGroup);
+const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 
 let loaded = false;
 watch(
