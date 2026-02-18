@@ -222,7 +222,7 @@ export async function removeUser(groupId: string, userId: string) {
 }
 
 /**
- * Change a users name within a group.
+ * Change a users nickname within a group.
  * @param groupId id of the group.
  * @param userId id of the user to update name.
  * @param nickname new name to give to the user.
@@ -231,7 +231,7 @@ export async function changeUserNickname(groupId: string, userId: string, nickna
 	const groupUserRef = doc(db, "groups", groupId, "users", userId);
 
 	// Update the name of the user in the group
-	await updateDoc(groupUserRef, { name: nickname });
+	await updateDoc(groupUserRef, { nickname });
 }
 
 /**
