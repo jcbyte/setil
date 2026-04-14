@@ -57,20 +57,23 @@ watch(
 		loaded = true;
 
 		if (newTransaction) {
-			setValues({
-				date: today(getLocalTimeZone()).toString(),
-				from: currentUser.value!.uid,
-				category: "expense",
-				to: {
-					type: "equal",
-					// Only include active members
-					people: Object.fromEntries(
-						Object.entries(groupValue.users)
-							.filter(([, user]) => user.status === "active")
-							.map(([userId]) => [userId, { selected: false, num: undefined }]),
-					),
+			setValues(
+				{
+					date: today(getLocalTimeZone()).toString(),
+					from: currentUser.value!.uid,
+					category: "expense",
+					to: {
+						type: "equal",
+						// Only include active members
+						people: Object.fromEntries(
+							Object.entries(groupValue.users)
+								.filter(([, user]) => user.status === "active")
+								.map(([userId]) => [userId, { selected: false, num: undefined }]),
+						),
+					},
 				},
-			});
+				false,
+			);
 		} else {
 			const transaction = groupValue.transactions[transactionId];
 
