@@ -78,6 +78,10 @@ function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
 		{ creditors: [], debtors: [] },
 	);
 
+	// Sort creditors and debtors for heuristics, highest credit/debt first
+	creditors.sort((a, b) => balances[b] - balances[a]);
+	debtors.sort((a, b) => -balances[b] - -balances[a]);
+
 	const newDebts: { from: string; to: string; amount: number }[] = [];
 
 	// Match debtors and creditors to minimise transactions
