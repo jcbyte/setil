@@ -9,6 +9,7 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
     src="demo.gif" 
     alt="Setil demo" 
     height="400"
+    style="border-radius: 8px;"
   />
 </p>
 
@@ -17,7 +18,6 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
     <strong>Open Setil ⟶</strong>
   </a>
 </p>
-
 
 ## Features
 
