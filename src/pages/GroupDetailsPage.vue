@@ -376,7 +376,7 @@ async function deleteGroup() {
 
 					<form class="flex flex-col gap-4" @submit="onSubmit">
 						<div class="flex flex-col gap-2">
-							<FormField v-slot="{ componentField }" name="name" :validate-on-blur="!isFieldDirty">
+							<FormField v-slot="{ componentField }" name="name" :validate-on-blur="isFieldDirty('name')">
 								<FormItem>
 									<FormLabel>Group Name</FormLabel>
 									<FormControl>
@@ -392,7 +392,7 @@ async function deleteGroup() {
 								</FormItem>
 							</FormField>
 
-							<FormField v-slot="{ componentField }" name="description" :validate-on-blur="!isFieldDirty">
+							<FormField v-slot="{ componentField }" name="description" :validate-on-blur="isFieldDirty('description')">
 								<FormItem>
 									<FormLabel>Description</FormLabel>
 									<FormControl>
@@ -406,7 +406,7 @@ async function deleteGroup() {
 								</FormItem>
 							</FormField>
 
-							<FormField v-slot="{ componentField }" name="currency" :validate-on-blur="!isFieldDirty">
+							<FormField v-slot="{ componentField }" name="currency" :validate-on-blur="isFieldDirty('currency')">
 								<FormItem>
 									<FormLabel>Currency</FormLabel>
 									<Select v-bind="componentField" :disabled="isGroupDetailsUpdating">

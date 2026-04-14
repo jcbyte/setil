@@ -85,7 +85,7 @@ const formSchema = toTypedSchema(
 						message: "Account number / IBAN required",
 					});
 			}
-		})
+		}),
 );
 
 const { isFieldDirty, handleSubmit, setValues, values } = useForm({
@@ -133,7 +133,7 @@ onMounted(async () => {
 				system: "UK",
 				name: getUser().displayName ?? undefined,
 			},
-			false
+			false,
 		);
 	}
 
@@ -203,7 +203,7 @@ async function clearDetails() {
 			SWIFT_bankAddress: undefined,
 			SWIFT_bankName: undefined,
 		},
-		false
+		false,
 	);
 
 	try {
@@ -240,7 +240,7 @@ async function clearDetails() {
 					<form class="flex flex-col gap-4" @submit="onSubmit">
 						<Skeleton v-if="isInitialLoading" class="rounded-lg h-[300px] w-full" />
 						<div v-else class="flex flex-col gap-2">
-							<FormField v-slot="{ componentField }" name="system" :validate-on-blur="!isFieldDirty">
+							<FormField v-slot="{ componentField }" name="system" :validate-on-blur="isFieldDirty('system')">
 								<FormItem>
 									<FormLabel>Banking System</FormLabel>
 									<Select v-bind="componentField" :disabled="isDetailsUpdating">
@@ -262,7 +262,7 @@ async function clearDetails() {
 								</FormItem>
 							</FormField>
 
-							<FormField v-slot="{ componentField }" name="name" :validate-on-blur="!isFieldDirty">
+							<FormField v-slot="{ componentField }" name="name" :validate-on-blur="isFieldDirty('name')">
 								<FormItem>
 									<FormLabel>Name</FormLabel>
 									<FormControl>
@@ -279,7 +279,11 @@ async function clearDetails() {
 							</FormField>
 
 							<div v-if="values.system === 'UK'">
-								<FormField v-slot="{ componentField }" name="UK_sortCode" :validate-on-blur="!isFieldDirty">
+								<FormField
+									v-slot="{ componentField }"
+									name="UK_sortCode"
+									:validate-on-blur="isFieldDirty('UK_sortCode')"
+								>
 									<FormItem>
 										<FormLabel>Sort Code</FormLabel>
 										<FormControl>
@@ -295,7 +299,11 @@ async function clearDetails() {
 									</FormItem>
 								</FormField>
 
-								<FormField v-slot="{ componentField }" name="UK_accountNumber" :validate-on-blur="!isFieldDirty">
+								<FormField
+									v-slot="{ componentField }"
+									name="UK_accountNumber"
+									:validate-on-blur="isFieldDirty('UK_accountNumber')"
+								>
 									<FormItem>
 										<FormLabel>Account Number</FormLabel>
 										<FormControl>
@@ -312,7 +320,11 @@ async function clearDetails() {
 								</FormField>
 							</div>
 							<div v-else-if="values.system === 'US'">
-								<FormField v-slot="{ componentField }" name="US_routingNumber" :validate-on-blur="!isFieldDirty">
+								<FormField
+									v-slot="{ componentField }"
+									name="US_routingNumber"
+									:validate-on-blur="isFieldDirty('US_routingNumber')"
+								>
 									<FormItem>
 										<FormLabel>Routing Number</FormLabel>
 										<FormControl>
@@ -328,7 +340,11 @@ async function clearDetails() {
 									</FormItem>
 								</FormField>
 
-								<FormField v-slot="{ componentField }" name="US_accountNumber" :validate-on-blur="!isFieldDirty">
+								<FormField
+									v-slot="{ componentField }"
+									name="US_accountNumber"
+									:validate-on-blur="isFieldDirty('US_accountNumber')"
+								>
 									<FormItem>
 										<FormLabel>Account Number</FormLabel>
 										<FormControl>
@@ -345,7 +361,7 @@ async function clearDetails() {
 								</FormField>
 							</div>
 							<div v-else-if="values.system === 'SEPA'">
-								<FormField v-slot="{ componentField }" name="SEPA_IBAN" :validate-on-blur="!isFieldDirty">
+								<FormField v-slot="{ componentField }" name="SEPA_IBAN" :validate-on-blur="isFieldDirty('SEPA_IBAN')">
 									<FormItem>
 										<FormLabel>IBAN</FormLabel>
 										<FormControl>
@@ -361,7 +377,7 @@ async function clearDetails() {
 									</FormItem>
 								</FormField>
 
-								<FormField v-slot="{ componentField }" name="SEPA_BIC" :validate-on-blur="!isFieldDirty">
+								<FormField v-slot="{ componentField }" name="SEPA_BIC" :validate-on-blur="isFieldDirty('SEPA_BIC')">
 									<FormItem>
 										<FormLabel>BIC / SWIFT Code (Optional)</FormLabel>
 										<FormControl>
@@ -378,7 +394,11 @@ async function clearDetails() {
 								</FormField>
 							</div>
 							<div v-else-if="values.system === 'SWIFT'">
-								<FormField v-slot="{ componentField }" name="SWIFT_SWIFT" :validate-on-blur="!isFieldDirty">
+								<FormField
+									v-slot="{ componentField }"
+									name="SWIFT_SWIFT"
+									:validate-on-blur="isFieldDirty('SWIFT_SWIFT')"
+								>
 									<FormItem>
 										<FormLabel>BIC / SWIFT Code</FormLabel>
 										<FormControl>
@@ -394,7 +414,7 @@ async function clearDetails() {
 									</FormItem>
 								</FormField>
 
-								<FormField v-slot="{ componentField }" name="SWIFT_IBAN" :validate-on-blur="!isFieldDirty">
+								<FormField v-slot="{ componentField }" name="SWIFT_IBAN" :validate-on-blur="isFieldDirty('SWIFT_IBAN')">
 									<FormItem>
 										<FormLabel>Account Number / IBAN</FormLabel>
 										<FormControl>
@@ -410,7 +430,11 @@ async function clearDetails() {
 									</FormItem>
 								</FormField>
 
-								<FormField v-slot="{ componentField }" name="SWIFT_bankName" :validate-on-blur="!isFieldDirty">
+								<FormField
+									v-slot="{ componentField }"
+									name="SWIFT_bankName"
+									:validate-on-blur="isFieldDirty('SWIFT_bankName')"
+								>
 									<FormItem>
 										<FormLabel>Bank Name (Optional)</FormLabel>
 										<FormControl>
@@ -426,7 +450,11 @@ async function clearDetails() {
 									</FormItem>
 								</FormField>
 
-								<FormField v-slot="{ componentField }" name="SWIFT_bankAddress" :validate-on-blur="!isFieldDirty">
+								<FormField
+									v-slot="{ componentField }"
+									name="SWIFT_bankAddress"
+									:validate-on-blur="isFieldDirty('SWIFT_bankAddress')"
+								>
 									<FormItem>
 										<FormLabel>Bank Address (Optional)</FormLabel>
 										<FormControl>

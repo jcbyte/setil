@@ -57,20 +57,23 @@ watch(
 		loaded = true;
 
 		if (newTransaction) {
-			setValues({
-				date: today(getLocalTimeZone()).toString(),
-				from: currentUser.value!.uid,
-				category: "expense",
-				to: {
-					type: "equal",
-					// Only include active members
-					people: Object.fromEntries(
-						Object.entries(groupValue.users)
-							.filter(([, user]) => user.status === "active")
-							.map(([userId]) => [userId, { selected: false, num: undefined }]),
-					),
+			setValues(
+				{
+					date: today(getLocalTimeZone()).toString(),
+					from: currentUser.value!.uid,
+					category: "expense",
+					to: {
+						type: "equal",
+						// Only include active members
+						people: Object.fromEntries(
+							Object.entries(groupValue.users)
+								.filter(([, user]) => user.status === "active")
+								.map(([userId]) => [userId, { selected: false, num: undefined }]),
+						),
+					},
 				},
-			});
+				false,
+			);
 		} else {
 			const transaction = groupValue.transactions[transactionId];
 
@@ -269,7 +272,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 				<form class="flex flex-col gap-4" @submit="onSubmit">
 					<div class="flex flex-col gap-2">
-						<FormField v-slot="{ componentField }" name="title" :validate-on-blur="!isFieldDirty">
+						<FormField v-slot="{ componentField }" name="title" :validate-on-blur="isFieldDirty('title')">
 							<FormItem>
 								<FormLabel>Title</FormLabel>
 								<FormControl>
@@ -285,7 +288,7 @@ const onSubmit = handleSubmit(async (values) => {
 						</FormField>
 
 						<div class="flex justify-center gap-4">
-							<FormField v-slot="{ componentField }" name="amount" :validate-on-blur="!isFieldDirty">
+							<FormField v-slot="{ componentField }" name="amount" :validate-on-blur="isFieldDirty('amount')">
 								<FormItem class="flex-1">
 									<FormLabel>Amount</FormLabel>
 									<div class="relative items-center">
@@ -307,7 +310,7 @@ const onSubmit = handleSubmit(async (values) => {
 								</FormItem>
 							</FormField>
 
-							<FormField name="date" :validate-on-blur="!isFieldDirty">
+							<FormField name="date" :validate-on-blur="isFieldDirty('date')">
 								<FormItem class="flex-1">
 									<FormLabel>Date</FormLabel>
 									<Popover>
@@ -338,7 +341,7 @@ const onSubmit = handleSubmit(async (values) => {
 							</FormField>
 						</div>
 
-						<FormField v-slot="{ componentField }" name="category" :validate-on-blur="!isFieldDirty">
+						<FormField v-slot="{ componentField }" name="category" :validate-on-blur="isFieldDirty('category')">
 							<FormItem>
 								<FormLabel>Category</FormLabel>
 								<Select v-bind="componentField" :disabled="isTransactionUpdating">
@@ -362,7 +365,7 @@ const onSubmit = handleSubmit(async (values) => {
 							</FormItem>
 						</FormField>
 
-						<FormField v-slot="{ componentField }" name="from" :validate-on-blur="!isFieldDirty">
+						<FormField v-slot="{ componentField }" name="from" :validate-on-blur="isFieldDirty('from')">
 							<FormItem>
 								<FormLabel>Paid By</FormLabel>
 								<Select v-bind="componentField" :disabled="isTransactionUpdating">
@@ -403,7 +406,7 @@ const onSubmit = handleSubmit(async (values) => {
 							</FormItem>
 						</FormField>
 
-						<FormField name="to" :validate-on-blur="!isFieldDirty">
+						<FormField name="to" :validate-on-blur="isFieldDirty('to')">
 							<FormItem>
 								<FormLabel>Split with</FormLabel>
 
