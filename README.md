@@ -4,9 +4,24 @@
 
 Setil is a mobile-first progressive web app designed to simplify group expenses. Create a group, invite friends, and add expenses in seconds. Powered by Vue 3 and Firebase, Setil tracks every transaction in real-time, automatically calculating the most efficient way for everyone to setil up.
 
-[Open Setil](https://setil.joelcutler.dev/)
+<p align="center">
+  <img 
+    src="demo.gif" 
+    alt="Setil demo" 
+    height="400"
+    style="
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    "
+  />
+</p>
 
-<!-- todo gif of Setil. -->
+<p align="center">
+  <a href="https://setil.joelcutler.dev/">
+    <strong>⟶ Open Setil</strong>
+  </a>
+</p>
+
 
 ## Features
 
