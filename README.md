@@ -10,7 +10,7 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
 
 ## Features
 
-- 💸 **Smart Settlement**: Uses a greedy resolution algorithm to simplify complex debts into the fewest possible payments.
+- 💸 **Smart Settlement**: Uses a greedy algorithm to simplify complex debts into the fewest possible payments.
 - 🔥 **Real-time**: Powered by Firestore; balances and transactions update instantly across all devices.
 - 🍰 **Flexible Splitting**: Split a single transaction between multiple people equally, or define specific amounts.
 - 📱 **PWA Support**: Installable on iOS, Android, and Desktop for a native experience.
@@ -29,7 +29,7 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
 
 ## Setil Logic
 
-Setil uses a greedy algorithm to resolve debts in $ O(n) $ time. Instead of tracking individual "who owes who" records for every transaction, it maintains a global balance for each user within the group.
+Setil uses a greedy algorithm to resolve debts in $O(n)$ time. Instead of tracking individual "who owes who" records for every transaction, it maintains a global balance for each user within the group.
 
 The `resolveGroupDebts` function ([SettleUpPage.vue](src/pages/SettleUpPage.vue)) categorises users into Creditors and Debtors, then matches them (using a highest absolute value heuristic) to minimise the total number of transfers.
 
