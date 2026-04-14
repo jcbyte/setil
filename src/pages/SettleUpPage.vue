@@ -326,7 +326,7 @@ async function openBankDetailsDialog() {
 					<form class="flex flex-col gap-4" @submit="onSubmit">
 						<div class="flex flex-col gap-2">
 							<div class="flex gap-2">
-								<FormField v-slot="{ componentField }" name="from" :validate-on-blur="!isFieldDirty">
+								<FormField v-slot="{ componentField }" name="from" :validate-on-blur="isFieldDirty('from')">
 									<FormItem class="flex-1">
 										<FormLabel>From</FormLabel>
 										<Select v-bind="componentField" :disabled="isMakingPayment">
@@ -363,7 +363,7 @@ async function openBankDetailsDialog() {
 									</FormItem>
 								</FormField>
 
-								<FormField v-slot="{ componentField }" name="to" :validate-on-blur="!isFieldDirty">
+								<FormField v-slot="{ componentField }" name="to" :validate-on-blur="isFieldDirty('to')">
 									<FormItem class="flex-1">
 										<FormLabel>Recipient</FormLabel>
 										<Select v-bind="componentField" :disabled="isMakingPayment">
@@ -401,7 +401,7 @@ async function openBankDetailsDialog() {
 								</FormField>
 							</div>
 
-							<FormField v-slot="{ componentField }" name="amount" :validate-on-blur="!isFieldDirty">
+							<FormField v-slot="{ componentField }" name="amount" :validate-on-blur="isFieldDirty('amount')">
 								<FormItem class="flex-1">
 									<FormLabel>Amount</FormLabel>
 									<div class="relative items-center">
