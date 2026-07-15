@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import path from "node:path";
 import { defineConfig } from "vite";
@@ -27,7 +28,7 @@ const manifest: Partial<ManifestOptions> = {
 
 // https://vite.dev/config/
 export default defineConfig({
-	plugins: [vue(), VitePWA({ registerType: "autoUpdate", manifest })],
+	plugins: [vue(), tailwindcss(), VitePWA({ registerType: "autoUpdate", manifest })],
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
