@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { signOut } from "@/util/app";
-import { LogOut, Settings } from "lucide-vue-next";
+import { LogOut, Settings } from "@lucide/vue";
 import { useRouter } from "vue-router";
 
 const currentUser = useCurrentUser();

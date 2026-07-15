@@ -4,8 +4,8 @@ import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { GroupListDataWithUserPublic } from "@/composables/useLiveGroupListWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
+import { ChevronRight } from "@lucide/vue";
 import { Timestamp } from "firebase/firestore";
-import { ChevronRight } from "lucide-vue-next";
 import { computed } from "vue";
 
 const props = defineProps<{

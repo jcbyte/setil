@@ -23,9 +23,9 @@ import { CurrencySettings, formatCurrency, fromFirestoreAmount, toFirestoreAmoun
 import { gcdN } from "@/util/math";
 import { getLeftUsersInTransaction, getRouteParam, splitAmountEven, splitAmountRatio, sumRecord } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
+import { ArrowLeft, CalendarIcon, Plus, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, CalendarIcon, Plus, Save } from "lucide-vue-next";
 import { toDate } from "reka-ui/date";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";

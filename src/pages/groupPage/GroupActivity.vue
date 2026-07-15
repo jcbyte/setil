@@ -25,7 +25,7 @@ import type { Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction, sumRecord } from "@/util/util";
-import { Calendar, EllipsisVertical, FilePen, Trash, UserRound } from "lucide-vue-next";
+import { Calendar, EllipsisVertical, FilePen, Trash, UserRound } from "@lucide/vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 

@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupListWithUserPublic from "@/composables/useLiveGroupListWithUserPublic";
-import { Plus } from "lucide-vue-next";
+import { Plus } from "@lucide/vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import GroupListItem from "./GroupListItem.vue";

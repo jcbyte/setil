@@ -37,9 +37,9 @@ import {
 } from "@/util/currency";
 import { type PaymentDetails } from "@/util/paymentDetails";
 import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
+import { ArrowDown, ArrowLeft, ArrowRight, Landmark, Wallet } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowDown, ArrowLeft, ArrowRight, Landmark, Wallet } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";

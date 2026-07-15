@@ -10,7 +10,7 @@ import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { inviteUser, noGroup } from "@/util/app";
 import { getRouteParam } from "@/util/util";
-import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
+import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "@lucide/vue";
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import GroupActivity from "./GroupActivity.vue";

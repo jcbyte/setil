@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import Toaster from "@/components/ui/toast/Toaster.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
+import { LoaderCircle } from "@lucide/vue";
 import { getAuth } from "firebase/auth";
-import { LoaderCircle } from "lucide-vue-next";
 import { ref } from "vue";
 import NotificationRequester from "./components/NotificationRequester.vue";
 import { app } from "./firebase/firebase";
