@@ -419,7 +419,7 @@ const onSubmit = handleSubmit(async (values) => {
 										</TabsList>
 									</Tabs>
 
-									<div class="grid grid-cols-[max-content_minmax(0,1fr)_minmax(0,1fr)_9rem] items-center gap-2">
+									<div class="grid grid-cols-[max-content_minmax(0,1fr)_minmax(0,1fr)_max-content] items-center gap-2">
 										<div v-for="(userData, userId) in values.to?.people" class="contents">
 											<Checkbox
 												class="col-start-1"
@@ -453,7 +453,10 @@ const onSubmit = handleSubmit(async (values) => {
 											>
 												{{ formatCurrency(toValue[userId] ?? 0, group.data.currency) }}
 											</span>
-											<div v-if="values.to?.type !== 'equal'" class="col-start-4 relative items-center">
+											<div
+												v-if="values.to?.type !== 'equal'"
+												:class="`col-start-4 relative items-center ${values.to?.type === 'unequal' ? 'w-28 sm:w-42' : 'w-16 sm:w-20'}`"
+											>
 												<Input
 													type="number"
 													:class="values.to?.type !== 'ratio' && 'pl-6'"
