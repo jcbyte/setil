@@ -126,7 +126,7 @@ const formSchema = toTypedSchema(
 				if (values.to?.type === "unequal") return true;
 				return val && typeof val === "number" && val > 0;
 			}, "An amount is required"),
-		date: z.string().refine((v) => v, { message: "A date is required" }),
+		date: z.string().refine((v) => v, "A date is required"),
 		category: z.string().refine((val) => Object.keys(CategorySettings).includes(val), "Must select a valid category"),
 		from: z
 			.string()
