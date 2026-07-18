@@ -1,5 +1,5 @@
 import type { TransactionCategory } from "@/firebase/types";
-import { FileText, Fuel, ReceiptText, Ticket, TramFront, Utensils, Wallet, type LucideProps } from "lucide-vue-next";
+import { FileText, Fuel, ReceiptText, Ticket, TramFront, Utensils, Wallet, type LucideProps } from "@lucide/vue";
 import type { FunctionalComponent } from "vue";
 
 export interface CategoryData {

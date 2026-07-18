@@ -41,8 +41,6 @@ import { type Currency } from "@/firebase/types";
 import { inviteUser, noGroup } from "@/util/app";
 import { CurrencySettings } from "@/util/currency";
 import { getRouteParam } from "@/util/util";
-import { toTypedSchema } from "@vee-validate/zod";
-import { Timestamp } from "firebase/firestore";
 import {
 	ArrowBigUpDash,
 	ArrowLeft,
@@ -56,7 +54,9 @@ import {
 	UserRound,
 	UserRoundPlus,
 	X,
-} from "lucide-vue-next";
+} from "@lucide/vue";
+import { toTypedSchema } from "@vee-validate/zod";
+import { Timestamp } from "firebase/firestore";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";

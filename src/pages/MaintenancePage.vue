@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Separator } from "@/components/ui/separator";
-import { Hammer } from "lucide-vue-next";
+import { Hammer } from "@lucide/vue";
 const version = __APP_VERSION__;
 </script>
 

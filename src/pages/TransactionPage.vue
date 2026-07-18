@@ -23,9 +23,9 @@ import { CurrencySettings, formatCurrency, fromFirestoreAmount, toFirestoreAmoun
 import { gcdN } from "@/util/math";
 import { getLeftUsersInTransaction, getRouteParam, splitAmountEven, splitAmountRatio, sumRecord } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
+import { ArrowLeft, CalendarIcon, Plus, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, CalendarIcon, Plus, Save } from "lucide-vue-next";
 import { toDate } from "reka-ui/date";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
@@ -126,7 +126,7 @@ const formSchema = toTypedSchema(
 				if (values.to?.type === "unequal") return true;
 				return val && typeof val === "number" && val > 0;
 			}, "An amount is required"),
-		date: z.string().refine((v) => v, { message: "A date is required" }),
+		date: z.string().refine((v) => v, "A date is required"),
 		category: z.string().refine((val) => Object.keys(CategorySettings).includes(val), "Must select a valid category"),
 		from: z
 			.string()

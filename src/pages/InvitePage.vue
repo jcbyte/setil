@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/toast";
 import { joinGroup } from "@/firebase/firestore/group";
 import { sendNotification } from "@/firebase/messaging";
 import { getRouteParam } from "@/util/util";
-import { Loader } from "lucide-vue-next";
+import { Loader } from "@lucide/vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
