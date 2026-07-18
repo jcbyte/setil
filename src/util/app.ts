@@ -4,21 +4,16 @@ import { type Router } from "vue-router";
 import { toast } from "vue-sonner";
 
 export async function signIn() {
-	// todo sort this
-
 	const persistentToast = toast.loading("Signing In", {
 		description: "Please continue in the popup window.",
-		duration: 0,
 	});
 
 	try {
 		const newUser = await signInWithGoogle();
 
-		persistentToast.dismiss();
-		toast("Signed In", { description: newUser ? "Welcome to Setil!" : "Welcome back!" });
+		toast("Signed In", { description: newUser ? "Welcome to Setil!" : "Welcome back!", id: persistentToast });
 	} catch (error: any) {
-		persistentToast.dismiss();
-		toast.error("Error Signing In", { description: error.code });
+		toast.error("Error Signing In", { description: error.code, id: persistentToast });
 	}
 }
 
