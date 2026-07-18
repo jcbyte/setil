@@ -465,7 +465,11 @@ const onSubmit = handleSubmit(async (values) => {
 															? (0).toFixed(CurrencySettings[group.data.currency].decimals)
 															: '0'
 													"
-													:step="Math.pow(10, -CurrencySettings[group.data.currency].decimals)"
+													:step="
+														values.to?.type === 'unequal'
+															? Math.pow(10, -CurrencySettings[group.data.currency].decimals)
+															: 1
+													"
 													:model-value="userData?.num"
 													@update:modelValue="(val) => setFieldValue(`to.people.${userId}.num`, Number(val))"
 													:disabled="isTransactionUpdating || !userData?.selected"
