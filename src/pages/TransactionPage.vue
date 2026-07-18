@@ -419,9 +419,10 @@ const onSubmit = handleSubmit(async (values) => {
 										</TabsList>
 									</Tabs>
 
-									<div class="flex flex-col gap-2">
-										<div v-for="(userData, userId) in values.to?.people" class="flex items-center gap-2">
+									<div class="grid grid-cols-[max-content_minmax(0,1fr)_minmax(0,1fr)_9rem] items-center gap-2">
+										<div v-for="(userData, userId) in values.to?.people" class="contents">
 											<Checkbox
+												class="col-start-1"
 												:id="`user-${userId}`"
 												:model-value="userData?.selected ?? false"
 												@update:modelValue="
@@ -432,7 +433,7 @@ const onSubmit = handleSubmit(async (values) => {
 												"
 												:disabled="isTransactionUpdating"
 											/>
-											<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
+											<label :for="`user-${userId}`" class="flex justify-start items-center gap-2">
 												<Avatar
 													:src="group.users[userId].public?.photoUrl ?? null"
 													:name="group.users[userId].nickname"
@@ -446,7 +447,13 @@ const onSubmit = handleSubmit(async (values) => {
 													{{ group.users[userId].nickname }}
 												</span>
 											</label>
-											<div v-if="values.to?.type !== 'equal'" class="relative items-center">
+											<span
+												v-if="values.to?.type !== 'unequal'"
+												:class="`${values.to?.type === 'equal' ? 'col-start-4' : 'col-start-3'} text-right text-sm text-muted-foreground`"
+											>
+												{{ formatCurrency(toValue[userId] ?? 0, group.data.currency) }}
+											</span>
+											<div v-if="values.to?.type !== 'equal'" class="col-start-4 relative items-center">
 												<Input
 													type="number"
 													:class="values.to?.type !== 'ratio' && 'pl-6'"
@@ -467,9 +474,6 @@ const onSubmit = handleSubmit(async (values) => {
 													{{ CurrencySettings[group.data.currency].symbol }}
 												</span>
 											</div>
-											<span v-if="values.to?.type !== 'unequal'" class="text-sm text-muted-foreground">
-												{{ formatCurrency(toValue[userId] ?? 0, group.data.currency) }}
-											</span>
 										</div>
 									</div>
 
