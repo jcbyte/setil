@@ -10,7 +10,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
@@ -30,12 +29,12 @@ import { toDate } from "reka-ui/date";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { toast } from "vue-sonner";
 import * as z from "zod";
 
 const router = useRouter();
 const route = useRoute();
 const currentUser = useCurrentUser();
-const { toast } = useToast();
 
 const isTransactionUpdating = ref<boolean>(false);
 
@@ -216,7 +215,7 @@ const onSubmit = handleSubmit(async (values) => {
 	try {
 		if (newTransaction) {
 			await createTransaction(groupId, transaction, leftUsers);
-			toast({ title: "Expense Created", description: "It's on the group's tab.", duration: 5000 });
+			toast("Expense Created", { description: "It's on the group's tab." });
 			sendNotification(
 				groupId,
 				group.value!.data.name,
@@ -229,16 +228,14 @@ const onSubmit = handleSubmit(async (values) => {
 			);
 		} else {
 			await updateTransaction(groupId, transactionId, transaction, leftUsers);
-			toast({
-				title: "Expense Details Updated",
+			toast("Expense Details Updated", {
 				description: "Your expense got a makeover, and it's ready to slay.",
-				duration: 5000,
 			});
 		}
 
 		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
 	} catch (e) {
-		toast({ title: "Error Saving Expense Details", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Saving Expense Details", { description: String(e) });
 	}
 
 	isTransactionUpdating.value = false;

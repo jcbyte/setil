@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Tabs from "@/components/ui/tabs/Tabs.vue";
-import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { inviteUser, noGroup } from "@/util/app";
@@ -13,12 +12,12 @@ import { getRouteParam } from "@/util/util";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "@lucide/vue";
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { toast } from "vue-sonner";
 import GroupActivity from "./GroupActivity.vue";
 import GroupSummary from "./GroupSummary.vue";
 
 const route = useRoute();
 const router = useRouter();
-const { toast } = useToast();
 const groupId = getRouteParam(route.params.groupId);
 
 if (!groupId) {
@@ -51,7 +50,7 @@ async function addMember() {
 	try {
 		await inviteUser(groupId, group.value.data.name);
 	} catch (e) {
-		toast({ title: "Error Creating Invite Link", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Creating Invite Link", { description: String(e) });
 	}
 	isAddingMember.value = false;
 }

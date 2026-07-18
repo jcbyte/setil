@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import { useToast } from "@/components/ui/toast";
 import { joinGroup } from "@/firebase/firestore/group";
 import { sendNotification } from "@/firebase/messaging";
 import { getRouteParam } from "@/util/util";
 import { Loader } from "@lucide/vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { toast } from "vue-sonner";
 
 const route = useRoute();
 const router = useRouter();
-const { toast } = useToast();
 
 const routeGroupId = getRouteParam(route.params.groupId);
 const routeInviteCode = getRouteParam(route.params.inviteCode);
 
 onMounted(async () => {
 	if (!routeGroupId || !routeInviteCode) {
-		toast({
-			title: "Invalid Link",
+		toast.error("Invalid Link", {
 			description: "Ensure this is a valid link.",
-			variant: "destructive",
-			duration: 5000,
 		});
 		router.push(`/`);
 		return;
@@ -30,7 +26,7 @@ onMounted(async () => {
 		const { new: joined, user: userData, group: groupData } = await joinGroup(routeGroupId, routeInviteCode, true);
 
 		if (joined) {
-			toast({ title: "Joined Group", description: "Time to make cents of things.", duration: 5000 });
+			toast("Joined Group", { description: "Time to make cents of things." });
 			sendNotification(
 				routeGroupId,
 				groupData.name,
@@ -40,10 +36,8 @@ onMounted(async () => {
 		}
 		router.push(`/group/${routeGroupId}`);
 	} catch {
-		toast({
-			title: "Could Not Join Group",
+		toast.error("Could Not Join Group", {
 			description: "Ensure this link has not expired.",
-			variant: "destructive",
 			duration: 5000,
 		});
 		router.push(`/`);

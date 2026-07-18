@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { useToast } from "@/components/ui/toast";
 import { requestPushNotificationPermission } from "@/firebase/messaging";
 import { onMounted } from "vue";
-
-const { toast } = useToast();
+import { toast } from "vue-sonner";
 
 onMounted(async () => {
 	// If the user has previously denied notifications do not try and request them again
@@ -12,11 +10,8 @@ onMounted(async () => {
 	try {
 		await requestPushNotificationPermission();
 	} catch (error: any) {
-		toast({
-			title: "Notifications Not Enabled",
+		toast.error("Notifications Not Enabled", {
 			description: error.message,
-			variant: "destructive",
-			duration: 5000,
 		});
 	}
 });

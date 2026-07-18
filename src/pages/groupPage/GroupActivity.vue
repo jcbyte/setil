@@ -17,7 +17,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Separator from "@/components/ui/separator/Separator.vue";
-import { useToast } from "@/components/ui/toast";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import type { Group } from "@/composables/useLiveGroup";
 import { deleteTransaction } from "@/firebase/firestore/transaction";
@@ -28,6 +27,7 @@ import { getLeftUsersInTransaction, sumRecord } from "@/util/util";
 import { Calendar, EllipsisVertical, FilePen, Trash, UserRound } from "@lucide/vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { toast } from "vue-sonner";
 
 const props = defineProps<{
 	groupId: string;
@@ -35,7 +35,6 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const { toast } = useToast();
 
 const {
 	open: deleteConfirmDialogOpen,
@@ -63,9 +62,9 @@ async function handleDeleteTransaction() {
 	);
 	try {
 		await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
-		toast({ title: "Expense Deleted", description: "It's like it never happened.", duration: 5000 });
+		toast("Expense Deleted", { description: "It's like it never happened." });
 	} catch (e) {
-		toast({ title: "Error Deleting Expense", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Deleting Expense", { description: String(e) });
 	}
 
 	closeDeleteConfirmDialog();

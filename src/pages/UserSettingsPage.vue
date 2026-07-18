@@ -5,7 +5,6 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getPaymentDetails, setPaymentDetails } from "@/firebase/firestore/user";
 import { getUser } from "@/firebase/firestore/util";
@@ -15,10 +14,10 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { toast } from "vue-sonner";
 import * as z from "zod";
 
 const router = useRouter();
-const { toast } = useToast();
 
 const isDetailsUpdating = ref<boolean>(false);
 const isInitialLoading = ref<boolean>(true);
@@ -179,9 +178,9 @@ const onSubmit = handleSubmit(async (values) => {
 
 		await setPaymentDetails(paymentDetails);
 
-		toast({ title: "Details Updated", description: "The universe may now shower me with funds.", duration: 5000 });
+		toast("Details Updated", { description: "The universe may now shower me with funds." });
 	} catch (e) {
-		toast({ title: "Error Updating Details", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Updating Details", { description: String(e) });
 	}
 
 	isDetailsUpdating.value = false;
@@ -208,9 +207,9 @@ async function clearDetails() {
 
 	try {
 		await setPaymentDetails(null);
-		toast({ title: "Details Cleared", description: "Poof! My payment info has vanished.", duration: 5000 });
+		toast("Details Cleared", { description: "Poof! My payment info has vanished." });
 	} catch (e) {
-		toast({ title: "Error Clearing Details", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Clearing Details", { description: String(e) });
 	}
 
 	isDetailsUpdating.value = false;

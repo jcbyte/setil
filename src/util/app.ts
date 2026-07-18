@@ -1,13 +1,12 @@
-import { useToast } from "@/components/ui/toast";
 import { firebaseSignOut, signInWithGoogle } from "@/firebase/auth";
 import { cleanupInvites, invite } from "@/firebase/firestore/group";
 import { type Router } from "vue-router";
+import { toast } from "vue-sonner";
 
 export async function signIn() {
-	const { toast } = useToast();
+	// todo sort this
 
-	const persistentToast = toast({
-		title: "Signing In",
+	const persistentToast = toast.loading("Signing In", {
 		description: "Please continue in the popup window.",
 		duration: 0,
 	});
@@ -16,22 +15,20 @@ export async function signIn() {
 		const newUser = await signInWithGoogle();
 
 		persistentToast.dismiss();
-		toast({ title: "Signed In", description: newUser ? "Welcome to Setil!" : "Welcome back!", duration: 5000 });
+		toast("Signed In", { description: newUser ? "Welcome to Setil!" : "Welcome back!" });
 	} catch (error: any) {
 		persistentToast.dismiss();
-		toast({ title: "Error Signing In", description: error.code, variant: "destructive", duration: 5000 });
+		toast.error("Error Signing In", { description: error.code });
 	}
 }
 
 export function signOut() {
-	const { toast } = useToast();
-
 	firebaseSignOut()
 		.then(() => {
-			toast({ title: "Signed Out", description: "See you again soon!", duration: 5000 });
+			toast("Signed Out", { description: "See you again soon!" });
 		})
 		.catch((error) => {
-			toast({ title: "Error Signing Out", description: error.code, variant: "destructive", duration: 5000 });
+			toast.error("Error Signing Out", { description: error.code });
 		});
 }
 
@@ -52,27 +49,18 @@ export async function inviteUser(groupId: string, groupName: string) {
 	if (navigator.canShare(sharedData)) {
 		await navigator.share(sharedData);
 	} else {
-		const { toast } = useToast();
-
 		// Else copy to clipboard and display a confirmation
 		await navigator.clipboard.writeText(inviteLink).then(() => {
-			toast({
-				title: "Copied Link to Clipboard",
+			toast("Copied Link to Clipboard", {
 				description: "This link will be valid for 3 days.",
-				duration: 5000,
 			});
 		});
 	}
 }
 
 export function noGroup(router: Router) {
-	const { toast } = useToast();
-
-	toast({
-		title: "Group Not Found",
+	toast.error("Group Not Found", {
 		description: "Ensure you are a member of this group.",
-		variant: "destructive",
-		duration: 5000,
 	});
 
 	router.replace("/");

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useColorMode } from "@vueuse/core";
+import "vue-sonner/style.css";
 import App from "./App.vue";
 import MaintenancePage from "./pages/MaintenancePage.vue";
 

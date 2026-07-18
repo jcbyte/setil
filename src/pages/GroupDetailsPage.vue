@@ -23,7 +23,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
@@ -60,6 +59,7 @@ import { Timestamp } from "firebase/firestore";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { toast } from "vue-sonner";
 import * as z from "zod";
 
 const router = useRouter();
@@ -67,7 +67,6 @@ const route = useRoute();
 const groupId = getRouteParam(route.params.groupId);
 const newGroup = groupId === null;
 const currentUser = useCurrentUser();
-const { toast } = useToast();
 const group = useLiveGroupWithUserPublic(groupId, () => {
 	if (!groupId) return; // If this is not a group, then do not error
 	if (leaveDialogProcessing.value || deleteDialogProcessing.value) return; // If we are currently leaving/deleting, we may not have access to do not error
@@ -148,7 +147,7 @@ const onSubmit = handleSubmit(async (values) => {
 				lastUpdate: Timestamp.now(),
 			});
 
-			toast({ title: "Group Created", description: "A fellowship of finances has been forged.", duration: 5000 });
+			toast("Group Created", { description: "A fellowship of finances has been forged." });
 			router.push(`/group/${newGroupId}`);
 		} else {
 			await updateGroup(groupId, {
@@ -157,10 +156,10 @@ const onSubmit = handleSubmit(async (values) => {
 				currency: values.currency as Currency,
 			});
 
-			toast({ title: "Group Details Updated", description: "Like a fresh coat of paint.", duration: 5000 });
+			toast("Group Details Updated", { description: "Like a fresh coat of paint." });
 		}
 	} catch (e) {
-		toast({ title: "Error Saving Group", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Saving Group", { description: String(e) });
 	}
 
 	isGroupDetailsUpdating.value = false;
@@ -190,13 +189,11 @@ async function updateDisplayName() {
 	try {
 		await changeUserNickname(groupId, currentUser.value!.uid, parsedName.data);
 
-		toast({
-			title: "Name Updated",
+		toast("Name Updated", {
 			description: "And just like that... a new legend is born!",
-			duration: 5000,
 		});
 	} catch (e) {
-		toast({ title: "Error Updating Name", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Updating Name", { description: String(e) });
 	}
 
 	isMyDisplayNameUpdating.value = false;
@@ -236,17 +233,12 @@ async function acceptRename(userId: string) {
 
 	try {
 		await changeUserNickname(groupId, userId, parsedName.data);
-		toast({
-			title: `${group.value.users[userId].nickname}'s Name Updated`,
+		toast(`${group.value.users[userId].nickname}'s Name Updated`, {
 			description: "Identity crisis averted.",
-			duration: 5000,
 		});
 	} catch (e) {
-		toast({
-			title: `Error Updating ${group.value.users[userId].nickname}'s Name`,
+		toast.error(`Error Updating ${group.value.users[userId].nickname}'s Name`, {
 			description: String(e),
-			variant: "destructive",
-			duration: 5000,
 		});
 	}
 
@@ -262,17 +254,12 @@ async function promoteMember() {
 
 	try {
 		await promoteUser(groupId, promoteDialogData.value.userId);
-		toast({
-			title: `${group.value.users[promoteDialogData.value.userId].nickname} Promoted`,
+		toast(`${group.value.users[promoteDialogData.value.userId].nickname} Promoted`, {
 			description: "Long live the new king.",
-			duration: 5000,
 		});
 	} catch (e) {
-		toast({
-			title: `Error Promoting ${group.value.users[promoteDialogData.value.userId].nickname}`,
+		toast.error(`Error Promoting ${group.value.users[promoteDialogData.value.userId].nickname}`, {
 			description: String(e),
-			variant: "destructive",
-			duration: 5000,
 		});
 	}
 
@@ -287,18 +274,11 @@ async function removeMember(userId: string) {
 
 	try {
 		await removeUser(groupId, userId);
-		toast({
-			title: `Removed ${group.value.users[userId].nickname}`,
+		toast(`Removed ${group.value.users[userId].nickname}`, {
 			description: "They've been erased from existence... well, at least the group.",
-			duration: 5000,
 		});
 	} catch (e) {
-		toast({
-			title: `Error Removing ${group.value.users[userId].nickname}`,
-			description: String(e),
-			variant: "destructive",
-			duration: 5000,
-		});
+		toast.error(`Error Removing ${group.value.users[userId].nickname}`, { description: String(e) });
 	}
 
 	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
@@ -313,7 +293,7 @@ async function addMember() {
 	try {
 		await inviteUser(groupId, group.value.data.name);
 	} catch (e) {
-		toast({ title: "Error Creating Invite Link", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Creating Invite Link", { description: String(e) });
 	}
 
 	isAddingMember.value = false;
@@ -327,9 +307,9 @@ async function leaveGroup() {
 	try {
 		await firestoreLeaveGroup(groupId);
 		router.push("/");
-		toast({ title: "Group Left", description: "Your expenses here are now history.", duration: 5000 });
+		toast("Group Left", { description: "Your expenses here are now history." });
 	} catch (e) {
-		toast({ title: "Error Leaving Group", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Leaving Group", { description: String(e) });
 	}
 
 	closeLeaveDialog();
@@ -343,9 +323,9 @@ async function deleteGroup() {
 	try {
 		await firestoreDeleteGroup(groupId);
 		router.push("/");
-		toast({ title: "Group Deleted", description: "All data related to this group has been deleted.", duration: 5000 });
+		toast("Group Deleted", { description: "All data related to this group has been deleted." });
 	} catch (e) {
-		toast({ title: "Error Deleting Group", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Deleting Group", { description: String(e) });
 	}
 
 	closeDeleteDialog();

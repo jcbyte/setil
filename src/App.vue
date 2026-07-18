@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Toaster from "@/components/ui/toast/Toaster.vue";
+import { Toaster } from "@/components/ui/sonner";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { LoaderCircle } from "@lucide/vue";
 import { getAuth } from "firebase/auth";
@@ -43,7 +43,14 @@ auth.onAuthStateChanged(() => {
 		</div>
 	</Transition>
 
-	<Toaster />
+	<Toaster
+		theme="dark"
+		position="bottom-center"
+		rich-colors
+		close-button
+		close-button-position="top-right"
+		:duration="5000"
+	/>
 </template>
 
 <style scoped>

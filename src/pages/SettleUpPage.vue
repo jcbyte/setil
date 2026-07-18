@@ -5,19 +5,18 @@ import CopyButton from "@/components/CopyButton.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
@@ -29,11 +28,11 @@ import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/firebase/types";
 import { noGroup } from "@/util/app";
 import {
-	CurrencySettings,
-	formatCurrency,
-	fromFirestoreAmount,
-	getBalanceStr,
-	toFirestoreAmount,
+  CurrencySettings,
+  formatCurrency,
+  fromFirestoreAmount,
+  getBalanceStr,
+  toFirestoreAmount,
 } from "@/util/currency";
 import { type PaymentDetails } from "@/util/paymentDetails";
 import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
@@ -43,11 +42,11 @@ import { Timestamp } from "firebase/firestore";
 import { useForm } from "vee-validate";
 import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { toast } from "vue-sonner";
 import * as z from "zod";
 
 const router = useRouter();
 const route = useRoute();
-const { toast } = useToast();
 const currentUser = useCurrentUser();
 const { breakpointSplit } = useScreenSize();
 
@@ -207,7 +206,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 	try {
 		await createTransaction(groupId, transaction, leftUsers);
-		toast({ title: "Payment Recorded", description: "Someone's about to be rich!", duration: 5000 });
+		toast("Payment Recorded", { description: "Someone's about to be rich!" });
 		sendNotification(
 			groupId,
 			group.value.data.name,
@@ -220,7 +219,7 @@ const onSubmit = handleSubmit(async (values) => {
 		);
 		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
 	} catch (e) {
-		toast({ title: "Error Saving Payment", description: String(e), variant: "destructive", duration: 5000 });
+		toast.error("Error Saving Payment", { description: String(e) });
 	}
 
 	isMakingPayment.value = false;
