@@ -122,29 +122,24 @@ cd setil
 npm install
 ```
 
-### 2. Configure Frontend Firebase Access
+### 2. Set Environment Variables
 
-- Update the Firebase configuration for your project at [firebase.ts](src/firebase/firebase.ts)
+Setil uses environment variables for the Firebase Web SDK, Firebase Admin SDK, encryption keys, and maintenance mode; all documented in [`.env.example`](.env.example).
 
-### 3. Set Environment Variables
-
-Populate environment variables in Vercel:
-
-| Variable              | Description                                 | Format                                                |
-| --------------------- | ------------------------------------------- | ----------------------------------------------------- |
-| VITE_MAINTENANCE      | Toggles maintenance mode                    | `true` or `false`                                     |
-| ENCRYPTION_KEY        | AES-256-GCM Encryption Key for bank details | 32-byte (256-bit) key, encoded in Base64              |
-| FIREBASE_PROJECT_ID   | Your unique Firebase project ID             |                                                       |
-| FIREBASE_PRIVATE_KEY  | Your Firebase Service Account private key   | Newlines are written directly as `\n` within the text |
-| FIREBASE_CLIENT_EMAIL | Your Firebase Service Account email         |                                                       |
-
-#### To generate an `ENCRYPTION_KEY`, run:
+If using Vercel, link the repository and pull its Development variables:
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+npx vercel link
+npx vercel env pull .env.local --environment=development
 ```
 
-### 4 Start Local Server
+Otherwise, create and populate the local environment file from the template:
+
+```bash
+cp .env.example .env.local
+```
+
+### 3. Start Local Server
 
 ```bash
 npm run dev
