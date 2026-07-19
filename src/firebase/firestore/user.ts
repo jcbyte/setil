@@ -161,3 +161,14 @@ export async function setPaymentDetails(details: PaymentDetails | null): Promise
 
 	return res.success;
 }
+
+/**
+ * Set our own global name.
+ * @param name the name to set.
+ */
+export async function setName(name: string) {
+	const user = getUser();
+	const userPublicRef = doc(db, "users", user.uid, "public", "data");
+
+	updateDoc(userPublicRef, { name });
+}
