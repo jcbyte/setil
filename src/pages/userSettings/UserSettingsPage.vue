@@ -4,7 +4,7 @@ import LoaderIcon from "@/components/LoaderIcon.vue";
 import Button from "@/components/ui/button/Button.vue";
 import { Input } from "@/components/ui/input";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { ArrowLeft, Check, ChevronRight, UserRound } from "@lucide/vue";
+import { ArrowLeft, Camera, Check, ChevronRight, CircleX, UserRound } from "@lucide/vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import * as z from "zod";
@@ -74,14 +74,24 @@ const B64_EG =
 						<span v-if="displayNameErrors" class="text-[12.8px] text-destructive">{{ displayNameErrors }}</span>
 					</div>
 
-					<div class="flex flex-col gap-2">
-						<span :class="`text-sm font-[500] ${displayNameErrors && 'text-destructive'}`"
-							>Profile Photo (TODO UX)</span
-						>
-						<div>
-							<Avatar :src="B64_EG" name="Eg" class="size-14" />
-							<Button>Update?</Button>
+					<div class="flex justify-between items-center gap-3">
+						<div class="flex flex-col gap-2">
+							<div class="flex flex-col">
+								<span class="text-sm font-[500]">Profile Photo</span>
+								<span class="text-[12.8px] text-muted-foreground">Select an image under 1 MB </span>
+							</div>
+							<div class="flex gap-2">
+								<Button type="button">
+									<Camera />
+									<span>Upload</span>
+								</Button>
+								<Button type="button" variant="outline">
+									<CircleX />
+									<span>Remove</span>
+								</Button>
+							</div>
 						</div>
+						<Avatar :src="B64_EG" name="Eg" class="size-20 border-2 border-background ring-1 ring-border" />
 					</div>
 				</div>
 			</div>
