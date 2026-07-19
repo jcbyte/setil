@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from "vue-router";
 import GroupDetailsPage from "./pages/GroupDetailsPage.vue";
-import GroupListPage from "./pages/groupListPage/GroupListPage.vue";
+import GroupListPage from "./pages/groupList/GroupListPage.vue";
 import GroupPage from "./pages/groupPage/GroupPage.vue";
 import InvitePage from "./pages/InvitePage.vue";
 import NotFoundPage from "./pages/NotFoundPage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
 import TransactionPage from "./pages/TransactionPage.vue";
-import UserSettingsPage from "./pages/UserSettingsPage.vue";
+import UserSettingsPage from "./pages/userSettings/UserSettingsPage.vue";
 
 const routes = [
 	{
