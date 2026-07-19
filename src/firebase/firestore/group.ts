@@ -20,7 +20,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import type { GroupData, GroupUserData, Invite } from "../types";
-import { getLeftUserStatus } from "./user";
+import { getLeftUserStatus, removeGroupFromUser } from "./user";
 import { getUser } from "./util";
 
 const templateNewUser = (user: User): GroupUserData => ({
@@ -218,6 +218,7 @@ export async function removeUser(groupId: string, userId: string) {
 	const status = await getLeftUserStatus(groupUserRef, true);
 
 	// If the status needs to be changed then do this
+	// The group will be removed from the other user when they call `getUserGroups`
 	if (status) await updateDoc(groupUserRef, { status: status });
 }
 
@@ -280,4 +281,8 @@ export async function leaveGroup(groupId: string) {
 	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
 	const newStatus = await getLeftUserStatus(groupUserRef, true);
 	if (newStatus) await updateDoc(groupUserRef, { status: newStatus });
+
+	// Remove the group from the user's list
+	// The group will be removed from ourselves when we call `getUserGroups` again, but but saves the bandwidth/error handling.
+	await removeGroupFromUser(groupId);
 }
