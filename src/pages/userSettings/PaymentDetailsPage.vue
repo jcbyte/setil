@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
-import Button from "@/components/ui/button/Button.vue";
+import { Button } from "@/components/ui/button";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { ArrowLeft, Check, ChevronRight, UserRound } from "@lucide/vue";
-import { ref } from "vue";
+import { getPaymentDetails, setPaymentDetails } from "@/firebase/firestore/user";
+import { getUser } from "@/firebase/firestore/util";
+import { BankingSystemSettings, type PaymentDetails } from "@/util/paymentDetails";
+import { ArrowLeft, CircleX, Save } from "@lucide/vue";
+import { toTypedSchema } from "@vee-validate/zod";
+import { useForm } from "vee-validate";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { toast } from "vue-sonner";
 import * as z from "zod";
 
 const router = useRouter();
@@ -216,7 +224,7 @@ async function clearDetails() {
 					<Button variant="ghost" class="size-9" @click="router.back()">
 						<ArrowLeft class="!size-6" />
 					</Button>
-					<span class="text-lg font-semibold">User Settings</span>
+					<span class="text-lg font-semibold">Payment Details</span>
 				</div>
 				<YourAccountSettings />
 			</div>
@@ -224,7 +232,7 @@ async function clearDetails() {
 			<div class="w-full max-w-[32rem] flex flex-col gap-4">
 				<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 					<div class="flex flex-col">
-						<span class="text-lg font-semibold">Payment Details</span>
+						<span class="text-lg font-semibold">Bank Details</span>
 						<span class="text-sm text-muted-foreground">How you want people to pay you</span>
 					</div>
 
@@ -480,14 +488,6 @@ async function clearDetails() {
 							</Button>
 						</div>
 					</form>
-
-			<div class="w-full max-w-[32rem] flex flex-col gap-4" @click="router.push('/settings/payment')">
-				<div class="border border-border rounded-lg flex justify-between items-center p-4">
-					<div class="flex flex-col">
-						<span class="text-lg font-semibold">Payment Details</span>
-						<span class="text-sm text-muted-foreground">Set or change your specified payment details</span>
-					</div>
-					<ChevronRight />
 				</div>
 			</div>
 		</div>
