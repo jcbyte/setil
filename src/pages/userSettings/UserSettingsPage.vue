@@ -60,8 +60,12 @@ async function handleAvatarFileChange(event: Event) {
 	const file = (event.target as HTMLInputElement).files?.[0];
 	if (!file) return;
 
-	// todo file size validation:
-	// if (file.size)
+	// CHeck file size
+	if (file.size > 1024 * 1024 * 1) {
+		avatarErrors.value = "The selected file exceeds 1 MB";
+		return;
+	}
+	avatarErrors.value = undefined;
 
 	isAvatarUpdating.value = true;
 
@@ -141,46 +145,49 @@ async function handleClearAvatar() {
 						<span v-if="displayNameErrors" class="text-[12.8px] text-destructive">{{ displayNameErrors }}</span>
 					</div>
 
-					<div class="flex justify-between items-center gap-3">
-						<div class="flex flex-col gap-2">
-							<div class="flex flex-col">
-								<span class="text-sm font-[500]">Profile Picture</span>
-								<span class="text-[12.8px] text-muted-foreground">Select an image under 1 MB </span>
+					<div class="" flex flex-col gap-2>
+						<div class="flex justify-between items-center gap-3">
+							<div class="flex flex-col gap-2">
+								<div class="flex flex-col">
+									<span class="text-sm font-[500]">Profile Picture</span>
+									<span class="text-[12.8px] text-muted-foreground">Select an image under 1 MB </span>
+								</div>
+								<div class="flex gap-2">
+									<Button
+										type="button"
+										:disabled="isAvatarUpdating || isAvatarClearing"
+										@click="() => avatarFileInput?.click()"
+									>
+										<LoaderIcon :icon="Camera" :loading="isAvatarUpdating" />
+										<span>Upload</span>
+									</Button>
+									<!-- Hidden file input for avatar upload -->
+									<input
+										type="file"
+										ref="avatarFileInput"
+										accept="image/*"
+										style="display: none"
+										@change="handleAvatarFileChange"
+									/>
+									<Button
+										v-if="avatarSrc"
+										type="button"
+										variant="outline"
+										:disabled="isAvatarUpdating || isAvatarClearing"
+										@click="handleClearAvatar"
+									>
+										<LoaderIcon :icon="CircleX" :loading="isAvatarClearing" />
+										<span>Remove</span>
+									</Button>
+								</div>
 							</div>
-							<div class="flex gap-2">
-								<Button
-									type="button"
-									:disabled="isAvatarUpdating || isAvatarClearing"
-									@click="() => avatarFileInput?.click()"
-								>
-									<LoaderIcon :icon="Camera" :loading="isAvatarUpdating" />
-									<span>Upload</span>
-								</Button>
-								<!-- Hidden file input for avatar upload -->
-								<input
-									type="file"
-									ref="avatarFileInput"
-									accept="image/*"
-									style="display: none"
-									@change="handleAvatarFileChange"
-								/>
-								<Button
-									v-if="avatarSrc"
-									type="button"
-									variant="outline"
-									:disabled="isAvatarUpdating || isAvatarClearing"
-									@click="handleClearAvatar"
-								>
-									<LoaderIcon :icon="CircleX" :loading="isAvatarClearing" />
-									<span>Remove</span>
-								</Button>
-							</div>
+							<Avatar
+								:src="avatarSrc ?? null"
+								name="Example Name"
+								class="size-20 border-2 border-background ring-1 ring-border"
+							/>
 						</div>
-						<Avatar
-							:src="avatarSrc ?? null"
-							name="Example Name"
-							class="size-20 border-2 border-background ring-1 ring-border"
-						/>
+						<span v-if="avatarErrors" class="text-[12.8px] text-destructive">{{ avatarErrors }}</span>
 					</div>
 				</div>
 			</div>
