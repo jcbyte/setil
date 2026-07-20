@@ -1,7 +1,7 @@
-import admin from "firebase-admin";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
 
-admin.initializeApp({
-	credential: admin.credential.cert({
+initializeApp({
+	credential: cert({
 		// type: process.env.FIREBASE_TYPE,
 		projectId: process.env.FIREBASE_PROJECT_ID,
 		// private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
@@ -15,5 +15,3 @@ admin.initializeApp({
 		// universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
 	}),
 });
-
-export default admin;

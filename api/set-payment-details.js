@@ -1,8 +1,10 @@
-import admin from "./firebaseAdmin.js";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
+import "./firebaseAdmin.js";
 import { encrypt } from "./_utils/crypt.js";
 
-const db = admin.firestore();
-const auth = admin.auth();
+const db = getFirestore();
+const auth = getAuth();
 
 export default async function (req, res) {
 	if (req.method !== "POST") {
