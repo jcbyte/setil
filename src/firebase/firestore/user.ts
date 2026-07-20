@@ -171,4 +171,21 @@ export async function setName(name: string) {
 	const userPublicRef = doc(db, "users", user.uid, "public", "data");
 
 	updateDoc(userPublicRef, { name });
+
+	// todo update nicknames that were previously old name
+}
+
+/**
+ * Retrieve our saved user data from the database.
+ * @returns the users public data.
+ */
+export async function getUserData(): Promise<{ public: PublicUserData }> {
+	const user = getUser();
+	const userPublicRef = doc(db, "users", user.uid, "public", "data");
+
+	const userPublicSnap = await getDoc(userPublicRef);
+	const userPublic = userPublicSnap.data() as PublicUserData;
+
+	// ? When we have private data this can also be returned
+	return { public: userPublic };
 }
