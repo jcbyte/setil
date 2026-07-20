@@ -1,8 +1,10 @@
 import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 import "./firebaseAdmin.js";
 import { v2 as cloudinary } from "cloudinary";
 import "./cloudinary.js";
 
+const db = getFirestore();
 const auth = getAuth();
 
 export default async function (req, res) {
@@ -36,6 +38,11 @@ export default async function (req, res) {
 		// todo which of these transformations are needed?
 		transformation: [{ width: 150, height: 150, crop: "crop" }, { radius: "max" }],
 	});
+	const url = cldRes.secure_url;
 
-	return res.status(200).json({ success: true, url: cldRes.secure_url });
+	// Update our public photoUrl here
+	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`);
+	await userPublicDataRef.update({ photoUrl: url });
+
+	return res.status(200).json({ success: true, url });
 }
