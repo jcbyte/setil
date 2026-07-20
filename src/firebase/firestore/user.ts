@@ -35,7 +35,7 @@ export async function initialiseUserData(): Promise<boolean> {
 	const userPublicRef = doc(userRef, "public", "data");
 	const publicUserData: PublicUserData = {
 		name: user.displayName ?? "Unknown User",
-		photoUrl: user.photoURL,
+		photoUrl: user.photoURL ?? undefined,
 		hasBankDetails: false,
 	};
 	await setDoc(userPublicRef, publicUserData);
