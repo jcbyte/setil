@@ -1,7 +1,7 @@
 import { getUser } from "@/firebase/firestore/util";
 import type { AvatarUrl } from "./types";
 
-export async function uploadAvatar(file: File): Promise<AvatarUrl | null> {
+export async function uploadAvatar(file: File): Promise<AvatarUrl> {
 	const user = getUser();
 
 	const b64Image = await new Promise<string>((r, rj) => {
@@ -22,11 +22,6 @@ export async function uploadAvatar(file: File): Promise<AvatarUrl | null> {
 		body: JSON.stringify({ avatar: b64Image }),
 	}).then((res) => res.json());
 
-	try {
-		const url = res.url as AvatarUrl;
-		console.log(url);
-		return url;
-	} catch {
-		return null;
-	}
+	const url = res.url as AvatarUrl;
+	return url;
 }

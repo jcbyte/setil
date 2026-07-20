@@ -33,7 +33,7 @@ export default async function (req, res) {
 
 	// Upload avatar to cloudinary
 	const cldRes = await cloudinary.uploader.upload(avatar, {
-		public_id: `avatars/${user.uid}/profile.jpg`,
+		public_id: `avatars/${user.uid}/avatar.jpg`,
 		overwrite: true,
 		// todo which of these transformations are needed?
 		transformation: [{ width: 150, height: 150, crop: "crop" }, { radius: "max" }],

@@ -3,6 +3,7 @@ import {
 	arrayRemove,
 	arrayUnion,
 	CollectionReference,
+	deleteField,
 	doc,
 	DocumentReference,
 	getDoc,
@@ -209,4 +210,14 @@ export async function getUserData(): Promise<{ public: PublicUserData }> {
 
 	// ? When we have private data this can also be returned
 	return { public: userPublic };
+}
+
+/**
+ * Remove the Avatar for the current user.
+ */
+export async function removeAvatar() {
+	const user = getUser();
+	const userPublicRef = doc(db, "users", user.uid, "public", "data");
+
+	await updateDoc(userPublicRef, { photoUrl: deleteField() });
 }
