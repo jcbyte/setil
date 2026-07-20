@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { uploadAvatar } from "@/cloudinary/avatar";
+import { removeAvatar, uploadAvatar } from "@/cloudinary/avatar";
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import Button from "@/components/ui/button/Button.vue";
 import { Input } from "@/components/ui/input";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { getUserData, removeAvatar, setName } from "@/firebase/firestore/user";
+import { getUserData, setName } from "@/firebase/firestore/user";
 import { ArrowLeft, Camera, Check, ChevronRight, CircleX, UserRound } from "@lucide/vue";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";

@@ -4,6 +4,7 @@ import type { AvatarUrl } from "./types";
 export async function uploadAvatar(file: File): Promise<AvatarUrl> {
 	const user = getUser();
 
+	// Send image as a Base64 value
 	const b64Image = await new Promise<string>((r, rj) => {
 		const reader = new FileReader();
 		reader.readAsDataURL(file);
@@ -13,7 +14,7 @@ export async function uploadAvatar(file: File): Promise<AvatarUrl> {
 		};
 	});
 
-	const res = await fetch("/api/upload-avatar", {
+	const res = await fetch("/api/avatar", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -24,4 +25,16 @@ export async function uploadAvatar(file: File): Promise<AvatarUrl> {
 
 	const url = res.url as AvatarUrl;
 	return url;
+}
+
+export async function removeAvatar() {
+	const user = getUser();
+
+	await fetch("/api/avatar", {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${await user.getIdToken()}`,
+		},
+	});
 }

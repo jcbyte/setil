@@ -1,0 +1,65 @@
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import "./firebaseAdmin.js";
+import { v2 as cloudinary } from "cloudinary";
+import "./cloudinary.js";
+
+const db = getFirestore();
+const auth = getAuth();
+
+export default async function (req, res) {
+	if (req.method !== "POST" && req.method !== "DELETE") {
+		return res.status(405).json({ success: false, error: "Method Not Allowed" });
+	}
+
+	// Extract parameters
+	const authHeader = req.headers.authorization;
+	let jwt;
+	if (authHeader && authHeader.startsWith("Bearer ")) {
+		jwt = authHeader.split(" ")[1];
+	}
+	if (!jwt) {
+		return res.status(401).json({ success: false, error: "Missing authorisation token" });
+	}
+
+	// Get user who performed the request
+	let user;
+	try {
+		user = await auth.verifyIdToken(jwt);
+	} catch (e) {
+		return res.status(401).json({ success: false, error: "Unauthorized" });
+	}
+
+	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`);
+	const avatarPublicId = `users/${user.uid}/avatar`;
+
+	if (req.method === "POST") {
+		const { avatar } = req.body;
+		if (!avatar) {
+			return res.status(400).json({ success: false, error: "Missing parameters" });
+		}
+
+		// Upload avatar to cloudinary
+		const cldRes = await cloudinary.uploader.upload(avatar, {
+			public_id: avatarPublicId,
+			overwrite: true,
+			transformation: [{ width: 150, height: 150, crop: "fill" }, { radius: "max" }],
+		});
+		const url = cldRes.secure_url;
+
+		// Update our public photoUrl here
+		await userPublicDataRef.update({ photoUrl: url });
+
+		return res.status(200).json({ success: true, url });
+	}
+
+	if (req.method === "DELETE") {
+		// Remove the avatar from cloudinary
+		await cloudinary.uploader.destroy(avatarPublicId);
+
+		// Remove photoUrl field
+		await userPublicDataRef.update({ photoUrl: FieldValue.delete() });
+
+		return res.status(200).json({ success: true });
+	}
+}
