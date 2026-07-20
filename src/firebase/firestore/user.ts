@@ -8,6 +8,7 @@ import {
 	getDoc,
 	setDoc,
 	updateDoc,
+	writeBatch,
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
@@ -163,16 +164,36 @@ export async function setPaymentDetails(details: PaymentDetails | null): Promise
 }
 
 /**
- * Set our own global name.
+ * Set our own global name, and update any non-changed nicknames.
  * @param name the name to set.
  */
 export async function setName(name: string) {
 	const user = getUser();
-	const userPublicRef = doc(db, "users", user.uid, "public", "data");
+	const userRef = doc(db, "users", user.uid);
+	const userPublicRef = doc(userRef, "public", "data");
 
-	updateDoc(userPublicRef, { name });
+	const userPublicSnap = await getDoc(userPublicRef);
+	const oldName = (userPublicSnap.data() as PublicUserData).name;
+	if (name === oldName) return;
 
-	// todo update nicknames that were previously old name
+	const userSnap = await getDoc(userRef);
+	const userGroups = (userSnap.data() as UserData).groups;
+
+	const batch = writeBatch(db);
+	batch.update(userPublicRef, { name });
+
+	// Update all nicknames in groups where it has been unchanged
+	const userGroupsSnaps = await Promise.all(
+		userGroups.map((groupId) => getDoc(doc(db, "groups", groupId, "users", user.uid))),
+	);
+	userGroupsSnaps.forEach((groupUserSnap) => {
+		const currentNickname = (groupUserSnap.data() as GroupUserData).nickname;
+		if (currentNickname === oldName) batch.update(groupUserSnap.ref, { nickname: name });
+	});
+
+	await batch.commit();
+
+	// todo Would having nicknames optional be a better strategy, and fallback to public name
 }
 
 /**
