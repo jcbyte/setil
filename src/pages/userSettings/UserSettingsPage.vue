@@ -3,11 +3,20 @@ import { removeAvatar, uploadAvatar } from "@/cloudinary/avatar";
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import Button from "@/components/ui/button/Button.vue";
+import { Dialog } from "@/components/ui/dialog";
+import DialogClose from "@/components/ui/dialog/DialogClose.vue";
+import DialogContent from "@/components/ui/dialog/DialogContent.vue";
+import DialogDescription from "@/components/ui/dialog/DialogDescription.vue";
+import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
+import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
+import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
 import { Input } from "@/components/ui/input";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserData, setName } from "@/firebase/firestore/user";
-import { ArrowLeft, Camera, Check, ChevronRight, CircleX, UserRound } from "@lucide/vue";
+import { ArrowLeft, Camera, Check, ChevronRight, CircleX, Crop, UserRound } from "@lucide/vue";
 import { onMounted, ref } from "vue";
+import { CircleStencil, Cropper } from "vue-advanced-cropper";
+import "vue-advanced-cropper/dist/style.css";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
@@ -25,6 +34,10 @@ function validateDisplayName() {
 
 const avatarSrc = ref<string | undefined>();
 const avatarErrors = ref<string | undefined>();
+
+const isCropperOpen = ref(false);
+const newAvatarSrc = ref<string | undefined>();
+const avatarCropper = ref<InstanceType<typeof Cropper> | undefined>();
 
 onMounted(async () => {
 	const userData = await getUserData();
@@ -60,17 +73,40 @@ async function handleAvatarFileChange(event: Event) {
 	const file = (event.target as HTMLInputElement).files?.[0];
 	if (!file) return;
 
-	// CHeck file size
-	if (file.size > 1024 * 1024 * 1) {
-		avatarErrors.value = "The selected file exceeds 1 MB";
+	// Check file size
+	if (file.size > 1024 * 1024 * 4) {
+		avatarErrors.value = "The selected file exceeds 4 MB";
 		return;
 	}
 	avatarErrors.value = undefined;
 
+	newAvatarSrc.value = URL.createObjectURL(file);
+	if (avatarFileInput.value) avatarFileInput.value.value = "";
+
+	isCropperOpen.value = true;
+}
+
+function cleanupCloseCropper() {
+	if (newAvatarSrc.value) {
+		URL.revokeObjectURL(newAvatarSrc.value);
+		newAvatarSrc.value = undefined;
+	}
+
+	isCropperOpen.value = false;
+}
+
+async function handleAvatarSave() {
+	if (!avatarCropper.value) return;
+
+	const { canvas } = avatarCropper.value.getResult();
+	const croppedAvatarB64 = canvas?.toDataURL();
+	if (!croppedAvatarB64) return;
+
 	isAvatarUpdating.value = true;
+	cleanupCloseCropper();
 
 	try {
-		const savedPhotoUrl = await uploadAvatar(file);
+		const savedPhotoUrl = await uploadAvatar(croppedAvatarB64);
 		avatarSrc.value = savedPhotoUrl;
 
 		toast("Profile Picture Updated", { description: "Glow-up complete" });
@@ -145,12 +181,12 @@ async function handleClearAvatar() {
 						<span v-if="displayNameErrors" class="text-[12.8px] text-destructive">{{ displayNameErrors }}</span>
 					</div>
 
-					<div class="" flex flex-col gap-2>
+					<div class="flex flex-col gap-2">
 						<div class="flex justify-between items-center gap-3">
 							<div class="flex flex-col gap-2">
 								<div class="flex flex-col">
 									<span class="text-sm font-[500]">Profile Picture</span>
-									<span class="text-[12.8px] text-muted-foreground">Select an image under 1 MB </span>
+									<span class="text-[12.8px] text-muted-foreground">Select an image under 4 MB </span>
 								</div>
 								<div class="flex gap-2">
 									<Button
@@ -183,7 +219,7 @@ async function handleClearAvatar() {
 							</div>
 							<Avatar
 								:src="avatarSrc ?? null"
-								name="Example Name"
+								:name="displayName ?? ''"
 								class="size-20 border-2 border-background ring-1 ring-border"
 							/>
 						</div>
@@ -202,5 +238,33 @@ async function handleClearAvatar() {
 				</div>
 			</div>
 		</div>
+
+		<Dialog :open="isCropperOpen" @update:open="(opened) => !opened && cleanupCloseCropper()">
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Crop Profile Picture</DialogTitle>
+					<DialogDescription>Adjust to frame your profile picture</DialogDescription>
+				</DialogHeader>
+
+				<div class="flex items-center justify-center w-full max-h-[60vh] overflow-hidden rounded-md">
+					<Cropper
+						ref="avatarCropper"
+						:src="newAvatarSrc"
+						:stencil-component="CircleStencil"
+						:stencil-props="{ aspectRatio: 1 }"
+					/>
+				</div>
+
+				<DialogFooter>
+					<DialogClose as-child>
+						<Button variant="outline" type="button" :disabled="isAvatarUpdating">Cancel</Button>
+					</DialogClose>
+					<Button type="button" :disabled="isAvatarUpdating" @click="handleAvatarSave">
+						<LoaderIcon :icon="Crop" :loading="isAvatarUpdating" />
+						<span>Done</span>
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	</div>
 </template>

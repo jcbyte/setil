@@ -1,18 +1,8 @@
 import { getUser } from "@/firebase/firestore/util";
 import type { AvatarUrl } from "./types";
 
-export async function uploadAvatar(file: File): Promise<AvatarUrl> {
+export async function uploadAvatar(b64Img: string): Promise<AvatarUrl> {
 	const user = getUser();
-
-	// Send image as a Base64 value
-	const b64Image = await new Promise<string>((r, rj) => {
-		const reader = new FileReader();
-		reader.readAsDataURL(file);
-		reader.onload = () => {
-			const res = reader.result;
-			typeof res === "string" ? r(res) : rj(new Error("Failed to read file as Base64"));
-		};
-	});
 
 	const res = await fetch("/api/avatar", {
 		method: "POST",
@@ -20,7 +10,7 @@ export async function uploadAvatar(file: File): Promise<AvatarUrl> {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-		body: JSON.stringify({ avatar: b64Image }),
+		body: JSON.stringify({ avatar: b64Img }),
 	}).then((res) => res.json());
 
 	const url = res.url as AvatarUrl;
