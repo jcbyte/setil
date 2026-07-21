@@ -1,7 +1,7 @@
 {
 	"name": "setil",
 	"private": true,
-	"version": "1.2.2",
+	"version": "1.3.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -11,10 +11,10 @@
 	"dependencies": {
 		"@internationalized/date": "^3.12.2",
 		"@lucide/vue": "^1.25.0",
-		"@tanstack/vue-table": "^8.21.3",
 		"@vee-validate/zod": "^4.15.1",
 		"@vueuse/core": "^14.3.0",
 		"class-variance-authority": "^0.7.1",
+		"cloudinary": "^2.10.0",
 		"clsx": "^2.1.1",
 		"firebase": "^12.16.0",
 		"firebase-admin": "^14.1.0",
@@ -22,6 +22,7 @@
 		"tailwind-merge": "^3.6.0",
 		"vee-validate": "^4.15.1",
 		"vue": "^3.5.40",
+		"vue-advanced-cropper": "^2.8.9",
 		"vue-router": "^5.2.0",
 		"vue-sonner": "^2.0.9",
 		"zod": "^3.25.76"

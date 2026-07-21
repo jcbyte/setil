@@ -1,8 +1,11 @@
-import admin from "./firebaseAdmin.js";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
+import { getMessaging } from "firebase-admin/messaging";
+import "./firebaseAdmin.js";
 
-const db = admin.firestore();
-const auth = admin.auth();
-const messaging = admin.messaging();
+const db = getFirestore();
+const auth = getAuth();
+const messaging = getMessaging();
 
 export default async function (req, res) {
 	if (req.method !== "POST") {

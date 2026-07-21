@@ -224,7 +224,7 @@ async function clearDetails() {
 					<Button variant="ghost" class="size-9" @click="router.back()">
 						<ArrowLeft class="!size-6" />
 					</Button>
-					<span class="text-lg font-semibold">User Settings</span>
+					<span class="text-lg font-semibold">Payment Details</span>
 				</div>
 				<YourAccountSettings />
 			</div>
@@ -232,7 +232,7 @@ async function clearDetails() {
 			<div class="w-full max-w-[32rem] flex flex-col gap-4">
 				<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 					<div class="flex flex-col">
-						<span class="text-lg font-semibold">Payment Details</span>
+						<span class="text-lg font-semibold">Bank Details</span>
 						<span class="text-sm text-muted-foreground">How you want people to pay you</span>
 					</div>
 

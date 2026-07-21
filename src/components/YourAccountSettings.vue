@@ -7,12 +7,15 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
+import { useLiveCurrentUserData } from "@/composables/useLiveCurrentUserData";
 import { signOut } from "@/util/app";
 import { LogOut, Settings } from "@lucide/vue";
 import { useRouter } from "vue-router";
 
-const currentUser = useCurrentUser();
 const router = useRouter();
+
+const currentUser = useCurrentUser();
+const currentUserData = useLiveCurrentUserData();
 </script>
 
 <template>
@@ -21,8 +24,8 @@ const router = useRouter();
 			<Avatar
 				v-bind="$attrs"
 				class="size-9"
-				:src="currentUser?.photoURL ?? ''"
-				:name="currentUser?.displayName ?? 'Me'"
+				:src="currentUserData?.public.photoUrl ?? null"
+				:name="currentUserData?.public.name ?? currentUser!.displayName ?? 'Me'"
 			/>
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
