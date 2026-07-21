@@ -55,7 +55,10 @@ export default async function (req, res) {
 
 	if (req.method === "DELETE") {
 		// Remove the avatar from cloudinary
-		await cloudinary.uploader.destroy(avatarPublicId);
+		try {
+			await cloudinary.uploader.destroy(avatarPublicId);
+			// If this fails it should be okay, as we may not have previously uploaded an avatar i.e. still using Initial Google avatar
+		} catch {}
 
 		// Remove photoUrl field
 		await userPublicDataRef.update({ photoUrl: FieldValue.delete() });
