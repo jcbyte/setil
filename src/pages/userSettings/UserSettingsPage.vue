@@ -11,10 +11,24 @@ import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
 import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
 import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserData, setName } from "@/firebase/firestore/user";
-import { ArrowLeft, Camera, Check, ChevronRight, CircleX, Crop, UserRound } from "@lucide/vue";
-import { onMounted, ref } from "vue";
+import type { Theme } from "@/util/theme";
+import {
+	ArrowLeft,
+	Camera,
+	Check,
+	ChevronRight,
+	CircleX,
+	Crop,
+	Monitor,
+	Moon,
+	SunMedium,
+	UserRound,
+	type LucideProps,
+} from "@lucide/vue";
+import { onMounted, ref, type FunctionalComponent } from "vue";
 import { CircleStencil, Cropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 import { useRouter } from "vue-router";
@@ -132,7 +146,13 @@ async function handleClearAvatar() {
 	isAvatarClearing.value = false;
 }
 
-// todo crop photo to circle selection ??
+const selectedTheme = ref("system");
+
+const themeDetail: Record<Theme, { name: string; icon: FunctionalComponent<LucideProps, {}, any, {}> }> = {
+	light: { name: "Light", icon: SunMedium },
+	dark: { name: "Dark", icon: Moon },
+	system: { name: "System", icon: Monitor },
+};
 </script>
 
 <template>
@@ -224,6 +244,38 @@ async function handleClearAvatar() {
 							/>
 						</div>
 						<span v-if="avatarErrors" class="text-[12.8px] text-destructive">{{ avatarErrors }}</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="w-full max-w-[32rem] flex flex-col gap-4">
+				<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
+					<div class="flex flex-col">
+						<span class="text-lg font-semibold">Appearance</span>
+						<span class="text-sm text-muted-foreground">Personalise how Setil looks</span>
+					</div>
+
+					<div class="flex justify-between items-center gap-2">
+						<div class="flex flex-col">
+							<span class="text-sm font-[500]">Theme</span>
+							<span class="text-[12.8px] text-muted-foreground text-nowrap">Choose your colour scheme</span>
+						</div>
+						<Select v-model="selectedTheme">
+							<SelectTrigger class="w-full max-w-38">
+								<div v-if="selectedTheme" class="flex items-center gap-2">
+									<component :is="themeDetail[selectedTheme as Theme].icon" class="size-4" />
+									<span>{{ themeDetail[selectedTheme as Theme].name }}</span>
+								</div>
+							</SelectTrigger>
+							<SelectContent align="center">
+								<SelectItem v-for="(detail, theme) in themeDetail" :value="theme">
+									<div class="flex items-center gap-2">
+										<component :is="detail.icon" class="size-4" />
+										<span>{{ detail.name }}</span>
+									</div>
+								</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 				</div>
 			</div>
