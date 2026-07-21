@@ -2,6 +2,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { LoaderCircle } from "@lucide/vue";
+import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { ref } from "vue";
 import NotificationRequester from "./components/NotificationRequester.vue";
@@ -15,6 +16,8 @@ const auth = getAuth(app);
 auth.onAuthStateChanged(() => {
 	firebaseLoaded.value = true;
 });
+
+const resolvedTheme = useColorMode().state;
 </script>
 
 <template>
@@ -44,7 +47,7 @@ auth.onAuthStateChanged(() => {
 	</Transition>
 
 	<Toaster
-		theme="dark"
+		:theme="resolvedTheme"
 		position="bottom-center"
 		rich-colors
 		close-button
