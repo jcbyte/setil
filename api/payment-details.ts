@@ -2,11 +2,12 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import "./_init/firebaseAdmin.js";
 import { decrypt, encrypt } from "./_utils/crypt.js";
+import { VercelRequest, VercelResponse } from "@vercel/node";
 
 const db = getFirestore();
 const auth = getAuth();
 
-export default async function (req, res) {
+export default async function (req: VercelRequest, res: VercelResponse) {
 	if (req.method !== "GET" && req.method !== "POST" && req.method !== "DELETE") {
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
