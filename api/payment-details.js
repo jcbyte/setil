@@ -1,7 +1,7 @@
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import "./_init/firebaseAdmin.js";
-import { decrypt } from "./_utils/crypt.js";
+import { decrypt, encrypt } from "./_utils/crypt.js";
 
 const db = getFirestore();
 const auth = getAuth();
