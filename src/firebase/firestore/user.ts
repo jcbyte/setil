@@ -225,6 +225,6 @@ export async function getUserData(): Promise<{ public: PublicUserData }> {
 	const userPublicSnap = await getDoc(userPublicRef);
 	const userPublic = userPublicSnap.data() as PublicUserData;
 
-	// ? When we have private data this can also be returned
+	// ? If we have private data, this can also be returned here
 	return { public: userPublic };
 }
