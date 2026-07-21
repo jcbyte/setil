@@ -126,7 +126,7 @@ export async function getPaymentDetails(userId?: string, groupId?: string): Prom
 		...(groupId ? { groupId } : {}),
 	});
 
-	const res = await fetch(`/api/get-payment-details?${queryParams.toString()}`, {
+	const res = await fetch(`/api/payment-details?${queryParams.toString()}`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json",
@@ -144,20 +144,38 @@ export async function getPaymentDetails(userId?: string, groupId?: string): Prom
 }
 
 /**
- * Set our own payment details (or clear them).
+ * Set our own payment details.
  * @param details the payment details to set.
  * @returns true if it was successful.
  */
 export async function setPaymentDetails(details: PaymentDetails | null): Promise<boolean> {
 	const user = getUser();
 
-	const res = await fetch("/api/set-payment-details", {
+	const res = await fetch("/api/payment-details", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
 		body: JSON.stringify({ paymentDetails: JSON.stringify(details) }),
+	}).then((res) => res.json());
+
+	return res.success;
+}
+
+/**
+ * Clear our own payment details.
+ * @returns true if it was successful.
+ */
+export async function removePaymentDetails(): Promise<boolean> {
+	const user = getUser();
+
+	const res = await fetch("/api/payment-details", {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${await user.getIdToken()}`,
+		},
 	}).then((res) => res.json());
 
 	return res.success;
