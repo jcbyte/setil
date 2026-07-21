@@ -124,7 +124,7 @@ npm install
 
 ### 2. Set Environment Variables
 
-Setil uses environment variables for the Firebase Web SDK, Firebase Admin SDK, encryption keys, and maintenance mode; all documented in [`.env.example`](.env.example).
+Setil uses environment variables for the Firebase Web SDK, Firebase Admin SDK, Cloudinary SDK, encryption keys, and maintenance mode; all documented in [`.env.example`](.env.example).
 
 If using Vercel, link the repository and pull its Development variables:
 
