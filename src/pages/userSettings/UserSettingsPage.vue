@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserData, setName } from "@/firebase/firestore/user";
-import type { Theme } from "@/util/theme";
 import {
 	ArrowLeft,
 	Camera,
@@ -28,6 +27,7 @@ import {
 	UserRound,
 	type LucideProps,
 } from "@lucide/vue";
+import { useColorMode, type BasicColorSchema } from "@vueuse/core";
 import { onMounted, ref, type FunctionalComponent } from "vue";
 import { CircleStencil, Cropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
@@ -146,12 +146,11 @@ async function handleClearAvatar() {
 	isAvatarClearing.value = false;
 }
 
-const selectedTheme = ref("system");
-
-const themeDetail: Record<Theme, { name: string; icon: FunctionalComponent<LucideProps, {}, any, {}> }> = {
+const selectedTheme = useColorMode().store;
+const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComponent<LucideProps, {}, any, {}> }> = {
 	light: { name: "Light", icon: SunMedium },
 	dark: { name: "Dark", icon: Moon },
-	system: { name: "System", icon: Monitor },
+	auto: { name: "System", icon: Monitor },
 };
 </script>
 
@@ -263,8 +262,8 @@ const themeDetail: Record<Theme, { name: string; icon: FunctionalComponent<Lucid
 						<Select v-model="selectedTheme">
 							<SelectTrigger class="w-full max-w-38">
 								<div v-if="selectedTheme" class="flex items-center gap-2">
-									<component :is="themeDetail[selectedTheme as Theme].icon" class="size-4" />
-									<span>{{ themeDetail[selectedTheme as Theme].name }}</span>
+									<component :is="themeDetail[selectedTheme].icon" class="size-4" />
+									<span>{{ themeDetail[selectedTheme].name }}</span>
 								</div>
 							</SelectTrigger>
 							<SelectContent align="center">

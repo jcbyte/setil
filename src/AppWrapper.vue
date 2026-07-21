@@ -8,7 +8,10 @@ const dev = import.meta.env.DEV;
 const maintenance = String(import.meta.env.VITE_MAINTENANCE ?? "false").toUpperCase() === "TRUE";
 const showMaintenance = maintenance && !dev;
 
-useColorMode().value = "dark";
+useColorMode({
+	storageKey: "setil-theme",
+	initialValue: "auto",
+});
 </script>
 
 <template>
