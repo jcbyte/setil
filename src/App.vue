@@ -2,8 +2,10 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { LoaderCircle } from "@lucide/vue";
+import { useColorMode, type BasicColorSchema } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import type { Theme } from "vue-sonner/src/packages/types.js";
 import NotificationRequester from "./components/NotificationRequester.vue";
 import { app } from "./firebase/firebase";
 import SignInPage from "./pages/SignInPage.vue";
@@ -15,6 +17,14 @@ const auth = getAuth(app);
 auth.onAuthStateChanged(() => {
 	firebaseLoaded.value = true;
 });
+
+const theme = useColorMode();
+const toasterThemeMap: Record<BasicColorSchema, Theme> = {
+	light: "light",
+	dark: "dark",
+	auto: "system",
+};
+const toasterTheme = computed(() => toasterThemeMap[theme.state.value]);
 </script>
 
 <template>
@@ -44,7 +54,7 @@ auth.onAuthStateChanged(() => {
 	</Transition>
 
 	<Toaster
-		theme="dark"
+		:theme="toasterTheme"
 		position="bottom-center"
 		rich-colors
 		close-button
