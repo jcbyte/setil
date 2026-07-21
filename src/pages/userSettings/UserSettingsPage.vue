@@ -267,7 +267,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 								</div>
 							</SelectTrigger>
 							<SelectContent align="center">
-								<SelectItem v-for="(detail, theme) in themeDetail" :value="theme">
+								<SelectItem v-for="(detail, theme) in themeDetail" :key="theme" :value="theme">
 									<div class="flex items-center gap-2">
 										<component :is="detail.icon" class="size-4" />
 										<span>{{ detail.name }}</span>

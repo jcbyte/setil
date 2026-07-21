@@ -10,7 +10,7 @@ const showMaintenance = maintenance && !dev;
 
 useColorMode({
 	storageKey: "setil-theme",
-	initialValue: "auto",
+	initialValue: "dark",
 });
 </script>
 
