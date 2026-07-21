@@ -23,6 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-.vercel
 !.env.example
+.vercel
 .env*

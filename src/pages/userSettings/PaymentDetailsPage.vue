@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { getPaymentDetails, setPaymentDetails } from "@/firebase/firestore/user";
+import { getPaymentDetails, setPaymentDetails, removePaymentDetails } from "@/firebase/firestore/user";
 import { getUser } from "@/firebase/firestore/util";
 import { BankingSystemSettings, type PaymentDetails } from "@/util/paymentDetails";
 import { ArrowLeft, CircleX, Save } from "@lucide/vue";
@@ -206,7 +206,7 @@ async function clearDetails() {
 	);
 
 	try {
-		await setPaymentDetails(null);
+		await removePaymentDetails();
 		toast("Details Cleared", { description: "Poof! My payment info has vanished." });
 	} catch (e) {
 		toast.error("Error Clearing Details", { description: String(e) });
