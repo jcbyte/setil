@@ -42,5 +42,8 @@
 		"vite": "^8.1.5",
 		"vite-plugin-pwa": "^1.3.0",
 		"vue-tsc": "^3.3.7"
+	},
+	"overrides": {
+		"jose": "^5.9.6"
 	}
 }
