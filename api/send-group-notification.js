@@ -1,7 +1,7 @@
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
-import "./firebaseAdmin.js";
+import "./_init/firebaseAdmin.js";
 
 const db = getFirestore();
 const auth = getAuth();

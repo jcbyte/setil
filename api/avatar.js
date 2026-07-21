@@ -1,8 +1,8 @@
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import "./firebaseAdmin.js";
+import "./_init/firebaseAdmin.js";
 import { v2 as cloudinary } from "cloudinary";
-import "./cloudinary.js";
+import "./_init/cloudinary.js";
 
 const db = getFirestore();
 const auth = getAuth();
