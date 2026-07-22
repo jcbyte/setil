@@ -28,7 +28,11 @@ const manifest: Partial<ManifestOptions> = {
 
 // https://vite.dev/config/
 export default defineConfig({
-	plugins: [vue(), tailwindcss(), VitePWA({ registerType: "autoUpdate", manifest })],
+	plugins: [
+		vue(),
+		tailwindcss(),
+		VitePWA({ strategies: "injectManifest", srcDir: "src", filename: "sw.ts", registerType: "autoUpdate", manifest }),
+	],
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),

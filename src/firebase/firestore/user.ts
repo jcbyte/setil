@@ -29,7 +29,7 @@ export async function initialiseUserData(): Promise<boolean> {
 	if (userDocSnap.exists()) return false;
 
 	// Create the users data area
-	const userData: UserData = { groups: [], fcmTokens: [] };
+	const userData: UserData = { groups: [], fids: [] };
 	await setDoc(userRef, userData);
 
 	const userPublicRef = doc(userRef, "public", "data");
@@ -99,16 +99,16 @@ export async function updateLeftUsersStatus(
 }
 
 /**
- * Add a fcm token to our users, so the server knows which devices to send push notifications too.
- * @param fcmToken the fcm token for our device given by firestore cloud messaging.
+ * Add a fid to our user, so the server knows which devices to send push notifications too.
+ * @param fid the fid for our device given by firestore cloud messaging.
  */
-export async function addFwcToken(fcmToken: string): Promise<void> {
+export async function addFid(fid: string): Promise<void> {
 	const user = getUser();
 
-	// Add the fcw token to the user if it is not already there
+	// Add the fid to the user if it is not already there
 	const userRef = doc(db, "users", user.uid);
 	await updateDoc(userRef, {
-		fcmTokens: arrayUnion(fcmToken),
+		fids: arrayUnion(fid),
 	});
 }
 

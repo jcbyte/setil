@@ -6,7 +6,7 @@ export type TransactionCategory = "expense" | "food" | "transport" | "fuel" | "e
 
 export interface UserData {
 	groups: string[];
-	fcmTokens: string[];
+	fids: string[];
 }
 
 export interface PublicUserData {

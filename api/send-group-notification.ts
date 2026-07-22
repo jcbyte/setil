@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { DecodedIdToken, getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import { getMessaging, MulticastMessage } from "firebase-admin/messaging";
+import { FidMulticastMessage, getMessaging } from "firebase-admin/messaging";
 
 import "./_init/firebaseAdmin.js";
 
@@ -49,16 +49,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 		}
 
 		// Get list of all fcm tokens for active users
-		const fcmTokens = [];
-		for (let userId of userIds) {
-			const userSnap = await db.doc(`users/${userId}`).get();
-			fcmTokens.push(...userSnap.get("fcmTokens"));
-		}
+		const userRefs = userIds.map((userId) => db.doc(`users/${userId}`));
+		const userSnaps = await db.getAll(...userRefs);
+		const fids = userSnaps.flatMap((snap) => snap.get("fids") ?? []);
 
-		if (fcmTokens.length > 0) {
+		if (fids.length > 0) {
 			// Send notification to all users' fcm tokens
-			const message: MulticastMessage = {
-				tokens: fcmTokens,
+			const message: FidMulticastMessage = {
+				fids,
 				data: { title, body, route: route ?? "/" },
 			};
 			await messaging.sendEachForMulticast(message);

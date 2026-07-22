@@ -5,16 +5,21 @@ import { LoaderCircle } from "@lucide/vue";
 import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { ref } from "vue";
-import NotificationRequester from "./components/NotificationRequester.vue";
+import { useNotification } from "./composables/useNotification.ts";
 import { app } from "./firebase/firebase";
 import SignInPage from "./pages/SignInPage.vue";
 
 const firebaseLoaded = ref(false);
 const currentUser = useCurrentUser();
 
+const { requestNotifications } = useNotification();
+
 const auth = getAuth(app);
-auth.onAuthStateChanged(() => {
+auth.onAuthStateChanged((user) => {
 	firebaseLoaded.value = true;
+
+	// Only request notifications once we are signed in, as it writes to user space
+	if (user) requestNotifications();
 });
 
 const resolvedTheme = useColorMode().state;
@@ -27,7 +32,6 @@ const resolvedTheme = useColorMode().state;
 				<SignInPage v-if="!currentUser" />
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-else class="w-full overflow-hidden">
-					<NotificationRequester />
 					<router-view v-slot="{ Component }">
 						<Transition name="fade-slide" mode="out-in">
 							<component :is="Component" class="overflow-visible" />
