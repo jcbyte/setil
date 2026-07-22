@@ -18,7 +18,9 @@ export function useNotification() {
 			const permission = await Notification.requestPermission();
 			if (permission !== "granted") return;
 
+			const serviceWorkerRegistration = await navigator.serviceWorker.ready;
 			await register(messaging, {
+				serviceWorkerRegistration,
 				vapidKey: import.meta.env.VITE_VAPID_KEY,
 			});
 		} catch (error: any) {
