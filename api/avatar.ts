@@ -1,20 +1,21 @@
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import "./_init/firebaseAdmin.js";
+import { VercelRequest, VercelResponse } from "@vercel/node";
 import { v2 as cloudinary } from "cloudinary";
+import { DecodedIdToken, getAuth } from "firebase-admin/auth";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import "./_init/cloudinary.js";
+import "./_init/firebaseAdmin.js";
 
 const db = getFirestore();
 const auth = getAuth();
 
-export default async function (req, res) {
+export default async function (req: VercelRequest, res: VercelResponse) {
 	if (req.method !== "POST" && req.method !== "DELETE") {
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 
 	// Extract parameters
 	const authHeader = req.headers.authorization;
-	let jwt;
+	let jwt: string | undefined;
 	if (authHeader && authHeader.startsWith("Bearer ")) {
 		jwt = authHeader.split(" ")[1];
 	}
@@ -23,7 +24,7 @@ export default async function (req, res) {
 	}
 
 	// Get user who performed the request
-	let user;
+	let user: DecodedIdToken | undefined;
 	try {
 		user = await auth.verifyIdToken(jwt);
 	} catch (e) {
@@ -36,7 +37,7 @@ export default async function (req, res) {
 	if (req.method === "POST") {
 		const { avatar } = req.body;
 		if (!avatar) {
-			return res.status(400).json({ success: false, error: "Missing parameters" });
+			return res.status(400).json({ success: false, error: "Missing parameter `avatar`" });
 		}
 
 		// Upload avatar to cloudinary
