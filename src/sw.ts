@@ -22,7 +22,7 @@ onBackgroundMessage(messaging, (payload) => {
 	if (!payload.data) return;
 
 	const { title, body, route } = payload.data;
-	const notificationOptions = {
+	const notificationOptions: NotificationOptions = {
 		body,
 		icon: "https://setil.vercel.app/icon/icon-192.png",
 		badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
@@ -42,16 +42,16 @@ self.addEventListener("notificationclick", (event) => {
 	const url = self.location.origin;
 	// Extract the route
 	const { route } = event.notification.data;
-	const wantedRoute = route && `${url}${route}`;
+	const wantedRoute = route ? `${url}${route}` : url;
 
 	// Check if the app is already open
 	event.waitUntil(
 		self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-			// If there's already an open client (window) then focus on it
+			// If there's already an open client (window) then use it
 			const openClient = clientList.find((client) => new URL(client.url).origin === url);
 			if (openClient) {
 				openClient.focus();
-				// if (wantedRoute) openClient.navigate(wantedRoute); // ! This causes issues as the `openClient` is not being controlled by this sw
+				openClient.navigate(wantedRoute);
 			} else {
 				// If not then open the URL in a new window/tab
 				self.clients.openWindow(wantedRoute ?? url);
