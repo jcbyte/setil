@@ -3,7 +3,6 @@ import { DecodedIdToken, getAuth } from "firebase-admin/auth";
 import { DocumentReference, getFirestore } from "firebase-admin/firestore";
 import { decrypt, encrypt, EncryptedData } from "./_utils/crypt.js";
 
-import { PublicUserData } from "@/firebase/types";
 import "./_init/firebaseAdmin.js";
 
 const db = getFirestore();
@@ -81,7 +80,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 	}
 
 	const paymentDetailsRef = db.doc(`/users/${user.uid}/private/paymentDetails`) as DocumentReference<EncryptedData>;
-	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`) as DocumentReference<PublicUserData>;
+	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`); // as DocumentReference<PublicUserData>;
 
 	if (req.method === "POST") {
 		const { paymentDetails } = req.body;

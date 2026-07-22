@@ -15,11 +15,6 @@
     "isolatedModules": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "paths": {
-      "@/firebase/types": [
-        "./src/firebase/types.ts"
-      ]
-    }
   },
   "include": [
     "api/**/*",
