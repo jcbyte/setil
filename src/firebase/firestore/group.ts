@@ -152,58 +152,57 @@ export async function joinGroup<T extends boolean>(
 	groupId: string,
 	inviteCode: string,
 	getData: T = false as T,
-): Promise<{ new: boolean } & (T extends true ? { user: GroupUserData; group: GroupData } : {})> {
+): Promise<{ new: false } | { new: true; user: GroupUserData; group: GroupData }> {
 	const user = getUser();
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 
-	async function getGroupData(): Promise<GroupData> {
-		const groupSnap = await getDoc(groupRef);
-		return groupSnap.data();
+	type GroupUserDataWithCustom = GroupUserData & { customData?: any };
+	const groupUserRef = doc(groupRef, "users", user.uid) as DocumentReference<GroupUserDataWithCustom>;
+
+	async function addGroupToUser() {
+		// Add the group to the user
+		const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
+		await updateDoc(userRef, {
+			groups: arrayUnion(groupId),
+		});
 	}
 
-	// Add the group to the user if it is not already there
-	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
-	await updateDoc(userRef, {
-		groups: arrayUnion(groupId),
-	});
-
-	// Add ourselves to the group
-	const groupUserRef = doc(groupRef, "users", user.uid) as DocumentReference<GroupUserData>;
-
-	// Check if the user had previously been part of the group
+	// Check the user is not already in the group
 	try {
-		const userSnap = await getDoc(groupUserRef);
-		if (userSnap.exists()) {
-			// Set ourselves to active in the group if we had previously been part of it
-			const userGroupData = userSnap.data();
-			if (userGroupData.status !== "active") {
-				updateDoc(groupUserRef, { status: "active" });
+		await getDoc(groupUserRef);
 
-				// Return that we newly joined the group as we we had previously left
-				return { new: true, ...(getData && { user: userGroupData, group: await getGroupData() }) };
-			}
-
-			// Return that the user was already in the group
-			return { new: false, ...(getData && { user: userGroupData, group: await getGroupData() }) };
-		}
+		await addGroupToUser();
+		return { new: false };
 	} catch {
-		// If user does not haver permissions to check the group, hence they are and have never been in it.
+		// If the user does not have permissions to view the group they are not in it
 	}
 
-	// Join the group
+	// Check if the user has been in the group previously
+	try {
+		await updateDoc(groupUserRef, { status: "active", customData: { inviteCode } });
+		await updateDoc(groupUserRef, { customData: deleteField() }); // Remove the required custom data
+
+		await addGroupToUser();
+		return {
+			new: true,
+			...(getData && { user: (await getDoc(groupUserRef)).data()!, group: (await getDoc(groupRef)).data()! }),
+		};
+	} catch {
+		// Updating a non-existent doc will fail, hence the user has never been in the group before
+	}
+
+	// Join the group as new
 	const newUserData = templateNewUser(user);
 	try {
 		await setDoc(groupUserRef, { ...newUserData, customData: { inviteCode } });
+		await updateDoc(groupUserRef, { customData: deleteField() }); // Remove the required custom data
 
-		// Remove the custom data, required to add a doc into the group
-		await updateDoc(groupUserRef, { customData: deleteField() });
+		await addGroupToUser();
+		return { new: true, ...(getData && { user: newUserData, group: await (await getDoc(groupRef)).data()! }) };
 	} catch {
 		// If joined failed then throw
 		throw Error("Invalid code");
 	}
-
-	// Return that the user has joined the group
-	return { new: true, ...(getData && { user: newUserData, group: await getGroupData() }) };
 }
 
 /**
@@ -258,6 +257,8 @@ export async function leaveGroup(groupId: string) {
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const groupDocSnap = await getDoc(groupRef);
 	const groupData = groupDocSnap.data();
+
+	if (!groupData) return;
 
 	if (groupData.owner === user.uid) {
 		// Find an active owner
