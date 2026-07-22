@@ -1,29 +1,22 @@
-import { getMessaging, getToken } from "firebase/messaging";
-import { app } from "./firebase";
-import { addFwcToken } from "./firestore/user";
 import { getUser } from "./firestore/util";
 
-const VAPID_KEY = "BNTO7GezdnZI2F6tcCs-IENFqIrp0BJ27_lmVEaz19VtOgDaA6uhnzYl0AdAWAzwh6yqN0mDOA30qeOoyay6p-8";
+// /**
+//  * Request notification permission.
+//  */
+// export async function requestPushNotificationPermission(): Promise<void> {
+// 	try {
+// 		const token = await getToken(messaging, { vapidKey: VAPID_KEY });
 
-const messaging = getMessaging(app);
-
-/**
- * Request notification permission.
- */
-export async function requestPushNotificationPermission(): Promise<void> {
-	try {
-		const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-
-		if (token) {
-			// Save the token for the user
-			await addFwcToken(token);
-		} else {
-			throw Error("Notifications not available on this device.");
-		}
-	} catch (error) {
-		// Most likely the user has not given notification permissions which is fine
-	}
-}
+// 		if (token) {
+// 			// Save the token for the user
+// 			await addFid(token);
+// 		} else {
+// 			throw Error("Notifications not available on this device.");
+// 		}
+// 	} catch (error) {
+// 		// Most likely the user has not given notification permissions which is fine
+// 	}
+// }
 
 /**
  * Send a notification to all suers within a specified group.
