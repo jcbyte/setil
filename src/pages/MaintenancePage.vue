@@ -14,9 +14,8 @@ const version = __APP_VERSION__;
 
 			<div class="flex flex-col">
 				<span class="text-2xl font-bold text-center">Setil will be back soon</span>
-				<span class="text-sm text-muted-foreground text-center">
-					We're currently carrying out some maintenance. Check back shortly.
-				</span>
+				<span class="text-sm text-muted-foreground text-center"> Currently undergoing maintenance</span>
+				<span class="text-sm text-muted-foreground text-center"> Please check back shortly</span>
 			</div>
 
 			<Separator />
