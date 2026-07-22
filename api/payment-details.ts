@@ -3,6 +3,7 @@ import { DecodedIdToken, getAuth } from "firebase-admin/auth";
 import { DocumentReference, getFirestore } from "firebase-admin/firestore";
 import { decrypt, encrypt, EncryptedData } from "./_utils/crypt.js";
 
+import { PublicUserData } from "@/firebase/types";
 import "./_init/firebaseAdmin.js";
 
 const db = getFirestore();
@@ -51,7 +52,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
 				// Get list of all userId's who are active in the group (without getting all their data)
 				const groupUsersRef = db.collection(`groups/${groupId}/users`);
-				const groupUsersMetaSnap = await groupUsersRef.select().get();
+				const groupUsersMetaSnap = await groupUsersRef.where("status", "==", "active").select().get();
 				const userIds = groupUsersMetaSnap.docs.map((doc) => doc.id);
 				// Verify that us and the other user are both in the group
 				if (!userIds.includes(user.uid) || !userIds.includes(userId)) {
@@ -79,8 +80,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 		}
 	}
 
-	const paymentDetailsRef = db.doc(`/users/${user.uid}/private/paymentDetails`);
-	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`);
+	const paymentDetailsRef = db.doc(`/users/${user.uid}/private/paymentDetails`) as DocumentReference<EncryptedData>;
+	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`) as DocumentReference<PublicUserData>;
 
 	if (req.method === "POST") {
 		const { paymentDetails } = req.body;

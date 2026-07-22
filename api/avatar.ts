@@ -1,7 +1,8 @@
+import { PublicUserData } from "@/firebase/types";
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { v2 as cloudinary } from "cloudinary";
 import { DecodedIdToken, getAuth } from "firebase-admin/auth";
-import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { DocumentReference, FieldValue, getFirestore } from "firebase-admin/firestore";
 
 import "./_init/cloudinary.js";
 import "./_init/firebaseAdmin.js";
@@ -32,7 +33,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 		return res.status(401).json({ success: false, error: "Unauthorized" });
 	}
 
-	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`);
+	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`) as DocumentReference<PublicUserData>;
 	const avatarPublicId = `users/${user.uid}/avatar`;
 
 	if (req.method === "POST") {

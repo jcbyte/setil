@@ -22,7 +22,7 @@ import { getUser } from "./util";
 export async function initialiseUserData(): Promise<boolean> {
 	const user = getUser();
 
-	const userRef = doc(db, "users", user.uid);
+	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
 	const userDocSnap = await getDoc(userRef);
 
 	// Do nothing if the user already exists
@@ -32,7 +32,7 @@ export async function initialiseUserData(): Promise<boolean> {
 	const userData: UserData = { groups: [], fids: [] };
 	await setDoc(userRef, userData);
 
-	const userPublicRef = doc(userRef, "public", "data");
+	const userPublicRef = doc(userRef, "public", "data") as DocumentReference<PublicUserData>;
 	const publicUserData: PublicUserData = {
 		name: user.displayName ?? "Unknown User",
 		photoUrl: user.photoURL ?? undefined,
@@ -45,7 +45,7 @@ export async function initialiseUserData(): Promise<boolean> {
 
 export async function removeGroupFromUser(groupId: string) {
 	const user = getUser();
-	const userRef = doc(db, "users", user.uid);
+	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
 
 	updateDoc(userRef, { groups: arrayRemove(groupId) });
 }
@@ -87,7 +87,7 @@ export async function updateLeftUsersStatus(
 ) {
 	await Promise.all(
 		leftUsers.map(async (userId) => {
-			const leftUserRef = doc(groupUsersRef, userId);
+			const leftUserRef = doc(groupUsersRef, userId) as DocumentReference<GroupUserData>;
 
 			// Check if there status is correct
 			const newStatus = await getLeftUserStatus(leftUserRef, false);
@@ -106,7 +106,7 @@ export async function addFid(fid: string): Promise<void> {
 	const user = getUser();
 
 	// Add the fid to the user if it is not already there
-	const userRef = doc(db, "users", user.uid);
+	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
 	await updateDoc(userRef, {
 		fids: arrayUnion(fid),
 	});
@@ -187,27 +187,37 @@ export async function removePaymentDetails(): Promise<boolean> {
  */
 export async function setName(name: string) {
 	const user = getUser();
-	const userRef = doc(db, "users", user.uid);
-	const userPublicRef = doc(userRef, "public", "data");
+	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
+	const userPublicRef = doc(userRef, "public", "data") as DocumentReference<PublicUserData>;
 
 	const userPublicSnap = await getDoc(userPublicRef);
-	const oldName = (userPublicSnap.data() as PublicUserData).name;
+	const userPublicData = userPublicSnap.data();
+	if (!userPublicData) throw Error(`User ${user.uid} does not have a '/public' doc`);
+	const oldName = userPublicData.name;
 	if (name === oldName) return;
 
 	const userSnap = await getDoc(userRef);
-	const userGroups = (userSnap.data() as UserData).groups;
+	const userData = userSnap.data();
+	if (!userData) throw Error(`User ${user.uid} does not exist`);
+	const userGroups = userData.groups;
 
 	const batch = writeBatch(db);
 	batch.update(userPublicRef, { name });
 
 	// Update all nicknames in groups where it has been unchanged
 	const userGroupsSnaps = await Promise.all(
-		userGroups.map((groupId) => getDoc(doc(db, "groups", groupId, "users", user.uid))),
+		userGroups.map((groupId) => {
+			const groupUserRef = doc(db, "groups", groupId, "users", user.uid) as DocumentReference<GroupUserData>;
+			return getDoc(groupUserRef);
+		}),
 	);
-	userGroupsSnaps.forEach((groupUserSnap) => {
-		const currentNickname = (groupUserSnap.data() as GroupUserData).nickname;
-		if (currentNickname === oldName) batch.update(groupUserSnap.ref, { nickname: name });
-	});
+
+	userGroupsSnaps
+		.filter((groupUserSnap) => groupUserSnap.exists())
+		.forEach((groupUserSnap) => {
+			const currentNickname = groupUserSnap.data().nickname;
+			if (currentNickname === oldName) batch.update(groupUserSnap.ref, { nickname: name });
+		});
 
 	await batch.commit();
 
@@ -220,10 +230,11 @@ export async function setName(name: string) {
  */
 export async function getUserData(): Promise<{ public: PublicUserData }> {
 	const user = getUser();
-	const userPublicRef = doc(db, "users", user.uid, "public", "data");
+	const userPublicRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
 
 	const userPublicSnap = await getDoc(userPublicRef);
-	const userPublic = userPublicSnap.data() as PublicUserData;
+	const userPublic = userPublicSnap.data();
+	if (!userPublic) throw Error(`User ${user.uid} does not have a '/public' doc`);
 
 	// ? If we have private data, this can also be returned here
 	return { public: userPublic };
