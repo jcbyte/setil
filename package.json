@@ -33,6 +33,7 @@
 	"devDependencies": {
 		"@tailwindcss/vite": "^4.3.3",
 		"@types/node": "^24.13.3",
+		"@vercel/config": "^0.5.5",
 		"@vercel/node": "^5.8.26",
 		"@vitejs/plugin-vue": "^6.0.8",
 		"@vue/tsconfig": "^0.9.1",
