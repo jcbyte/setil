@@ -7,7 +7,7 @@ const version = __APP_VERSION__;
 
 <template>
 	<div class="flex min-h-dvh items-center justify-center p-4">
-		<div class="flex w-full max-w-sm flex-col items-center gap-4 rounded-lg border border-border p-8">
+		<div class="flex w-full max-w-sm flex-col items-center gap-4 rounded-lg border border-border p-8 -mt-16">
 			<div class="flex size-12 items-center justify-center rounded-full bg-muted">
 				<Wrench class="size-6 text-muted-foreground" />
 			</div>
