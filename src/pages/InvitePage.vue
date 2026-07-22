@@ -36,7 +36,7 @@ onMounted(async () => {
 		}
 		router.push(`/group/${routeGroupId}`);
 	} catch {
-		toast.error("Could Not Join Group", {
+		toast.error("Couldn't Join Group", {
 			description: "Ensure this link has not expired.",
 			duration: 5000,
 		});

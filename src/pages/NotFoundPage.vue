@@ -16,7 +16,7 @@ const router = useRouter();
 
 			<div class="flex flex-col">
 				<span class="text-2xl font-bold text-center">Error 404</span>
-				<span class="text-sm text-muted-foreground text-center"> This page cannot be found </span>
+				<span class="text-sm text-muted-foreground text-center">This page cannot be found</span>
 			</div>
 
 			<Separator />
