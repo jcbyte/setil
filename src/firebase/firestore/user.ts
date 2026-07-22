@@ -191,11 +191,15 @@ export async function setName(name: string) {
 	const userPublicRef = doc(userRef, "public", "data") as DocumentReference<PublicUserData>;
 
 	const userPublicSnap = await getDoc(userPublicRef);
-	const oldName = userPublicSnap.data().name;
+	const userPublicData = userPublicSnap.data();
+	if (!userPublicData) throw Error(`User ${user.uid} does not have a '/public' doc`);
+	const oldName = userPublicData.name;
 	if (name === oldName) return;
 
 	const userSnap = await getDoc(userRef);
-	const userGroups = userSnap.data().groups;
+	const userData = userSnap.data();
+	if (!userData) throw Error(`User ${user.uid} does not exist`);
+	const userGroups = userData.groups;
 
 	const batch = writeBatch(db);
 	batch.update(userPublicRef, { name });
@@ -207,10 +211,13 @@ export async function setName(name: string) {
 			return getDoc(groupUserRef);
 		}),
 	);
-	userGroupsSnaps.forEach((groupUserSnap) => {
-		const currentNickname = groupUserSnap.data().nickname;
-		if (currentNickname === oldName) batch.update(groupUserSnap.ref, { nickname: name });
-	});
+
+	userGroupsSnaps
+		.filter((groupUserSnap) => groupUserSnap.exists())
+		.forEach((groupUserSnap) => {
+			const currentNickname = groupUserSnap.data().nickname;
+			if (currentNickname === oldName) batch.update(groupUserSnap.ref, { nickname: name });
+		});
 
 	await batch.commit();
 
@@ -227,6 +234,7 @@ export async function getUserData(): Promise<{ public: PublicUserData }> {
 
 	const userPublicSnap = await getDoc(userPublicRef);
 	const userPublic = userPublicSnap.data();
+	if (!userPublic) throw Error(`User ${user.uid} does not have a '/public' doc`);
 
 	// ? If we have private data, this can also be returned here
 	return { public: userPublic };

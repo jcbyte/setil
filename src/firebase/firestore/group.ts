@@ -258,7 +258,7 @@ export async function leaveGroup(groupId: string) {
 	const groupDocSnap = await getDoc(groupRef);
 	const groupData = groupDocSnap.data();
 
-	if (!groupData) return;
+	if (!groupData) throw Error(`Group ${groupId} does not exist`);
 
 	if (groupData.owner === user.uid) {
 		// Find an active owner

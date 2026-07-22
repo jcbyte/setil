@@ -93,6 +93,7 @@ export async function updateTransaction(
 	const transactionRef = doc(groupRef, "transactions", transactionId) as DocumentReference<Transaction>;
 	const transactionSnap = await getDoc(transactionRef);
 	const oldTransaction = transactionSnap.data();
+	if (!oldTransaction) throw Error(`Transaction ${transactionId} does not exist`);
 
 	const batch = writeBatch(db);
 
@@ -134,6 +135,7 @@ export async function deleteTransaction(groupId: string, transactionId: string, 
 	const transactionRef = doc(groupRef, "transactions", transactionId) as DocumentReference<Transaction>;
 	const transactionSnap = await getDoc(transactionRef);
 	const transaction = transactionSnap.data();
+	if (!transaction) throw Error(`Transaction ${transactionId} does not exist`);
 
 	const batch = writeBatch(db);
 
