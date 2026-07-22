@@ -4,7 +4,7 @@ import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { LoaderCircle } from "@lucide/vue";
 import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useNotification } from "./composables/useNotification.ts";
 import { app } from "./firebase/firebase";
 import SignInPage from "./pages/SignInPage.vue";
@@ -12,14 +12,15 @@ import SignInPage from "./pages/SignInPage.vue";
 const firebaseLoaded = ref(false);
 const currentUser = useCurrentUser();
 
-const auth = getAuth(app);
-auth.onAuthStateChanged(() => {
-	firebaseLoaded.value = true;
-});
-
 const { requestNotifications } = useNotification();
-onMounted(() => {
-	requestNotifications();
+
+const auth = getAuth(app);
+auth.onAuthStateChanged((user) => {
+	firebaseLoaded.value = true;
+
+	// Only request notifications once we are signed in
+	// As we write to user space
+	if (user) requestNotifications();
 });
 
 const resolvedTheme = useColorMode().state;
