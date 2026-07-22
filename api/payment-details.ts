@@ -58,7 +58,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 				}
 			}
 		} catch (error) {
-			return res.status(500).json({ success: false, error: error.message });
+			return res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
 		}
 
 		try {
@@ -74,7 +74,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
 			return res.status(200).json({ success: true, paymentDetails });
 		} catch (error) {
-			return res.status(500).json({ success: false, error: error.message });
+			return res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
 		}
 	}
 
