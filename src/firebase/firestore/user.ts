@@ -134,10 +134,10 @@ export async function getPaymentDetails(userId?: string, groupId?: string): Prom
 		},
 	}).then((res) => res.json());
 
+	if (res.paymentDetails === null) return null;
 	// If the response is incorrect return that no details have been set
 	try {
-		const details = JSON.parse(res.paymentDetails) as PaymentDetails | null;
-		return details;
+		return JSON.parse(res.paymentDetails) as PaymentDetails;
 	} catch {
 		return null;
 	}
@@ -157,7 +157,7 @@ export async function setPaymentDetails(details: PaymentDetails | null): Promise
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-		body: JSON.stringify({ paymentDetails: JSON.stringify(details) }),
+		body: JSON.stringify({ paymentDetails: details }),
 	}).then((res) => res.json());
 
 	return res.success;

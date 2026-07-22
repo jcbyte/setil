@@ -1,19 +1,21 @@
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import { DecodedIdToken, getAuth } from "firebase-admin/auth";
+import { DocumentReference, getFirestore } from "firebase-admin/firestore";
+import { decrypt, encrypt, EncryptedData } from "./_utils/crypt.js";
+
 import "./_init/firebaseAdmin.js";
-import { decrypt } from "./_utils/crypt.js";
 
 const db = getFirestore();
 const auth = getAuth();
 
-export default async function (req, res) {
+export default async function (req: VercelRequest, res: VercelResponse) {
 	if (req.method !== "GET" && req.method !== "POST" && req.method !== "DELETE") {
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 
 	// Extract parameters
 	const authHeader = req.headers.authorization;
-	let jwt;
+	let jwt: string | undefined;
 	if (authHeader && authHeader.startsWith("Bearer ")) {
 		jwt = authHeader.split(" ")[1];
 	}
@@ -22,7 +24,7 @@ export default async function (req, res) {
 	}
 
 	// Get user who performed the request
-	let user;
+	let user: DecodedIdToken | undefined;
 	try {
 		user = await auth.verifyIdToken(jwt);
 	} catch (e) {
@@ -32,14 +34,21 @@ export default async function (req, res) {
 	if (req.method === "GET") {
 		const { userId, groupId } = req.query;
 		if (!userId) {
-			return res.status(400).json({ success: false, error: "Missing parameters" });
+			return res.status(400).json({ success: false, error: "Missing parameter `userId`" });
+		}
+		if (typeof userId !== "string") {
+			return res.status(400).json({ success: false, error: "`userId` must be a single value" });
 		}
 
 		try {
 			if (userId !== user.uid) {
 				if (!groupId) {
-					return res.status(400).json({ success: false, error: "Missing parameters" });
+					return res.status(400).json({ success: false, error: "Missing parameter `groupId`" });
 				}
+				if (typeof groupId !== "string") {
+					return res.status(400).json({ success: false, error: "`groupId` must be a single value" });
+				}
+
 				// Get list of all userId's who are active in the group (without getting all their data)
 				const groupUsersRef = db.collection(`groups/${groupId}/users`);
 				const groupUsersMetaSnap = await groupUsersRef.select().get();
@@ -50,23 +59,23 @@ export default async function (req, res) {
 				}
 			}
 		} catch (error) {
-			return res.status(500).json({ success: false, error: error.message });
+			return res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
 		}
 
 		try {
-			const paymentDetailsRef = db.doc(`/users/${userId}/private/paymentDetails`);
+			const paymentDetailsRef = db.doc(`/users/${userId}/private/paymentDetails`) as DocumentReference<EncryptedData>;
 			const paymentDetailsSnap = await paymentDetailsRef.get();
+			const encryptedPaymentDetails = paymentDetailsSnap.data();
 
-			if (!paymentDetailsSnap.exists) {
-				return res.status(200).json({ success: true, paymentDetails: JSON.stringify(null) });
+			if (!encryptedPaymentDetails) {
+				return res.status(200).json({ success: true, paymentDetails: null });
 			}
 
-			const encryptedPaymentDetails = paymentDetailsSnap.data();
 			const paymentDetails = decrypt(encryptedPaymentDetails);
 
 			return res.status(200).json({ success: true, paymentDetails });
 		} catch (error) {
-			return res.status(500).json({ success: false, error: error.message });
+			return res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
 		}
 	}
 
@@ -76,12 +85,11 @@ export default async function (req, res) {
 	if (req.method === "POST") {
 		const { paymentDetails } = req.body;
 		if (!paymentDetails) {
-			return res.status(400).json({ success: false, error: "Missing parameters" });
+			return res.status(400).json({ success: false, error: "Missing parameter `paymentDetails`" });
 		}
-		const paymentDetailsValue = JSON.parse(paymentDetails);
 
 		// Encrypt and store payment details
-		const encryptedPaymentDetails = encrypt(paymentDetails);
+		const encryptedPaymentDetails = encrypt(JSON.stringify(paymentDetails));
 
 		await paymentDetailsRef.set(encryptedPaymentDetails);
 		await userPublicDataRef.update({ hasBankDetails: true });

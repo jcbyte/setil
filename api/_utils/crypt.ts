@@ -1,11 +1,20 @@
 import crypto from "crypto";
 
+if (!process.env.ENCRYPTION_KEY) {
+	throw new Error("Environment variable `ENCRYPTION_KEY` is not set.");
+}
+
 const KEY_LENGTH = 32;
 const IV_LENGTH = 12;
-const AUTH_TAG_LENGTH = 16;
 const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY, "base64");
 
-export function encrypt(text) {
+export interface EncryptedData {
+	ciphertext: string;
+	iv: string;
+	authTag: string;
+}
+
+export function encrypt(text: string): EncryptedData {
 	const iv = crypto.randomBytes(IV_LENGTH);
 
 	const cipher = crypto.createCipheriv("aes-256-gcm", ENCRYPTION_KEY, iv);
@@ -22,7 +31,7 @@ export function encrypt(text) {
 	};
 }
 
-export function decrypt(encryptedData) {
+export function decrypt(encryptedData: EncryptedData): string {
 	const { ciphertext, iv, authTag } = encryptedData;
 
 	const ivBuffer = Buffer.from(iv, "hex");
@@ -33,10 +42,10 @@ export function decrypt(encryptedData) {
 	decipher.setAuthTag(authTagBuffer);
 
 	try {
-		let decrypted = decipher.update(ciphertextBuffer, "hex", "utf8");
+		let decrypted = decipher.update(ciphertext, "hex", "utf8");
 		decrypted += decipher.final("utf8");
 		return decrypted;
 	} catch (e) {
-		throw new Error("Authentication failed or incorrect key/data.");
+		throw new Error("Decryption failed: Incorrect key/data.");
 	}
 }
