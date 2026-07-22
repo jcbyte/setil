@@ -108,7 +108,7 @@ export async function addFid(fid: string): Promise<void> {
 	// Add the fid to the user if it is not already there
 	const userRef = doc(db, "users", user.uid);
 	await updateDoc(userRef, {
-		fid: arrayUnion(fid),
+		fids: arrayUnion(fid),
 	});
 }
 
