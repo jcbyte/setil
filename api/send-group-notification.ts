@@ -55,11 +55,11 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
 		if (fids.length > 0) {
 			// Send notification to all users' fcm tokens
-			const message: FidMulticastMessage = {
+			const messages: FidMulticastMessage = {
 				fids,
 				data: { title, body, route: route ?? "/" },
 			};
-			await messaging.sendEachForMulticast(message);
+			await messaging.sendEachForMulticast(messages);
 		}
 
 		return res.status(200).json({ success: true });
