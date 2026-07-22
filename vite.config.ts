@@ -3,6 +3,9 @@ import vue from "@vitejs/plugin-vue";
 import path from "node:path";
 import { defineConfig } from "vite";
 import { ManifestOptions, VitePWA } from "vite-plugin-pwa";
+import { getVercelEntries } from "vite-plugin-vercel";
+import { ViteVercelConfig } from "vite-plugin-vercel/types";
+import vercel from "vite-plugin-vercel/vite";
 import pkg from "./package.json";
 
 const manifest: Partial<ManifestOptions> = {
@@ -26,12 +29,25 @@ const manifest: Partial<ManifestOptions> = {
 	orientation: "portrait",
 };
 
+const vercelConfig: ViteVercelConfig = {
+	entries: await getVercelEntries("endpoints/api", {
+		destination: "api",
+	}),
+	rewrites: [
+		{
+			source: "/(.*)",
+			destination: "/index.html",
+		},
+	],
+};
+
 // https://vite.dev/config/
 export default defineConfig({
 	plugins: [
 		vue(),
 		tailwindcss(),
 		VitePWA({ strategies: "injectManifest", srcDir: "src", filename: "sw.ts", registerType: "autoUpdate", manifest }),
+		vercel(vercelConfig),
 	],
 	resolve: {
 		alias: {
