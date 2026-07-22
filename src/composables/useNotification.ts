@@ -2,8 +2,6 @@ import { addFid } from "@/firebase/firestore/user";
 import { getMessaging, onRegistered, register } from "firebase/messaging";
 import { toast } from "vue-sonner";
 
-const VAPID_KEY = "BNTO7GezdnZI2F6tcCs-IENFqIrp0BJ27_lmVEaz19VtOgDaA6uhnzYl0AdAWAzwh6yqN0mDOA30qeOoyay6p-8";
-
 export function useNotification() {
 	const messaging = getMessaging();
 
@@ -21,7 +19,7 @@ export function useNotification() {
 			if (permission !== "granted") return;
 
 			await register(messaging, {
-				vapidKey: VAPID_KEY,
+				vapidKey: import.meta.env.VITE_VAPID_KEY,
 			});
 		} catch (error: any) {
 			toast.error("Notifications Could not be enabled", {

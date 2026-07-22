@@ -18,8 +18,7 @@ const auth = getAuth(app);
 auth.onAuthStateChanged((user) => {
 	firebaseLoaded.value = true;
 
-	// Only request notifications once we are signed in
-	// As we write to user space
+	// Only request notifications once we are signed in, as it writes to user space
 	if (user) requestNotifications();
 });
 
