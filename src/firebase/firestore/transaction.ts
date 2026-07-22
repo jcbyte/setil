@@ -10,7 +10,7 @@ import {
 	writeBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { Transaction } from "../types";
+import type { GroupData, GroupUserData, Transaction } from "../types";
 import { updateGroupUpdateTime } from "./group";
 import { updateLeftUsersStatus } from "./user";
 
@@ -26,13 +26,13 @@ function updateGroupBalances(groupRef: DocumentReference, batch: WriteBatch, fro
 	const otherTo = Object.fromEntries(Object.entries(to).filter(([userId]) => userId !== from));
 
 	// Add the total credit onto the from user
-	const fromUserRef = doc(groupRef, "users", from);
+	const fromUserRef = doc(groupRef, "users", from) as DocumentReference<GroupUserData>;
 	batch.update(fromUserRef, { [`balance`]: increment(sumRecord(otherTo)) });
 
 	// Update each receiver with their new balances
 	Object.entries(otherTo).forEach(([toUser, toAmount]) => {
 		// Add the given debt to the toUser
-		const userRef = doc(groupRef, "users", toUser);
+		const userRef = doc(groupRef, "users", toUser) as DocumentReference<GroupUserData>;
 		batch.update(userRef, { [`balance`]: increment(-toAmount) });
 	});
 }
@@ -52,7 +52,7 @@ export async function createTransaction(
 	const batch = writeBatch(db);
 
 	// Add the transaction to the group
-	const groupRef = doc(db, "groups", groupId);
+	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const groupTransactionsRef = collection(groupRef, "transactions");
 	const transactionRef = await addDoc(groupTransactionsRef, transaction);
 
@@ -89,10 +89,10 @@ export async function updateTransaction(
 	leftUsers?: string[],
 ): Promise<void> {
 	// Get the existing transaction data
-	const groupRef = doc(db, "groups", groupId);
-	const transactionRef = doc(groupRef, "transactions", transactionId);
+	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
+	const transactionRef = doc(groupRef, "transactions", transactionId) as DocumentReference<Transaction>;
 	const transactionSnap = await getDoc(transactionRef);
-	const oldTransaction = transactionSnap.data() as Transaction;
+	const oldTransaction = transactionSnap.data();
 
 	const batch = writeBatch(db);
 
@@ -128,12 +128,12 @@ export async function updateTransaction(
  * @param leftUsers optional array of users who have left who's status needs to be recalculated.
  */
 export async function deleteTransaction(groupId: string, transactionId: string, leftUsers?: string[]): Promise<void> {
-	const groupRef = doc(db, "groups", groupId);
+	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 
 	// Get the existing transaction data
-	const transactionRef = doc(groupRef, "transactions", transactionId);
+	const transactionRef = doc(groupRef, "transactions", transactionId) as DocumentReference<Transaction>;
 	const transactionSnap = await getDoc(transactionRef);
-	const transaction = transactionSnap.data() as Transaction;
+	const transaction = transactionSnap.data();
 
 	const batch = writeBatch(db);
 

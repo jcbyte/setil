@@ -19,7 +19,7 @@ import {
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { GroupData, GroupUserData, Invite } from "../types";
+import type { GroupData, GroupUserData, Invite, UserData } from "../types";
 import { getLeftUserStatus, removeGroupFromUser } from "./user";
 import { getUser } from "./util";
 
@@ -38,7 +38,7 @@ const templateNewUser = (user: User): GroupUserData => ({
 export function updateGroupUpdateTime(groupRef: DocumentReference, batch: WriteBatch) {
 	// Update the time when the current user has last added a transaction
 	const user = getUser();
-	const thisUserRef = doc(groupRef, "users", user.uid);
+	const thisUserRef = doc(groupRef, "users", user.uid) as DocumentReference<GroupUserData>;
 	batch.update(thisUserRef, { lastUpdate: Timestamp.now() });
 
 	// Update the last update field for the group
@@ -58,11 +58,11 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 	const groupRef = await addDoc(groupsRef, { ...groupData, owner: user.uid });
 
 	// Add the user to the group
-	const groupUsersRef = doc(groupRef, "users", user.uid);
+	const groupUsersRef = doc(groupRef, "users", user.uid) as DocumentReference<GroupUserData>;
 	await setDoc(groupUsersRef, templateNewUser(user));
 
 	// Add the group to the user
-	const userRef = doc(db, "users", user.uid);
+	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
 	await updateDoc(userRef, {
 		groups: arrayUnion(groupRef.id),
 	});
@@ -77,7 +77,7 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
  */
 export async function updateGroup(groupId: string, groupData: Partial<Omit<GroupData, "owner">>): Promise<void> {
 	// Update the group
-	const groupRef = doc(db, "groups", groupId);
+	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 
 	try {
 		await updateDoc(groupRef, groupData);
@@ -93,7 +93,7 @@ export async function updateGroup(groupId: string, groupData: Partial<Omit<Group
 export async function deleteGroup(groupId: string) {
 	// Delete the group
 	// The group will be removed from other users groups when they call `getUserGroups`
-	const groupRef = doc(db, "groups", groupId);
+	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 
 	try {
 		await deleteDoc(groupRef);
@@ -154,28 +154,28 @@ export async function joinGroup<T extends boolean>(
 	getData: T = false as T,
 ): Promise<{ new: boolean } & (T extends true ? { user: GroupUserData; group: GroupData } : {})> {
 	const user = getUser();
-	const groupRef = doc(db, "groups", groupId);
+	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 
 	async function getGroupData(): Promise<GroupData> {
 		const groupSnap = await getDoc(groupRef);
-		return groupSnap.data() as GroupData;
+		return groupSnap.data();
 	}
 
 	// Add the group to the user if it is not already there
-	const userRef = doc(db, "users", user.uid);
+	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
 	await updateDoc(userRef, {
 		groups: arrayUnion(groupId),
 	});
 
 	// Add ourselves to the group
-	const groupUserRef = doc(groupRef, "users", user.uid);
+	const groupUserRef = doc(groupRef, "users", user.uid) as DocumentReference<GroupUserData>;
 
 	// Check if the user had previously been part of the group
 	try {
 		const userSnap = await getDoc(groupUserRef);
 		if (userSnap.exists()) {
 			// Set ourselves to active in the group if we had previously been part of it
-			const userGroupData = userSnap.data() as GroupUserData;
+			const userGroupData = userSnap.data();
 			if (userGroupData.status !== "active") {
 				updateDoc(groupUserRef, { status: "active" });
 
@@ -212,7 +212,7 @@ export async function joinGroup<T extends boolean>(
  * @param userId id of the user to remove.
  */
 export async function removeUser(groupId: string, userId: string) {
-	const groupUserRef = doc(db, "groups", groupId, "users", userId);
+	const groupUserRef = doc(db, "groups", groupId, "users", userId) as DocumentReference<GroupUserData>;
 
 	// Get the status of the user when not in the group
 	const status = await getLeftUserStatus(groupUserRef, true);
@@ -229,7 +229,7 @@ export async function removeUser(groupId: string, userId: string) {
  * @param nickname new name to give to the user.
  */
 export async function changeUserNickname(groupId: string, userId: string, nickname: string) {
-	const groupUserRef = doc(db, "groups", groupId, "users", userId);
+	const groupUserRef = doc(db, "groups", groupId, "users", userId) as DocumentReference<GroupUserData>;
 
 	// Update the name of the user in the group
 	await updateDoc(groupUserRef, { nickname });
@@ -241,7 +241,7 @@ export async function changeUserNickname(groupId: string, userId: string, nickna
  * @param userId id of the user to promote.
  */
 export async function promoteUser(groupId: string, userId: string) {
-	const groupRef = doc(db, "groups", groupId);
+	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 
 	// Update the owner of the the group
 	await updateDoc(groupRef, { owner: userId });
@@ -255,9 +255,9 @@ export async function leaveGroup(groupId: string) {
 	const user = getUser();
 
 	// If user is owner then pass this to a different user
-	const groupRef = doc(db, "groups", groupId);
+	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const groupDocSnap = await getDoc(groupRef);
-	const groupData = groupDocSnap.data() as GroupData;
+	const groupData = groupDocSnap.data();
 
 	if (groupData.owner === user.uid) {
 		// Find an active owner
@@ -278,7 +278,7 @@ export async function leaveGroup(groupId: string) {
 	}
 
 	// Set the users status to show they have left
-	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
+	const groupUserRef = doc(db, "groups", groupId, "users", user.uid) as DocumentReference<GroupUserData>;
 	const newStatus = await getLeftUserStatus(groupUserRef, true);
 	if (newStatus) await updateDoc(groupUserRef, { status: newStatus });
 
