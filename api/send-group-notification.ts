@@ -1,34 +1,40 @@
-import { getAuth } from "firebase-admin/auth";
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import { DecodedIdToken, getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import { getMessaging } from "firebase-admin/messaging";
+import { getMessaging, MulticastMessage } from "firebase-admin/messaging";
+
 import "./_init/firebaseAdmin.js";
 
 const db = getFirestore();
 const auth = getAuth();
 const messaging = getMessaging();
 
-export default async function (req, res) {
+export default async function (req: VercelRequest, res: VercelResponse) {
 	if (req.method !== "POST") {
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 
 	// Extract parameters
 	const authHeader = req.headers.authorization;
-	let jwt;
+	let jwt: string | undefined;
 	if (authHeader && authHeader.startsWith("Bearer ")) {
 		jwt = authHeader.split(" ")[1];
 	}
-	const { groupId, title, body, route } = req.body;
-	if (!jwt || !groupId || !title || !body) {
-		return res.status(400).json({ success: false, error: "Missing parameters" });
+	if (!jwt) {
+		return res.status(401).json({ success: false, error: "Missing authorisation token" });
 	}
 
 	// Get user who performed the request
-	let user;
+	let user: DecodedIdToken | undefined;
 	try {
 		user = await auth.verifyIdToken(jwt);
 	} catch (e) {
 		return res.status(401).json({ success: false, error: "Unauthorized" });
+	}
+
+	const { groupId, title, body, route } = req.body;
+	if (!groupId || !title || !body) {
+		return res.status(400).json({ success: false, error: "Missing parameters" });
 	}
 
 	try {
@@ -51,8 +57,7 @@ export default async function (req, res) {
 
 		if (fcmTokens.length > 0) {
 			// Send notification to all users' fcm tokens
-			// https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages
-			const message = {
+			const message: MulticastMessage = {
 				tokens: fcmTokens,
 				data: { title, body, route: route ?? "/" },
 			};
@@ -61,6 +66,6 @@ export default async function (req, res) {
 
 		return res.status(200).json({ success: true });
 	} catch (error) {
-		return res.status(500).json({ success: false, error: error.message });
+		return res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
 	}
 }

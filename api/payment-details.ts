@@ -1,8 +1,9 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { DecodedIdToken, getAuth } from "firebase-admin/auth";
 import { DocumentReference, getFirestore } from "firebase-admin/firestore";
-import "./_init/firebaseAdmin.js";
 import { decrypt, encrypt, EncryptedData } from "./_utils/crypt.js";
+
+import "./_init/firebaseAdmin.js";
 
 const db = getFirestore();
 const auth = getAuth();
