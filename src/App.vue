@@ -5,14 +5,12 @@ import { LoaderCircle } from "@lucide/vue";
 import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { ref } from "vue";
-import { useNotification } from "./composables/useNotification.ts";
 import { app } from "./firebase/firebase";
+import { requestNotifications } from "./firebase/messaging.ts";
 import SignInPage from "./pages/SignInPage.vue";
 
 const firebaseLoaded = ref(false);
 const currentUser = useCurrentUser();
-
-const { requestNotifications } = useNotification();
 
 const auth = getAuth(app);
 auth.onAuthStateChanged((user) => {
