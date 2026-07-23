@@ -21,6 +21,7 @@ import {
 	ChevronRight,
 	CircleX,
 	Crop,
+	LoaderCircle,
 	Monitor,
 	Moon,
 	SunMedium,
@@ -245,11 +246,19 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 									</Button>
 								</div>
 							</div>
-							<Avatar
-								:src="avatarSrc ?? null"
-								:name="displayName ?? ''"
-								class="size-20 border-2 border-background ring-1 ring-border"
-							/>
+							<div class="relative flex justify-center items-center">
+								<Avatar
+									:src="avatarSrc ?? null"
+									:name="displayName ?? ''"
+									class="size-20 border-2 border-background ring-1 ring-border"
+								/>
+								<div
+									v-if="isAvatarUpdating || isAvatarClearing"
+									class="absolute inset-0 flex justify-center items-center rounded-full bg-black/40 backdrop-blur-[3px]"
+								>
+									<LoaderCircle class="size-6 animate-spin text-white" />
+								</div>
+							</div>
 						</div>
 						<span v-if="avatarErrors" class="text-[12.8px] text-destructive">{{ avatarErrors }}</span>
 					</div>
