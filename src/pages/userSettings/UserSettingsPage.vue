@@ -113,14 +113,23 @@ async function handleAvatarSave() {
 	if (!avatarCropper.value) return;
 
 	const { canvas } = avatarCropper.value.getResult();
-	const croppedAvatarB64 = canvas?.toDataURL();
-	if (!croppedAvatarB64) return;
+	if (!canvas) return;
+
+	const file = await new Promise<File>((resolve, reject) => {
+		canvas.toBlob((blob) => {
+			if (!blob) {
+				reject(new Error("Cannot extract bloc from canvas"));
+				return;
+			}
+			resolve(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
+		}, "image/jpeg");
+	});
 
 	isAvatarUpdating.value = true;
 	cleanupCloseCropper();
 
 	try {
-		const savedPhotoUrl = await uploadAvatar(croppedAvatarB64);
+		const savedPhotoUrl = await uploadAvatar(file);
 		avatarSrc.value = savedPhotoUrl;
 
 		toast("Profile Picture Updated", { description: "Glow-up complete" });
