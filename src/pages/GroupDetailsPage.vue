@@ -214,11 +214,12 @@ async function clearMyNickname() {
 	try {
 		await clearUserNickname(groupId, currentUser.value!.uid);
 
-		toast("Nickname Cleared", { description: "todo" });
+		toast("Nickname Cleared", { description: "No more secret identities." });
 	} catch (e) {
 		toast.error("Error Updating Name", { description: String(e) });
 	}
 
+	myNickname.value = "";
 	isMyNicknameClearing.value = false;
 }
 
@@ -278,7 +279,7 @@ async function clearNickname(userId: string) {
 	try {
 		await clearUserNickname(groupId, userId);
 		toast(`${group.value.users[userId].public?.name}'s Nickname Cleared`, {
-			description: "todo.",
+			description: "The disguise has been removed.",
 		});
 	} catch (e) {
 		toast.error(`Error Updating ${group.value.users[userId].computed.name}'s Name`, {
