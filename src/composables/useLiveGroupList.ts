@@ -1,9 +1,10 @@
 import { db } from "@/firebase/firebase";
 import { removeGroupFromUser } from "@/firebase/firestore/user";
-import type { GroupData, GroupUserData, UserData } from "@/firebase/types";
+import type { GroupData, GroupUserData } from "@/firebase/types";
 import { collection, CollectionReference, doc, DocumentReference, query, where } from "firebase/firestore";
 import { computed, onUnmounted, reactive, ref, watch, type Ref } from "vue";
 import { useCurrentUser } from "./useCurrentUser";
+import { useLiveCurrentUserData } from "./useLiveCurrentUserData";
 import { useLiveDoc } from "./useLiveDoc";
 import { useLiveQuery } from "./useLiveQuery";
 
@@ -34,9 +35,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 	loaded: Ref<boolean>;
 } {
 	const currentUser = useCurrentUser();
-
-	const userRef = doc(db, "users", currentUser.value!.uid) as DocumentReference<UserData>;
-	const { data: userData, release: releaseUserData } = useLiveDoc(userRef, (nw) => onError?.(nw));
+	const currentUserData = useLiveCurrentUserData((nw) => onError?.(nw));
 
 	const groupList = reactive<Record<string, Ref<GroupListData | null>>>({});
 	const loaded = ref<boolean>(false);
@@ -44,17 +43,16 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 
 	// Automatically cleanup the live subscribers when going out of scope
 	onUnmounted(() => {
-		releaseUserData();
 		docReleasers.forEach((release) => release());
 		docReleasers.clear();
 	});
 
 	watch(
-		userData,
+		currentUserData,
 		(newUserData) => {
-			if (!newUserData) return;
+			if (!newUserData.user) return;
 
-			const requestedGroups = newUserData.groups;
+			const requestedGroups = newUserData.user.groups;
 			const requestedGroupsSet = new Set(requestedGroups);
 			const currentGroups = Object.keys(groupList);
 			const currentGroupsSet = new Set(currentGroups);

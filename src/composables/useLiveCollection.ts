@@ -56,5 +56,5 @@ export function useLiveCollection<T>(
 	const { items, loaded, release: releaseQuery } = useLiveQuery(colRef, onError);
 	liveCollections.set(colKey, { rec: items, loaded, release: releaseQuery, refCount: 1 });
 
-	return { items: items, loaded, release };
+	return { items, loaded, release };
 }

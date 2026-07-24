@@ -25,19 +25,19 @@ export type GroupWithUserPublic = Omit<Group, "users"> & {
  *   or the group has not loaded yet
  */
 export default function useLiveGroupWithUserPublic(
-	groupId: string | null,
+	groupId: string,
 	onError?: (network: boolean, group: boolean, id?: string) => void,
 ): Ref<GroupWithUserPublic | null> {
 	// Get live group data
 	const liveGroup = useLiveGroup(groupId, (nw) => onError?.(nw, true));
 
 	// Compute usersIds within the group, and retrieve there live public data
-	const userIds = computed(() => (liveGroup.value ? Object.keys(liveGroup.value.users) : []));
+	const userIds = computed(() => (liveGroup.value.users ? Object.keys(liveGroup.value.users) : []));
 	const userPublic = useLiveUserCollection(userIds, (nw, userId) => onError?.(nw, false, userId));
 
 	// Merge public data into each user
 	const liveGroupWithUserPublic = computed(() => {
-		if (!liveGroup.value) return null;
+		if (!liveGroup.value.users) return null;
 
 		const mergedUserData: Record<string, GroupUserDataWithPublic> = Object.fromEntries(
 			Object.entries(liveGroup.value.users).map(([userId, groupUserData]) => {
