@@ -1,4 +1,4 @@
-import { sumRecord } from "@/util/util";
+import { sumRecord } from "@/util/split";
 import {
 	addDoc,
 	collection,

@@ -24,8 +24,8 @@ const currentUserData = useLiveCurrentUserData();
 			<Avatar
 				v-bind="$attrs"
 				class="size-9"
-				:src="currentUserData?.public.photoUrl ?? null"
-				:name="currentUserData?.public.name ?? currentUser!.displayName ?? 'Me'"
+				:src="currentUserData.public?.photoUrl ?? null"
+				:name="currentUserData.public?.name ?? currentUser!.displayName ?? 'Me'"
 			/>
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>

@@ -1,80 +1,56 @@
 <script setup lang="ts">
 import AvatarStack from "@/components/AvatarStack.vue";
 import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { GroupListDataWithUserPublic } from "@/composables/useLiveGroupListWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
-import { ChevronRight } from "@lucide/vue";
-import { Timestamp } from "firebase/firestore";
+import { getLastUpdatedStr } from "@/util/time";
 import { computed } from "vue";
 
 const props = defineProps<{
-	group: GroupListDataWithUserPublic | null;
+	group: GroupListDataWithUserPublic;
 }>();
 
-const lastUpdatedStr = computed(() => {
-	if (!props.group) return null;
-
-	const deltaTime = Timestamp.now().seconds - props.group.group.lastUpdate.seconds;
-
-	const intervals: { label: string; seconds: number }[] = [
-		{ label: "year", seconds: 31536000 },
-		{ label: "month", seconds: 2592000 },
-		{ label: "week", seconds: 604800 },
-		{ label: "day", seconds: 86400 },
-		{ label: "hour", seconds: 3600 },
-		{ label: "minute", seconds: 60 },
-	];
-
-	const interval = intervals.find(({ seconds }) => Math.floor(deltaTime / seconds) >= 1);
-
-	if (interval) {
-		const count = Math.floor(deltaTime / interval.seconds);
-		return `Updated ${count} ${interval.label}${count > 1 ? "s" : ""} ago`;
-	}
-
-	return "Updated just now";
-});
+const lastUpdatedStr = computed(() => getLastUpdatedStr(props.group.group.lastUpdate.seconds));
 
 const yourBalanceStr = computed(() => {
-	if (!props.group) return null;
-
 	return getBalanceStr(
 		props.group.myBalance,
 		props.group.group.currency,
 		(b) => `You're owed ${b}`,
 		(b) => `You owe ${b}`,
-		() => "Your all in balance",
+		() => "All Setil'd",
 	);
 });
 </script>
 
 <template>
-	<div v-if="group" class="flex flex-col justify-between gap-2 border border-border rounded-lg p-4 relative">
-		<div class="flex flex-col gap-2">
-			<div class="flex flex-col">
-				<span class="text-lg font-semibold">{{ group.group.name }}</span>
-				<span v-if="group.group.description" class="text-sm text-muted-foreground">{{ group.group.description }}</span>
+	<Card>
+		<CardHeader>
+			<CardTitle>{{ group.group.name }}</CardTitle>
+			<CardDescription v-if="group.group.description">{{ group.group.description }}</CardDescription>
+		</CardHeader>
+		<CardContent>
+			<div class="flex justify-between items-end gap-2">
+				<div class="flex flex-col gap-2">
+					<BalanceStrBadge :balance-str="yourBalanceStr" />
+					<span class="text-sm text-muted-foreground">{{ lastUpdatedStr }}</span>
+				</div>
+				<AvatarStack
+					avatar-class="border border-background"
+					:avatars="
+						group.topUsers
+							.filter(([, topUserData]) => topUserData.computed.name)
+							.map(([, topUserData]) => ({
+								src: topUserData.public?.photoUrl ?? null,
+								name: topUserData.computed.name!,
+							}))
+					"
+					:total-count="group.userCount"
+				/>
 			</div>
-			<AvatarStack
-				avatar-class="border border-background"
-				:avatars="
-					group.topUsers
-						.filter(([, topUserData]) => topUserData.computed.name)
-						.map(([, topUserData]) => ({
-							src: topUserData.public?.photoUrl ?? null,
-							name: topUserData.computed.name!,
-						}))
-				"
-				:total-count="group.userCount"
-			/>
-		</div>
+		</CardContent>
+	</Card>
 
-		<div class="flex justify-between">
-			<span class="text-sm text-muted-foreground">{{ lastUpdatedStr! }}</span>
-			<BalanceStrBadge :balance-str="yourBalanceStr!" />
-		</div>
-		<ChevronRight class="text-muted-foreground absolute top-4 right-4" />
-	</div>
-	<Skeleton v-else class="rounded-lg h-[158px] max-w-[26rem] w-full" />
+	<!-- <ChevronRight class="text-muted-foreground absolute top-4 right-4" /> -->
 </template>
