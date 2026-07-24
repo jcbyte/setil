@@ -1,10 +1,10 @@
-import type { GroupUserData, PublicUserData } from "@/firebase/types";
 import { computed, unref, type Ref } from "vue";
 import type { GroupListData } from "./useLiveGroupList";
 import useLiveGroupList from "./useLiveGroupList";
+import type { GroupUserDataWithPublic } from "./useLiveGroupWithUserPublic";
 import useLiveUserCollection from "./useLiveUserCollection";
 
-export type GroupUserDataWithPublic = GroupUserData & { public: PublicUserData | null };
+// export type GroupUserDataWithPublic = GroupUserData & { public: PublicUserData | null };
 export type GroupListDataWithUserPublic = Omit<GroupListData, "topUsers"> & {
 	topUsers: [string, GroupUserDataWithPublic][];
 };
@@ -54,7 +54,14 @@ export default function useLiveGroupListWithUserPublic(
 				// Merge public data into each user
 				const mergedUsers: [string, GroupUserDataWithPublic][] = group.topUsers.map(([userId, userData]) => {
 					const publicRef = userPublic[userId];
-					return [userId, { ...userData, public: unref(publicRef) }];
+					return [
+						userId,
+						{
+							...userData,
+							public: unref(publicRef),
+							computed: { name: userData.nickname ?? unref(publicRef)?.name ?? null },
+						},
+					];
 				});
 
 				return [groupId, { ...group, topUsers: mergedUsers }];
