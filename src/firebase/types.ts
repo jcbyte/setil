@@ -24,7 +24,7 @@ export interface GroupData {
 }
 
 export interface GroupUserData {
-	nickname: string;
+	nickname?: string;
 	status: "active" | "left" | "history";
 	balance: number;
 	lastUpdate: Timestamp;
