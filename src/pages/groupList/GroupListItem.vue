@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { GroupListDataWithUserPublic } from "@/composables/useLiveGroupListWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
 import { getLastUpdatedStr } from "@/util/time";
+import { ChevronRight } from "@lucide/vue";
 import { computed } from "vue";
 
 const props = defineProps<{
@@ -25,8 +26,8 @@ const yourBalanceStr = computed(() => {
 </script>
 
 <template>
-	<Card>
-		<CardHeader>
+	<Card role="link" class="group relative cursor-pointer transition hover:border-primary/40 hover:shadow-md">
+		<CardHeader class="pr-12">
 			<CardTitle>{{ group.group.name }}</CardTitle>
 			<CardDescription v-if="group.group.description">{{ group.group.description }}</CardDescription>
 		</CardHeader>
@@ -50,7 +51,8 @@ const yourBalanceStr = computed(() => {
 				/>
 			</div>
 		</CardContent>
+		<ChevronRight
+			class="absolute right-5 top-5 size-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground"
+		/>
 	</Card>
-
-	<!-- <ChevronRight class="text-muted-foreground absolute top-4 right-4" /> -->
 </template>
