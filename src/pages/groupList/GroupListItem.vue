@@ -26,12 +26,15 @@ const yourBalanceStr = computed(() => {
 </script>
 
 <template>
-	<Card role="link" class="group relative cursor-pointer transition hover:border-primary/40 hover:shadow-md">
+	<Card
+		role="link"
+		class="group relative flex flex-col cursor-pointer transition hover:border-primary/40 hover:shadow-md"
+	>
 		<CardHeader class="pr-12">
 			<CardTitle>{{ group.group.name }}</CardTitle>
 			<CardDescription v-if="group.group.description">{{ group.group.description }}</CardDescription>
 		</CardHeader>
-		<CardContent>
+		<CardContent class="mt-auto">
 			<div class="flex justify-between items-end gap-2">
 				<div class="flex flex-col gap-2">
 					<BalanceStrBadge :balance-str="yourBalanceStr" />
