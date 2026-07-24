@@ -25,8 +25,8 @@ const sortedGroups = computed(() =>
 </script>
 
 <template>
-	<div class="w-full flex flex-col gap-4">
-		<div class="flex justify-between">
+	<div class="mx-auto w-full max-w-4xl flex flex-col gap-4">
+		<div class="flex justify-between items-center">
 			<span class="text-lg font-semibold">My Groups</span>
 			<div class="flex gap-2 justify-center items-center">
 				<YourAccountSettings />
@@ -38,17 +38,12 @@ const sortedGroups = computed(() =>
 			</div>
 		</div>
 
-		<div class="flex flex-wrap gap-4 justify-center w-full">
-			<Skeleton v-if="!groupListLoaded" v-for="_n in 3" class="rounded-lg h-[158px] max-w-[26rem] w-full" />
+		<div class="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
+			<Skeleton v-if="!groupListLoaded" v-for="_n in 4" class="rounded-lg h-42 w-full" />
 
 			<template v-else-if="Object.keys(groupList).length > 0" v-for="[groupId, group] in sortedGroups">
-				<GroupListItem
-					v-if="group"
-					:group="group"
-					@click="router.push(`/group/${groupId}`)"
-					class="max-w-[26rem] w-full"
-				/>
-				<Skeleton v-else class="rounded-lg h-[158px] max-w-[26rem] w-full" />
+				<GroupListItem v-if="group" :group="group" @click="router.push(`/group/${groupId}`)" class="w-full" />
+				<Skeleton v-else class="rounded-lg h-42 w-full" />
 			</template>
 
 			<Empty v-else>
