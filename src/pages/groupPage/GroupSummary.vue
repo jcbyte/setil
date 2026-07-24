@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
+import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
 import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
 import { computed } from "vue";
@@ -41,11 +42,16 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 			>
 				<div class="flex justify-center items-center gap-1">
 					<Avatar
+						v-if="user.computed.name"
 						:src="user.public?.photoUrl ?? null"
-						:name="user.nickname"
+						:name="user.computed.name"
 						:class="`size-9 ${user.status !== 'active' && 'opacity-70'}`"
 					/>
-					<span :class="`${user.status !== 'active' && 'text-muted-foreground'}`">{{ user.nickname }}</span>
+					<Skeleton v-else class="size-9 rounded-full" />
+					<span v-if="user.computed.name" :class="`${user.status !== 'active' && 'text-muted-foreground'}`">
+						{{ user.computed.name }}
+					</span>
+					<Skeleton v-else class="w-22 h-6" />
 					<span v-if="user.status !== 'active'" class="text-xs place-self-end text-muted-foreground italic">
 						(Left)
 					</span>

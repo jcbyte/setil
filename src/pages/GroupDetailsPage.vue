@@ -87,7 +87,7 @@ watch(
 				currency: groupValue.data.currency,
 			});
 
-			myDisplayName.value = groupValue.users[currentUser.value!.uid].nickname;
+			myDisplayName.value = groupValue.users[currentUser.value!.uid].nickname ?? "";
 		}
 	},
 	{ immediate: true },
@@ -213,7 +213,7 @@ function startRename(userId: string) {
 
 	memberNewNickname.value[userId] = {
 		updating: true,
-		nickname: group.value.users[userId].nickname,
+		nickname: group.value.users[userId].nickname ?? "",
 		processing: false,
 	};
 }
@@ -233,11 +233,11 @@ async function acceptRename(userId: string) {
 
 	try {
 		await changeUserNickname(groupId, userId, parsedName.data);
-		toast(`${group.value.users[userId].nickname}'s Name Updated`, {
+		toast(`${parsedName}'s Name Updated`, {
 			description: "Identity crisis averted.",
 		});
 	} catch (e) {
-		toast.error(`Error Updating ${group.value.users[userId].nickname}'s Name`, {
+		toast.error(`Error Updating ${group.value.users[userId].computed.name}'s Name`, {
 			description: String(e),
 		});
 	}
@@ -254,11 +254,11 @@ async function promoteMember() {
 
 	try {
 		await promoteUser(groupId, promoteDialogData.value.userId);
-		toast(`${group.value.users[promoteDialogData.value.userId].nickname} Promoted`, {
+		toast(`${group.value.users[promoteDialogData.value.userId].computed.name} Promoted`, {
 			description: "Long live the new king.",
 		});
 	} catch (e) {
-		toast.error(`Error Promoting ${group.value.users[promoteDialogData.value.userId].nickname}`, {
+		toast.error(`Error Promoting ${group.value.users[promoteDialogData.value.userId].computed.name}`, {
 			description: String(e),
 		});
 	}
@@ -274,11 +274,11 @@ async function removeMember(userId: string) {
 
 	try {
 		await removeUser(groupId, userId);
-		toast(`Removed ${group.value.users[userId].nickname}`, {
+		toast(`Removed ${group.value.users[userId].computed.name}`, {
 			description: "They've been erased from existence... well, at least the group.",
 		});
 	} catch (e) {
-		toast.error(`Error Removing ${group.value.users[userId].nickname}`, { description: String(e) });
+		toast.error(`Error Removing ${group.value.users[userId].computed.name}`, { description: String(e) });
 	}
 
 	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
@@ -419,9 +419,16 @@ async function deleteGroup() {
 						<span class="text-sm text-muted-foreground">How others see you in this group</span>
 					</div>
 					<div v-if="group && currentGroupUser" class="flex items-center gap-2">
-						<Avatar :src="currentGroupUser.public?.photoUrl ?? null" :name="currentGroupUser.nickname" class="size-9" />
+						<Avatar
+							v-if="currentGroupUser.computed.name"
+							:src="currentGroupUser.public?.photoUrl ?? null"
+							:name="currentGroupUser.computed.name"
+							class="size-9"
+						/>
+						<Skeleton v-else class="size-9 rounded-full" />
 						<div class="flex flex-col">
-							<span>{{ currentGroupUser.nickname }}</span>
+							<span v-if="currentGroupUser.computed.name">{{ currentGroupUser.computed.name }}</span>
+							<Skeleton v-else class="w-22 h-6" />
 							<span class="text-sm text-muted-foreground">
 								{{ currentUser!.uid === group.data.owner ? "Owner" : "Member" }}
 							</span>
@@ -471,12 +478,17 @@ async function deleteGroup() {
 							<div class="flex justify-between items-center gap-2">
 								<div class="flex items-center gap-2 flex-1">
 									<Avatar
+										v-if="user.computed.name"
 										:src="user.public?.photoUrl ?? null"
-										:name="user.nickname"
+										:name="user.computed.name"
 										:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
 									/>
+									<Skeleton v-else class="size-9 rounded-full" />
 									<div v-if="!(memberNewNickname[userId]?.updating ?? false)" class="flex flex-col">
-										<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.nickname }}</span>
+										<span v-if="user.computed.name" :class="`${user.status === 'left' && 'text-muted-foreground'}`">
+											{{ user.computed.name }}
+										</span>
+										<Skeleton v-else class="w-22 h-6" />
 										<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
 											{{
 												user.status === "active" ? (userId === group!.data.owner ? "Owner" : "Member") : "Left Group"
@@ -605,7 +617,7 @@ async function deleteGroup() {
 					<AlertDialogDescription>
 						Promoting
 						<span class="font-semibold">
-							{{ group!.users[promoteDialogData!.userId].nickname }}
+							{{ group!.users[promoteDialogData!.userId].computed.name }}
 						</span>
 						to Owner will change your role to Member.
 					</AlertDialogDescription>

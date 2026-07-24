@@ -176,8 +176,15 @@ watch(currentTab, (newTab, oldTab) => {
 							v-for="user in Object.values(group.users).filter((user) => user.status === 'active')"
 							class="flex gap-1 justify-center items-center"
 						>
-							<Avatar :src="user.public?.photoUrl ?? null" :name="user.nickname" class="size-7" />
-							<span class="text-sm">{{ user.nickname }}</span>
+							<Avatar
+								v-if="user.computed.name"
+								:src="user.public?.photoUrl ?? null"
+								:name="user.computed.name"
+								class="size-7"
+							/>
+							<Skeleton v-else class="size-7 rounded-full" />
+							<span v-if="user.computed.name" class="text-sm">{{ user.computed.name }}</span>
+							<Skeleton v-else class="w-18 h-5" />
 						</div>
 					</div>
 				</div>
