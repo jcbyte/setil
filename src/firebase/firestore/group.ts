@@ -3,7 +3,6 @@ import {
 	addDoc,
 	arrayUnion,
 	collection,
-	deleteDoc,
 	deleteField,
 	doc,
 	DocumentReference,
@@ -91,15 +90,19 @@ export async function updateGroup(groupId: string, groupData: Partial<Omit<Group
  * @param groupId id of the group.
  */
 export async function deleteGroup(groupId: string) {
+	const user = getUser();
+
+	const queryParams = new URLSearchParams({ groupId });
+
 	// Delete the group
 	// The group will be removed from other users groups when they call `getUserGroups`
-	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
-
-	try {
-		await deleteDoc(groupRef);
-	} catch (e) {
-		throw `Could not delete group: ${e}`;
-	}
+	await fetch(`/api/group?${queryParams.toString()}`, {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${await user.getIdToken()}`,
+		},
+	}).then((res) => res.json());
 }
 
 /**
