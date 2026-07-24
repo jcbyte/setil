@@ -8,7 +8,6 @@ import {
 	getDoc,
 	setDoc,
 	updateDoc,
-	writeBatch,
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
@@ -187,41 +186,9 @@ export async function removePaymentDetails(): Promise<boolean> {
  */
 export async function setName(name: string) {
 	const user = getUser();
-	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
-	const userPublicRef = doc(userRef, "public", "data") as DocumentReference<PublicUserData>;
+	const userPublicRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
 
-	const userPublicSnap = await getDoc(userPublicRef);
-	const userPublicData = userPublicSnap.data();
-	if (!userPublicData) throw Error(`User ${user.uid} does not have a '/public' doc`);
-	const oldName = userPublicData.name;
-	if (name === oldName) return;
-
-	const userSnap = await getDoc(userRef);
-	const userData = userSnap.data();
-	if (!userData) throw Error(`User ${user.uid} does not exist`);
-	const userGroups = userData.groups;
-
-	const batch = writeBatch(db);
-	batch.update(userPublicRef, { name });
-
-	// Update all nicknames in groups where it has been unchanged
-	const userGroupsSnaps = await Promise.all(
-		userGroups.map((groupId) => {
-			const groupUserRef = doc(db, "groups", groupId, "users", user.uid) as DocumentReference<GroupUserData>;
-			return getDoc(groupUserRef);
-		}),
-	);
-
-	userGroupsSnaps
-		.filter((groupUserSnap) => groupUserSnap.exists())
-		.forEach((groupUserSnap) => {
-			const currentNickname = groupUserSnap.data().nickname;
-			if (currentNickname === oldName) batch.update(groupUserSnap.ref, { nickname: name });
-		});
-
-	await batch.commit();
-
-	// todo Would having nicknames optional be a better strategy, and fallback to public name
+	await updateDoc(userPublicRef, { name });
 }
 
 /**
