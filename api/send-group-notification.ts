@@ -1,12 +1,11 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { DecodedIdToken, getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { FidMulticastMessage, getMessaging } from "firebase-admin/messaging";
 
 import "./_init/firebaseAdmin.js";
+import { authenticateUser } from "./_utils/auth.js";
 
 const db = getFirestore();
-const auth = getAuth();
 const messaging = getMessaging();
 
 export default async function (req: VercelRequest, res: VercelResponse) {
@@ -14,23 +13,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 
-	// Extract parameters
-	const authHeader = req.headers.authorization;
-	let jwt: string | undefined;
-	if (authHeader && authHeader.startsWith("Bearer ")) {
-		jwt = authHeader.split(" ")[1];
-	}
-	if (!jwt) {
-		return res.status(401).json({ success: false, error: "Missing authorisation token" });
-	}
-
-	// Get user who performed the request
-	let user: DecodedIdToken | undefined;
-	try {
-		user = await auth.verifyIdToken(jwt);
-	} catch (e) {
-		return res.status(401).json({ success: false, error: "Unauthorized" });
-	}
+	const user = await authenticateUser(req.headers.authorization, res);
+	if (!user) return;
 
 	const { groupId, title, body, route } = req.body;
 	if (!groupId || !title || !body) {

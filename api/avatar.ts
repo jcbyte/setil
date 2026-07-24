@@ -1,36 +1,20 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { v2 as cloudinary, SignApiOptions } from "cloudinary";
-import { DecodedIdToken, getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 
 import "./_init/cloudinary.js";
 import "./_init/firebaseAdmin.js";
+import { authenticateUser } from "./_utils/auth.js";
 
 const db = getFirestore();
-const auth = getAuth();
 
 export default async function (req: VercelRequest, res: VercelResponse) {
 	if (req.method !== "POST" && req.method !== "DELETE") {
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 
-	// Extract parameters
-	const authHeader = req.headers.authorization;
-	let jwt: string | undefined;
-	if (authHeader && authHeader.startsWith("Bearer ")) {
-		jwt = authHeader.split(" ")[1];
-	}
-	if (!jwt) {
-		return res.status(401).json({ success: false, error: "Missing authorisation token" });
-	}
-
-	// Get user who performed the request
-	let user: DecodedIdToken | undefined;
-	try {
-		user = await auth.verifyIdToken(jwt);
-	} catch (e) {
-		return res.status(401).json({ success: false, error: "Unauthorized" });
-	}
+	const user = await authenticateUser(req.headers.authorization, res);
+	if (!user) return;
 
 	const avatarPublicId = `users/${user.uid}/avatar`;
 
