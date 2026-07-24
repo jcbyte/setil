@@ -6,7 +6,7 @@ import useLiveUserCollection from "./useLiveUserCollection";
 export type ComputedUtils = { name: string | null };
 export type GroupUserDataWithPublic = GroupUserData & { public: PublicUserData | null; computed: ComputedUtils };
 export type GroupWithUserPublic = Omit<Group, "users"> & {
-	users: Record<string, GroupUserDataWithPublic>;
+	users: Record<string, GroupUserDataWithPublic> | null;
 };
 
 /**
@@ -27,7 +27,7 @@ export type GroupWithUserPublic = Omit<Group, "users"> & {
 export default function useLiveGroupWithUserPublic(
 	groupId: string,
 	onError?: (network: boolean, group: boolean, id?: string) => void,
-): Ref<GroupWithUserPublic | null> {
+): Ref<GroupWithUserPublic> {
 	// Get live group data
 	const liveGroup = useLiveGroup(groupId, (nw) => onError?.(nw, true));
 
@@ -37,21 +37,21 @@ export default function useLiveGroupWithUserPublic(
 
 	// Merge public data into each user
 	const liveGroupWithUserPublic = computed(() => {
-		if (!liveGroup.value.users) return null;
-
-		const mergedUserData: Record<string, GroupUserDataWithPublic> = Object.fromEntries(
-			Object.entries(liveGroup.value.users).map(([userId, groupUserData]) => {
-				const publicRef = userPublic[userId];
-				return [
-					userId,
-					{
-						...groupUserData,
-						public: unref(publicRef),
-						computed: { name: groupUserData.nickname ?? unref(publicRef)?.name ?? null },
-					},
-				];
-			}),
-		);
+		const mergedUserData: Record<string, GroupUserDataWithPublic> | null = liveGroup.value.users
+			? Object.fromEntries(
+					Object.entries(liveGroup.value.users).map(([userId, groupUserData]) => {
+						const publicRef = userPublic[userId];
+						return [
+							userId,
+							{
+								...groupUserData,
+								public: unref(publicRef),
+								computed: { name: groupUserData.nickname ?? unref(publicRef)?.name ?? null },
+							},
+						];
+					}),
+				)
+			: null;
 
 		return { ...liveGroup.value, users: mergedUserData };
 	});

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import {
 	AlertDialog,
@@ -8,7 +9,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import Button from "@/components/ui/button/Button.vue";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -16,7 +18,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Separator from "@/components/ui/separator/Separator.vue";
 import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
@@ -24,8 +25,8 @@ import { deleteTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
-import { getLeftUsersInTransaction, sumRecord } from "@/util/util";
-import { Calendar, EllipsisVertical, FilePen, Trash, UserRound } from "@lucide/vue";
+import { getLeftUsersInTransaction, sumRecord } from "@/util/split";
+import { EllipsisVertical, FilePen, Trash } from "@lucide/vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
@@ -47,14 +48,42 @@ const {
 } = useControlledDialog<{ transactionId: string }>();
 
 const sortedTransactions = computed(() => {
+	if (!props.group.transactions) return [];
+
 	return Object.entries(props.group.transactions).sort(
-		([, transactionA]: [string, Transaction], [, transactionB]: [string, Transaction]) => {
-			return transactionB.date.seconds - transactionA.date.seconds;
-		},
+		([, transactionA]: [string, Transaction], [, transactionB]: [string, Transaction]) =>
+			transactionB.date.seconds - transactionA.date.seconds,
 	);
 });
 
+interface MonthTransactionGroup {
+	monthGroup: string;
+	transactions: [string, Transaction][];
+}
+
+const groupedSortedTransactions = computed(() => {
+	const groups: MonthTransactionGroup[] = [];
+	sortedTransactions.value.forEach(([transactionId, transaction]) => {
+		const monthGroup = transaction.date.toDate().toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+		let lastGroup = groups[groups.length - 1];
+		if (!lastGroup || lastGroup.monthGroup !== monthGroup) {
+			lastGroup = { monthGroup, transactions: [] };
+			groups.push(lastGroup);
+		}
+
+		lastGroup.transactions.push([transactionId, transaction]);
+	});
+
+	console.log(groups);
+
+	return groups;
+});
+
 async function handleDeleteTransaction() {
+	if (!props.group.transactions) return;
+	if (!props.group.users) return;
+
 	startDeleteConfirmDialogProcessing();
 
 	const leftUsers = getLeftUsersInTransaction(
@@ -74,77 +103,95 @@ async function handleDeleteTransaction() {
 
 <template>
 	<div>
-		<div class="flex flex-col gap-2 border border-border rounded-lg p-4">
-			<div class="flex flex-col">
-				<span class="text-lg font-semibold">Group Activity</span>
-				<span class="text-sm text-muted-foreground">Transactions in this group</span>
-			</div>
-			<div class="flex flex-col">
-				<div v-for="([transactionId, transaction], index) in sortedTransactions">
-					<div class="flex flex-col">
-						<div class="flex justify-between items-center">
-							<div class="flex items-center gap-3">
-								<div class="bg-secondary rounded-lg size-9 p-2 flex justify-center items-center">
-									<component :is="CategorySettings[transaction.category].icon" />
-								</div>
-								<div class="flex flex-col">
-									<div class="text-lg font-semibold">{{ transaction.title }}</div>
-									<div class="flex flex-col-reverse sm:flex-row gap-0 sm:gap-2">
-										<div class="flex items-center gap-1">
-											<Calendar class="!size-4 text-muted-foreground" />
-											<span class="text-sm text-muted-foreground text-nowrap">
-												{{ transaction.date.toDate().toLocaleDateString() }}
-											</span>
+		<Card>
+			<CardHeader>
+				<CardTitle>Group Activity</CardTitle>
+				<CardDescription>Transactions in this group</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<div class="flex flex-col gap-4">
+					<div
+						v-if="group.transactions"
+						v-for="groupedTransactions in groupedSortedTransactions"
+						class="flex flex-col gap-1"
+					>
+						<span class="text-sm text-muted-foreground font-semibold uppercase">{{
+							groupedTransactions.monthGroup
+						}}</span>
+						<div class="flex flex-col gap-1">
+							<div
+								v-for="[transactionId, transaction] in groupedTransactions.transactions"
+								class="bg-secondary rounded-lg px-4 py-2 flex justify-between items-center gap-4"
+							>
+								<div class="flex items-center gap-2">
+									<div class="relative flex justify-center items-center">
+										<Avatar
+											v-if="props.group.users && props.group.users[transaction.from].computed.name"
+											:src="props.group.users[transaction.from].public?.photoUrl ?? null"
+											:name="props.group.users[transaction.from].computed.name!"
+										/>
+										<Skeleton v-else class="size-10 rounded-full" />
+										<div
+											class="absolute -bottom-1 -right-1 rounded-full bg-card size-5.5 flex justify-center items-center"
+										>
+											<component :is="CategorySettings[transaction.category].icon" class="size-3!" />
 										</div>
+									</div>
+									<div class="flex flex-col">
+										<span>{{ transaction.title }}</span>
 										<div class="flex items-center gap-1">
-											<UserRound class="!size-4 text-muted-foreground" />
 											<span
-												v-if="props.group.users[transaction.from].computed.name"
+												v-if="props.group.users && props.group.users[transaction.from].computed.name"
 												class="text-sm text-muted-foreground text-nowrap"
 											>
-												{{ props.group.users[transaction.from].computed.name }}
+												by {{ props.group.users[transaction.from].computed.name }}
 											</span>
 											<Skeleton v-else class="w-18 h-5" />
 										</div>
 									</div>
 								</div>
-							</div>
-							<div class="flex justify-center items-center gap-2">
-								<span class="text-lg">
-									{{ formatCurrency(sumRecord(transaction.to), props.group.data.currency) }}
-								</span>
-								<DropdownMenu>
-									<DropdownMenuTrigger as-child>
-										<Button variant="ghost" class="size-8">
+
+								<div class="flex items-center gap-2">
+									<div class="flex flex-col items-end">
+										<span>
+											{{
+												props.group.data
+													? formatCurrency(sumRecord(transaction.to), props.group.data.currency)
+													: sumRecord(transaction.to)
+											}}
+										</span>
+										<span class="text-sm text-muted-foreground text-nowrap">
+											{{ transaction.date.toDate().toLocaleDateString(undefined, { day: "numeric", month: "short" }) }}
+										</span>
+									</div>
+									<DropdownMenu>
+										<DropdownMenuTrigger as-child>
 											<EllipsisVertical class="!size-5" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent>
-										<DropdownMenuItem @click="router.push(`/group/${groupId}/transaction/${transactionId}`)">
-											<div class="w-full flex justify-between items-center">
-												<span>Edit</span>
-												<FilePen class="!size-5" />
-											</div>
-										</DropdownMenuItem>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
-											<div class="w-full flex justify-between items-center">
-												<span class="text-red-400">Delete</span>
-												<Trash class="text-red-400 !size-5" />
-											</div>
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent>
+											<DropdownMenuItem @click="router.push(`/group/${groupId}/transaction/${transactionId}`)">
+												<div class="w-full flex justify-between items-center">
+													<span>Edit</span>
+													<FilePen class="!size-5" />
+												</div>
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
+											<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
+												<div class="w-full flex justify-between items-center">
+													<span class="text-red-400">Delete</span>
+													<Trash class="text-red-400 !size-5" />
+												</div>
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
 							</div>
 						</div>
-						<Separator v-if="index < sortedTransactions.length - 1" class="my-2" />
 					</div>
+					<Skeleton v-else />
 				</div>
-				<div v-if="sortedTransactions.length === 0" class="flex justify-center items-center">
-					<span class="text-sm text-muted-foreground">No Activity</span>
-				</div>
-			</div>
-		</div>
+			</CardContent>
+		</Card>
 
 		<AlertDialog v-model:open="deleteConfirmDialogOpen">
 			<AlertDialogContent>

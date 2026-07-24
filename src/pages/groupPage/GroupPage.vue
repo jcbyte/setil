@@ -2,15 +2,21 @@
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import CardContent from "@/components/ui/card/CardContent.vue";
+import CardDescription from "@/components/ui/card/CardDescription.vue";
+import CardFooter from "@/components/ui/card/CardFooter.vue";
+import CardHeader from "@/components/ui/card/CardHeader.vue";
+import CardTitle from "@/components/ui/card/CardTitle.vue";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Tabs from "@/components/ui/tabs/Tabs.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { inviteUser, noGroup } from "@/util/app";
-import { getRouteParam } from "@/util/util";
+import { getRouteParam } from "@/util/split.ts";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "@lucide/vue";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import GroupActivity from "./GroupActivity.vue";
@@ -25,6 +31,10 @@ if (!groupId) {
 	throw "No groupId";
 }
 const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
+
+const activeUsers = computed(() =>
+	group.value.users ? Object.values(group.value.users).filter((user) => user.status === "active") : [],
+);
 
 type Tab = "summary" | "activity";
 const tabSettings: Record<Tab, { title: string }> = {
@@ -43,8 +53,7 @@ watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
 const isAddingMember = ref<boolean>(false);
 
 async function addMember() {
-	if (!groupId) return;
-	if (!group.value) return;
+	if (!groupId || !group.value || !group.value.data) return;
 
 	isAddingMember.value = true;
 	try {
@@ -92,39 +101,39 @@ watch(currentTab, (newTab, oldTab) => {
 </script>
 
 <template>
-	<div class="w-full flex flex-col gap-4 items-center">
-		<div class="w-full flex justify-between items-center">
-			<div class="flex gap-2 justify-center items-center">
-				<Button variant="ghost" class="size-9" @click="router.push('/')">
-					<ArrowLeft class="!size-6" />
+	<div class="mx-auto w-full max-w-4xl flex flex-col gap-4">
+		<div class="flex justify-between items-center">
+			<div class="flex items-center gap-1">
+				<Button variant="ghost" size="icon" @click="router.push('/')">
+					<ArrowLeft class="!size-5.5" />
 				</Button>
-				<span v-if="group" class="text-lg font-semibold">{{ group.data.name }}</span>
-				<Skeleton v-else class="w-20 h-7" />
+				<span v-if="group.data" class="text-lg font-semibold">{{ group.data.name }}</span>
+				<Skeleton v-else class="w-28 h-7" />
 			</div>
-			<div class="flex gap-2 justify-center items-center">
-				<YourAccountSettings />
-				<Button variant="outline" class="size-9" @click="router.push(`/group/${groupId}/edit`)">
-					<Settings class="!size-5" />
+			<div class="flex items-center gap-2">
+				<Button variant="outline" class="size-9 sm:size-auto" @click="router.push(`/group/${groupId}/edit`)">
+					<Settings />
+					<span class="hidden sm:inline">Group Settings</span>
 				</Button>
+				<YourAccountSettings />
 			</div>
 		</div>
 
-		<div class="flex flex-col justify-center md:flex-row gap-2 w-full">
-			<div class="flex-1 flex flex-col gap-2 w-full md:max-w-[36rem]">
+		<div class="flex flex-col md:flex-row gap-2">
+			<div class="flex-1 flex flex-col gap-2">
 				<Tabs v-model:model-value="currentTab">
-					<TabsList class="grid w-full grid-cols-2">
+					<TabsList class="grid grid-cols-2">
 						<TabsTrigger v-for="tab in tabOrder" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
 					</TabsList>
 				</Tabs>
-				<div v-if="group" class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
+				<div class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
 					<Transition :name="tabTransition" mode="out-in">
 						<GroupSummary v-if="currentTab === 'summary'" :group="group" />
 						<GroupActivity v-else-if="currentTab === 'activity'" :group-id="groupId" :group="group" />
 					</Transition>
 				</div>
-				<Skeleton v-else class="w-full h-96" />
 
-				<div class="flex w-full gap-2">
+				<div class="flex gap-2">
 					<Button
 						v-for="groupButton in [
 							{
@@ -144,11 +153,11 @@ watch(currentTab, (newTab, oldTab) => {
 						class="h-full flex-1 p-4"
 						@click="groupButton.onClick"
 					>
-						<div class="flex flex-col justify-center items-center gap-2">
-							<div class="bg-secondary p-3 rounded-lg aspect-square flex justify-center items-center">
-								<component :is="groupButton.icon" class="!size-7" />
+						<div class="flex flex-col items-center gap-2">
+							<div class="bg-muted p-3 rounded-lg aspect-square flex justify-center items-center">
+								<component :is="groupButton.icon" class="!size-6" />
 							</div>
-							<div class="flex flex-col justify-center items-center">
+							<div class="flex flex-col items-center">
 								<span class="text-md font-semibold">{{ groupButton.title }}</span>
 								<span class="text-sm text-muted-foreground">{{ groupButton.description }}</span>
 							</div>
@@ -157,43 +166,45 @@ watch(currentTab, (newTab, oldTab) => {
 				</div>
 			</div>
 
-			<div
-				v-if="group"
-				class="border border-border rounded-lg p-4 flex flex-col gap-2 h-fit w-full md:w-auto md:max-w-72 lg:max-w-96"
-			>
-				<div class="flex flex-col">
-					<span class="text-lg font-semibold">Group Info</span>
-					<span v-if="group.data.description" class="text-sm text-muted-foreground">Description</span>
-					<span v-if="group.data.description" class="text-sm">{{ group.data.description }}</span>
-				</div>
-				<div class="flex flex-col gap-1">
-					<span class="text-sm text-muted-foreground font-semibold">
-						Members ({{ Object.values(group.users).filter((user) => user.status === "active").length }})
-					</span>
-					<div class="flex gap-2 flex-wrap">
-						<div
-							v-if="group.users"
-							v-for="user in Object.values(group.users).filter((user) => user.status === 'active')"
-							class="flex gap-1 justify-center items-center"
-						>
-							<Avatar
-								v-if="user.computed.name"
-								:src="user.public?.photoUrl ?? null"
-								:name="user.computed.name"
-								class="size-7"
-							/>
-							<Skeleton v-else class="size-7 rounded-full" />
-							<span v-if="user.computed.name" class="text-sm">{{ user.computed.name }}</span>
-							<Skeleton v-else class="w-18 h-5" />
+			<Card v-if="group.data" class="relative h-fit min-w-68 max-w-none md:max-w-96">
+				<CardHeader>
+					<CardTitle>Group Info</CardTitle>
+					<CardDescription v-if="group.data.description">{{ group.data.description }}</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div class="flex flex-col gap-1.5">
+						<span v-if="group.users" class="text-sm font-semibold"> {{ activeUsers.length }} Members </span>
+						<Skeleton v-else class="inline w-22 h-5" />
+
+						<div v-if="group.users" class="flex flex-col gap-1">
+							<div v-for="user in activeUsers" class="flex gap-1 items-center">
+								<Avatar
+									v-if="user.computed.name"
+									:src="user.public?.photoUrl ?? null"
+									:name="user.computed.name"
+									class="size-7"
+								/>
+								<Skeleton v-else class="size-7 rounded-full" />
+								<span v-if="user.computed.name" class="text-sm">{{ user.computed.name }}</span>
+								<Skeleton v-else class="w-18 h-5" />
+							</div>
+						</div>
+						<div v-else class="flex flex-col gap-1">
+							<div v-for="_ in 4" class="flex gap-1 items-center">
+								<Skeleton class="size-7 rounded-full" />
+								<Skeleton class="w-18 h-5" />
+							</div>
 						</div>
 					</div>
-				</div>
-				<Button variant="outline" :disabled="isAddingMember" @click="addMember">
-					<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
-					<span>Add Member</span>
-				</Button>
-			</div>
-			<Skeleton v-else class="h-64 w-full md:max-w-72 lg:max-w-96" />
+				</CardContent>
+				<CardFooter>
+					<Button variant="secondary" class="w-full" :disabled="isAddingMember" @click="addMember">
+						<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
+						<span>Add Member</span>
+					</Button>
+				</CardFooter>
+			</Card>
+			<Skeleton v-else class="h-82 w-68" />
 		</div>
 	</div>
 </template>
