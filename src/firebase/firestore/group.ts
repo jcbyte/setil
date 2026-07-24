@@ -241,6 +241,18 @@ export async function changeUserNickname(groupId: string, userId: string, nickna
 }
 
 /**
+ * Clear a users nickname within a group.
+ * @param groupId id of the group.
+ * @param userId id of the user whose nickname to clear.
+ */
+export async function clearUserNickname(groupId: string, userId: string) {
+	const groupUserRef = doc(db, "groups", groupId, "users", userId) as DocumentReference<GroupUserData>;
+
+	// Update the name of the user in the group
+	await updateDoc(groupUserRef, { nickname: deleteField() });
+}
+
+/**
  * Set a groups owner to a different user.
  * @param groupId id of the group.
  * @param userId id of the user to promote.

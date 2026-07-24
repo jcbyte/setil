@@ -29,6 +29,7 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic";
 import {
 	changeUserNickname,
+	clearUserNickname,
 	createGroup,
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
@@ -53,6 +54,7 @@ import {
 	Plus,
 	Save,
 	Trash,
+	UserMinus,
 	UserRound,
 	UserRoundPlus,
 	X,
@@ -194,7 +196,7 @@ async function updateMyNickname() {
 	try {
 		await changeUserNickname(groupId, currentUser.value!.uid, parsedName.data);
 
-		toast("Name Updated", {
+		toast("Nickname Updated", {
 			description: "And just like that... a new legend is born!",
 		});
 	} catch (e) {
@@ -205,12 +207,25 @@ async function updateMyNickname() {
 }
 
 async function clearMyNickname() {
-	// todo
+	if (!groupId) return;
+
+	isMyNicknameClearing.value = true;
+
+	try {
+		await clearUserNickname(groupId, currentUser.value!.uid);
+
+		toast("Nickname Cleared", { description: "todo" });
+	} catch (e) {
+		toast.error("Error Updating Name", { description: String(e) });
+	}
+
+	isMyNicknameClearing.value = false;
 }
 
 const memberNewNickname = ref<
 	Record<string, { updating: boolean; nickname: string; processing: boolean; errors?: string }>
 >({});
+const memberNicknamesClearing = ref<Set<String>>(new Set());
 
 function validateMemberName(userId: string) {
 	const parsedName = nicknameValidation.safeParse(memberNewNickname.value[userId].nickname);
@@ -242,7 +257,7 @@ async function acceptRename(userId: string) {
 
 	try {
 		await changeUserNickname(groupId, userId, parsedName.data);
-		toast(`${parsedName.data}'s Name Updated`, {
+		toast(`${parsedName.data}'s Nickname Updated`, {
 			description: "Identity crisis averted.",
 		});
 	} catch (e) {
@@ -255,7 +270,23 @@ async function acceptRename(userId: string) {
 }
 
 async function clearNickname(userId: string) {
-	// todo
+	if (!groupId) return;
+	if (!group.value) return;
+
+	memberNicknamesClearing.value.add(userId);
+
+	try {
+		await clearUserNickname(groupId, userId);
+		toast(`${group.value.users[userId].public?.name}'s Nickname Cleared`, {
+			description: "todo.",
+		});
+	} catch (e) {
+		toast.error(`Error Updating ${group.value.users[userId].computed.name}'s Name`, {
+			description: String(e),
+		});
+	}
+
+	memberNicknamesClearing.value.delete(userId);
 }
 
 async function promoteMember() {
@@ -451,9 +482,9 @@ async function deleteGroup() {
 					<div class="flex flex-col gap-2">
 						<div class="flex items-center gap-1">
 							<span :class="`text-sm font-[500] ${myNicknameErrors && 'text-destructive'}`">Your Nickname</span>
-							<Dot v-if="currentGroupUser?.nickname" class="size-4 text-muted-foreground" />
+							<Dot v-if="currentGroupUser?.nickname || isMyNicknameClearing" class="size-4 text-muted-foreground" />
 							<Button
-								v-if="currentGroupUser?.nickname"
+								v-if="currentGroupUser?.nickname || isMyNicknameClearing"
 								variant="link"
 								:disabled="isMyNicknameClearing"
 								class="h-5 p-0 text-sm text-muted-foreground"
@@ -572,13 +603,20 @@ async function deleteGroup() {
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent>
-										<DropdownMenuItem @click="startRename(userId)">
+										<DropdownMenuItem
+											@click="startRename(userId)"
+											:disabled="memberNewNickname[userId]?.updating || memberNicknamesClearing.has(userId)"
+										>
 											<div class="w-full flex justify-between items-center gap-2">
 												<span>Rename</span>
 												<Pencil class="!size-5" />
 											</div>
 										</DropdownMenuItem>
-										<DropdownMenuItem v-if="user.nickname" @click="clearNickname(userId)">
+										<DropdownMenuItem
+											v-if="user.nickname"
+											@click="clearNickname(userId)"
+											:disabled="memberNewNickname[userId]?.updating || memberNicknamesClearing.has(userId)"
+										>
 											<div class="w-full flex justify-between items-center gap-2">
 												<span>Clear Nickname</span>
 												<CircleX class="!size-5" />
@@ -594,7 +632,7 @@ async function deleteGroup() {
 										<DropdownMenuItem @click="removeMember(userId)" :disabled="user.status !== 'active'">
 											<div class="w-full flex justify-between items-center gap-2">
 												<span class="text-red-400">Remove</span>
-												<Trash class="text-red-400 !size-5" />
+												<UserMinus class="text-red-400 !size-5" />
 											</div>
 										</DropdownMenuItem>
 									</DropdownMenuContent>
