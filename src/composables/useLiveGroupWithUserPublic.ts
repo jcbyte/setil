@@ -3,7 +3,8 @@ import { computed, unref, type Ref } from "vue";
 import { useLiveGroup, type Group } from "./useLiveGroup";
 import useLiveUserCollection from "./useLiveUserCollection";
 
-export type GroupUserDataWithPublic = GroupUserData & { public: PublicUserData | null };
+export type ComputedUtils = { name: string | null };
+export type GroupUserDataWithPublic = GroupUserData & { public: PublicUserData | null; computed: ComputedUtils };
 export type GroupWithUserPublic = Omit<Group, "users"> & {
 	users: Record<string, GroupUserDataWithPublic>;
 };
@@ -46,6 +47,7 @@ export default function useLiveGroupWithUserPublic(
 					{
 						...groupUserData,
 						public: unref(publicRef),
+						computed: { name: groupUserData.nickname ?? unref(publicRef)?.name ?? null },
 					},
 				];
 			}),

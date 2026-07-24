@@ -29,6 +29,7 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic";
 import {
 	changeUserNickname,
+	clearUserNickname,
 	createGroup,
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
@@ -45,11 +46,15 @@ import {
 	ArrowLeft,
 	Check,
 	ChevronDown,
+	CircleX,
+	Dot,
+	Loader2,
 	LogOut,
 	Pencil,
 	Plus,
 	Save,
 	Trash,
+	UserMinus,
 	UserRound,
 	UserRoundPlus,
 	X,
@@ -87,14 +92,15 @@ watch(
 				currency: groupValue.data.currency,
 			});
 
-			myDisplayName.value = groupValue.users[currentUser.value!.uid].nickname;
+			myNickname.value = groupValue.users[currentUser.value!.uid].nickname ?? "";
 		}
 	},
 	{ immediate: true },
 );
 
 const isGroupDetailsUpdating = ref<boolean>(false);
-const isMyDisplayNameUpdating = ref<boolean>(false);
+const isMyNicknameUpdating = ref<boolean>(false);
+const isMyNicknameClearing = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
 const isUpdatingMember = ref<string[]>([]);
 
@@ -169,42 +175,61 @@ const currentGroupUser = computed<GroupUserDataWithPublic | null>(
 	() => group.value?.users[currentUser.value!.uid] ?? null,
 );
 
-const myDisplayName = ref<string | undefined>();
-const myDisplayNameErrors = ref<string | undefined>();
-const displayNameValidation = z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters");
+const nicknameValidation = z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters");
 
-function validateMyDisplayName() {
-	const parsedName = displayNameValidation.safeParse(myDisplayName.value);
-	myDisplayNameErrors.value = parsedName.success ? undefined : parsedName.error.issues[0].message;
+const myNickname = ref<string | undefined>();
+const myNicknameErrors = ref<string | undefined>();
+
+function validateMyNickname() {
+	const parsedName = nicknameValidation.safeParse(myNickname.value);
+	myNicknameErrors.value = parsedName.success ? undefined : parsedName.error.issues[0].message;
 }
 
-async function updateDisplayName() {
+async function updateMyNickname() {
 	if (!groupId) return;
 
-	const parsedName = displayNameValidation.safeParse(myDisplayName.value);
+	const parsedName = nicknameValidation.safeParse(myNickname.value);
 	if (!parsedName.success) return;
 
-	isMyDisplayNameUpdating.value = true;
+	isMyNicknameUpdating.value = true;
 
 	try {
 		await changeUserNickname(groupId, currentUser.value!.uid, parsedName.data);
 
-		toast("Name Updated", {
+		toast("Nickname Updated", {
 			description: "And just like that... a new legend is born!",
 		});
 	} catch (e) {
 		toast.error("Error Updating Name", { description: String(e) });
 	}
 
-	isMyDisplayNameUpdating.value = false;
+	isMyNicknameUpdating.value = false;
+}
+
+async function clearMyNickname() {
+	if (!groupId) return;
+
+	isMyNicknameClearing.value = true;
+
+	try {
+		await clearUserNickname(groupId, currentUser.value!.uid);
+
+		toast("Nickname Cleared", { description: "No more secret identities." });
+	} catch (e) {
+		toast.error("Error Updating Name", { description: String(e) });
+	}
+
+	myNickname.value = "";
+	isMyNicknameClearing.value = false;
 }
 
 const memberNewNickname = ref<
 	Record<string, { updating: boolean; nickname: string; processing: boolean; errors?: string }>
 >({});
+const memberNicknamesClearing = ref<Set<String>>(new Set());
 
 function validateMemberName(userId: string) {
-	const parsedName = displayNameValidation.safeParse(memberNewNickname.value[userId].nickname);
+	const parsedName = nicknameValidation.safeParse(memberNewNickname.value[userId].nickname);
 	memberNewNickname.value[userId].errors = parsedName.success ? undefined : parsedName.error.issues[0].message;
 }
 
@@ -213,7 +238,7 @@ function startRename(userId: string) {
 
 	memberNewNickname.value[userId] = {
 		updating: true,
-		nickname: group.value.users[userId].nickname,
+		nickname: group.value.users[userId].nickname ?? "",
 		processing: false,
 	};
 }
@@ -226,23 +251,43 @@ async function acceptRename(userId: string) {
 	if (!groupId) return;
 	if (!group.value) return;
 
-	const parsedName = displayNameValidation.safeParse(memberNewNickname.value[userId].nickname);
+	const parsedName = nicknameValidation.safeParse(memberNewNickname.value[userId].nickname);
 	if (!parsedName.success) return;
 
 	memberNewNickname.value[userId].processing = true;
 
 	try {
 		await changeUserNickname(groupId, userId, parsedName.data);
-		toast(`${group.value.users[userId].nickname}'s Name Updated`, {
+		toast(`${parsedName.data}'s Nickname Updated`, {
 			description: "Identity crisis averted.",
 		});
 	} catch (e) {
-		toast.error(`Error Updating ${group.value.users[userId].nickname}'s Name`, {
+		toast.error(`Error Updating ${group.value.users[userId].computed.name}'s Name`, {
 			description: String(e),
 		});
 	}
 
 	memberNewNickname.value[userId].updating = false;
+}
+
+async function clearNickname(userId: string) {
+	if (!groupId) return;
+	if (!group.value) return;
+
+	memberNicknamesClearing.value.add(userId);
+
+	try {
+		await clearUserNickname(groupId, userId);
+		toast(`${group.value.users[userId].public?.name}'s Nickname Cleared`, {
+			description: "The disguise has been removed.",
+		});
+	} catch (e) {
+		toast.error(`Error Updating ${group.value.users[userId].computed.name}'s Name`, {
+			description: String(e),
+		});
+	}
+
+	memberNicknamesClearing.value.delete(userId);
 }
 
 async function promoteMember() {
@@ -254,11 +299,11 @@ async function promoteMember() {
 
 	try {
 		await promoteUser(groupId, promoteDialogData.value.userId);
-		toast(`${group.value.users[promoteDialogData.value.userId].nickname} Promoted`, {
+		toast(`${group.value.users[promoteDialogData.value.userId].computed.name} Promoted`, {
 			description: "Long live the new king.",
 		});
 	} catch (e) {
-		toast.error(`Error Promoting ${group.value.users[promoteDialogData.value.userId].nickname}`, {
+		toast.error(`Error Promoting ${group.value.users[promoteDialogData.value.userId].computed.name}`, {
 			description: String(e),
 		});
 	}
@@ -274,11 +319,11 @@ async function removeMember(userId: string) {
 
 	try {
 		await removeUser(groupId, userId);
-		toast(`Removed ${group.value.users[userId].nickname}`, {
+		toast(`Removed ${group.value.users[userId].computed.name}`, {
 			description: "They've been erased from existence... well, at least the group.",
 		});
 	} catch (e) {
-		toast.error(`Error Removing ${group.value.users[userId].nickname}`, { description: String(e) });
+		toast.error(`Error Removing ${group.value.users[userId].computed.name}`, { description: String(e) });
 	}
 
 	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
@@ -419,9 +464,16 @@ async function deleteGroup() {
 						<span class="text-sm text-muted-foreground">How others see you in this group</span>
 					</div>
 					<div v-if="group && currentGroupUser" class="flex items-center gap-2">
-						<Avatar :src="currentGroupUser.public?.photoUrl ?? null" :name="currentGroupUser.nickname" class="size-9" />
+						<Avatar
+							v-if="currentGroupUser.computed.name"
+							:src="currentGroupUser.public?.photoUrl ?? null"
+							:name="currentGroupUser.computed.name"
+							class="size-9"
+						/>
+						<Skeleton v-else class="size-9 rounded-full" />
 						<div class="flex flex-col">
-							<span>{{ currentGroupUser.nickname }}</span>
+							<span v-if="currentGroupUser.computed.name">{{ currentGroupUser.computed.name }}</span>
+							<Skeleton v-else class="w-22 h-6" />
 							<span class="text-sm text-muted-foreground">
 								{{ currentUser!.uid === group.data.owner ? "Owner" : "Member" }}
 							</span>
@@ -429,35 +481,54 @@ async function deleteGroup() {
 					</div>
 					<Skeleton v-else class="w-56 h-10" />
 					<div class="flex flex-col gap-2">
-						<span :class="`text-sm font-[500] ${myDisplayNameErrors && 'text-destructive'}`">Display Name</span>
+						<div class="flex items-center gap-1">
+							<span :class="`text-sm font-[500] ${myNicknameErrors && 'text-destructive'}`">Your Nickname</span>
+							<Dot v-if="currentGroupUser?.nickname || isMyNicknameClearing" class="size-4 text-muted-foreground" />
+							<Button
+								v-if="currentGroupUser?.nickname || isMyNicknameClearing"
+								variant="link"
+								:disabled="isMyNicknameClearing"
+								class="h-5 p-0 text-sm text-muted-foreground"
+								@click="clearMyNickname"
+								>Clear Nickname</Button
+							>
+							<Loader2 v-if="isMyNicknameClearing" class="size-4 text-muted-foreground animate-spin" />
+						</div>
 						<div class="flex justify-center items-center gap-2">
 							<div class="relative w-full">
 								<Input
-									v-model:model-value="myDisplayName"
+									v-model:model-value="myNickname"
 									class="pl-8"
 									autocomplete="off"
 									type="text"
-									placeholder="Name"
-									:disabled="isMyDisplayNameUpdating"
-									@update:model-value="validateMyDisplayName"
+									:placeholder="currentGroupUser?.public?.name ?? 'Name'"
+									:disabled="isMyNicknameUpdating || isMyNicknameClearing"
+									@update:model-value="validateMyNickname"
 								/>
 								<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
 									<UserRound class="size-4" />
 								</span>
 							</div>
-							<Button type="button" :disabled="isMyDisplayNameUpdating" class="w-fit" @click="updateDisplayName">
-								<LoaderIcon :icon="Check" :loading="isMyDisplayNameUpdating" />
+							<Button
+								type="button"
+								:disabled="isMyNicknameUpdating || isMyNicknameClearing"
+								class="w-fit"
+								@click="updateMyNickname"
+							>
+								<LoaderIcon :icon="Check" :loading="isMyNicknameUpdating" />
 								<span>Update</span>
 							</Button>
 						</div>
-						<span v-if="myDisplayNameErrors" class="text-[12.8px] text-destructive">{{ myDisplayNameErrors }}</span>
+						<span v-if="myNicknameErrors" class="text-[12.8px] text-destructive">{{ myNicknameErrors }}</span>
 					</div>
 				</div>
 
 				<div v-if="!newGroup" class="border border-border rounded-lg flex flex-col gap-6 p-4">
 					<div class="flex flex-col">
 						<span class="text-lg font-semibold">Members</span>
-						<span class="text-sm text-muted-foreground">View and manage group members</span>
+						<span class="text-sm text-muted-foreground"
+							>View {{ currentUser?.uid === group?.data.owner && "and manage" }} group members</span
+						>
 					</div>
 
 					<div v-if="group" class="flex flex-col gap-4">
@@ -471,12 +542,17 @@ async function deleteGroup() {
 							<div class="flex justify-between items-center gap-2">
 								<div class="flex items-center gap-2 flex-1">
 									<Avatar
+										v-if="user.computed.name"
 										:src="user.public?.photoUrl ?? null"
-										:name="user.nickname"
+										:name="user.computed.name"
 										:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
 									/>
+									<Skeleton v-else class="size-9 rounded-full" />
 									<div v-if="!(memberNewNickname[userId]?.updating ?? false)" class="flex flex-col">
-										<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.nickname }}</span>
+										<span v-if="user.computed.name" :class="`${user.status === 'left' && 'text-muted-foreground'}`">
+											{{ user.computed.name }}
+										</span>
+										<Skeleton v-else class="w-22 h-6" />
 										<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
 											{{
 												user.status === "active" ? (userId === group!.data.owner ? "Owner" : "Member") : "Left Group"
@@ -488,7 +564,7 @@ async function deleteGroup() {
 											v-model:model-value="memberNewNickname[userId].nickname"
 											autocomplete="off"
 											type="text"
-											placeholder="Name"
+											:placeholder="user.public?.name ?? 'Name'"
 											:disabled="memberNewNickname[userId].processing"
 											@update:model-value="validateMemberName(userId)"
 										/>
@@ -528,23 +604,36 @@ async function deleteGroup() {
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent>
-										<DropdownMenuItem @click="startRename(userId)">
-											<div class="w-full flex justify-between items-center">
+										<DropdownMenuItem
+											@click="startRename(userId)"
+											:disabled="memberNewNickname[userId]?.updating || memberNicknamesClearing.has(userId)"
+										>
+											<div class="w-full flex justify-between items-center gap-2">
 												<span>Rename</span>
 												<Pencil class="!size-5" />
 											</div>
 										</DropdownMenuItem>
+										<DropdownMenuItem
+											v-if="user.nickname"
+											@click="clearNickname(userId)"
+											:disabled="memberNewNickname[userId]?.updating || memberNicknamesClearing.has(userId)"
+										>
+											<div class="w-full flex justify-between items-center gap-2">
+												<span>Clear Nickname</span>
+												<CircleX class="!size-5" />
+											</div>
+										</DropdownMenuItem>
 										<DropdownMenuItem @click="openPromoteDialog({ userId })" :disabled="user.status !== 'active'">
-											<div class="w-full flex justify-between items-center">
+											<div class="w-full flex justify-between items-center gap-2">
 												<span>Promote</span>
 												<ArrowBigUpDash class="!size-5" />
 											</div>
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem @click="removeMember(userId)" :disabled="user.status !== 'active'">
-											<div class="w-full flex justify-between items-center">
+											<div class="w-full flex justify-between items-center gap-2">
 												<span class="text-red-400">Remove</span>
-												<Trash class="text-red-400 !size-5" />
+												<UserMinus class="text-red-400 !size-5" />
 											</div>
 										</DropdownMenuItem>
 									</DropdownMenuContent>
@@ -605,7 +694,7 @@ async function deleteGroup() {
 					<AlertDialogDescription>
 						Promoting
 						<span class="font-semibold">
-							{{ group!.users[promoteDialogData!.userId].nickname }}
+							{{ group!.users[promoteDialogData!.userId].computed.name }}
 						</span>
 						to Owner will change your role to Member.
 					</AlertDialogDescription>

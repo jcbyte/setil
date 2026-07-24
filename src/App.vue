@@ -54,7 +54,7 @@ const resolvedTheme = useColorMode().state;
 		rich-colors
 		close-button
 		close-button-position="top-right"
-		:duration="5000"
+		:duration="6000"
 	/>
 </template>
 

@@ -17,8 +17,9 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Separator from "@/components/ui/separator/Separator.vue";
+import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
-import type { Group } from "@/composables/useLiveGroup";
+import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import { deleteTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
@@ -31,7 +32,7 @@ import { toast } from "vue-sonner";
 
 const props = defineProps<{
 	groupId: string;
-	group: Group;
+	group: GroupWithUserPublic;
 }>();
 
 const router = useRouter();
@@ -91,15 +92,19 @@ async function handleDeleteTransaction() {
 									<div class="flex flex-col-reverse sm:flex-row gap-0 sm:gap-2">
 										<div class="flex items-center gap-1">
 											<Calendar class="!size-4 text-muted-foreground" />
-											<span class="text-sm text-muted-foreground text-nowrap">{{
-												transaction.date.toDate().toLocaleDateString()
-											}}</span>
+											<span class="text-sm text-muted-foreground text-nowrap">
+												{{ transaction.date.toDate().toLocaleDateString() }}
+											</span>
 										</div>
 										<div class="flex items-center gap-1">
 											<UserRound class="!size-4 text-muted-foreground" />
-											<span class="text-sm text-muted-foreground text-nowrap">{{
-												props.group.users[transaction.from].nickname
-											}}</span>
+											<span
+												v-if="props.group.users[transaction.from].computed.name"
+												class="text-sm text-muted-foreground text-nowrap"
+											>
+												{{ props.group.users[transaction.from].computed.name }}
+											</span>
+											<Skeleton v-else class="w-18 h-5" />
 										</div>
 									</div>
 								</div>

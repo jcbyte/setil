@@ -19,7 +19,7 @@ import {
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { GroupData, GroupUserData, Invite, UserData } from "../types";
+import type { GroupData, GroupUserData, Invite, PublicUserData, UserData } from "../types";
 import { getLeftUserStatus, removeGroupFromUser } from "./user";
 import { getUser } from "./util";
 
@@ -148,11 +148,10 @@ export async function cleanupInvites(groupId: string): Promise<void> {
  * @param getData also retries the group and this user in the groups data.
  * @returns true if the user has newly joined the group.
  */
-export async function joinGroup<T extends boolean>(
+export async function joinGroup(
 	groupId: string,
 	inviteCode: string,
-	getData: T = false as T,
-): Promise<{ new: false } | { new: true; user: GroupUserData; group: GroupData }> {
+): Promise<{ new: false } | { new: true; groupName: string; userName: string }> {
 	const user = getUser();
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 
@@ -183,10 +182,12 @@ export async function joinGroup<T extends boolean>(
 		await updateDoc(groupUserRef, { customData: deleteField() }); // Remove the required custom data
 
 		await addGroupToUser();
-		return {
-			new: true,
-			...(getData && { user: (await getDoc(groupUserRef)).data()!, group: (await getDoc(groupRef)).data()! }),
-		};
+
+		const groupName = (await getDoc(groupRef)).data()!.name;
+		const userPublicRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
+		const userName = (await getDoc(groupUserRef)).data()!.nickname ?? (await getDoc(userPublicRef)).data()!.name;
+
+		return { new: true, groupName, userName };
 	} catch {
 		// Updating a non-existent doc will fail, hence the user has never been in the group before
 	}
@@ -198,7 +199,12 @@ export async function joinGroup<T extends boolean>(
 		await updateDoc(groupUserRef, { customData: deleteField() }); // Remove the required custom data
 
 		await addGroupToUser();
-		return { new: true, ...(getData && { user: newUserData, group: await (await getDoc(groupRef)).data()! }) };
+
+		const groupName = (await getDoc(groupRef)).data()!.name;
+		const userPublicRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
+		const userName = (await getDoc(userPublicRef)).data()!.name;
+
+		return { new: true, groupName, userName };
 	} catch {
 		// If joined failed then throw
 		throw Error("Invalid code");
@@ -232,6 +238,18 @@ export async function changeUserNickname(groupId: string, userId: string, nickna
 
 	// Update the name of the user in the group
 	await updateDoc(groupUserRef, { nickname });
+}
+
+/**
+ * Clear a users nickname within a group.
+ * @param groupId id of the group.
+ * @param userId id of the user whose nickname to clear.
+ */
+export async function clearUserNickname(groupId: string, userId: string) {
+	const groupUserRef = doc(db, "groups", groupId, "users", userId) as DocumentReference<GroupUserData>;
+
+	// Update the name of the user in the group
+	await updateDoc(groupUserRef, { nickname: deleteField() });
 }
 
 /**

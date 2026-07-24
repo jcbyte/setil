@@ -23,14 +23,14 @@ onMounted(async () => {
 	}
 
 	try {
-		const joinRes = await joinGroup(routeGroupId, routeInviteCode, true);
+		const joinRes = await joinGroup(routeGroupId, routeInviteCode);
 
 		if (joinRes.new) {
 			toast("Joined Group", { description: "Time to make cents of things." });
 			sendNotification(
 				routeGroupId,
-				joinRes.group.name,
-				`${joinRes.user.nickname} just joined the group!`,
+				joinRes.groupName,
+				`${joinRes.userName} just joined the group!`,
 				`/group/${routeGroupId}`,
 			);
 		}

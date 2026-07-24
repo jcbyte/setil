@@ -219,7 +219,7 @@ const onSubmit = handleSubmit(async (values) => {
 			sendNotification(
 				groupId,
 				group.value!.data.name,
-				`${group.value!.users[values.from].nickname} added expense ${values.title} for ${formatCurrency(
+				`${group.value!.users[values.from].computed.name} added expense ${values.title} for ${formatCurrency(
 					values.amount,
 					group.value!.data.currency,
 					false,
@@ -371,11 +371,16 @@ const onSubmit = handleSubmit(async (values) => {
 											<SelectValue>
 												<div v-if="values.from" class="flex items-center gap-2">
 													<Avatar
+														v-if="group.users[values.from].computed.name"
 														:src="group.users[values.from].public?.photoUrl ?? null"
-														:name="group.users[values.from].nickname"
+														:name="group.users[values.from].computed.name!"
 														class="size-6"
 													/>
-													<span>{{ group.users[values.from!].nickname }} </span>
+													<Skeleton v-else class="size-6 rounded-full" />
+													<span v-if="group.users[values.from!].computed.name">
+														{{ group.users[values.from!].computed.name }}
+													</span>
+													<Skeleton v-else class="w-18 h-5" />
 												</div>
 											</SelectValue>
 										</SelectTrigger>
@@ -388,13 +393,19 @@ const onSubmit = handleSubmit(async (values) => {
 										>
 											<div class="flex items-center gap-2">
 												<Avatar
+													v-if="group.users[userId].computed.name"
 													:src="group.users[userId].public?.photoUrl ?? null"
-													:name="group.users[userId].nickname"
+													:name="group.users[userId].computed.name"
 													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>
-												<span :class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`">
-													{{ group.users[userId].nickname }}
+												<Skeleton v-else class="size-6 rounded-full" />
+												<span
+													v-if="group.users[userId].computed.name"
+													:class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`"
+												>
+													{{ group.users[userId].computed.name }}
 												</span>
+												<Skeleton v-else class="w-18 h-5" />
 											</div>
 										</SelectItem>
 									</SelectContent>
@@ -435,17 +446,21 @@ const onSubmit = handleSubmit(async (values) => {
 											/>
 											<label :for="`user-${userId}`" class="flex justify-start items-center gap-2">
 												<Avatar
+													v-if="group.users[userId].computed.name"
 													:src="group.users[userId].public?.photoUrl ?? null"
-													:name="group.users[userId].nickname"
+													:name="group.users[userId].computed.name"
 													:class="`size-6 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 												/>
+												<Skeleton v-else class="size-6 rounded-full" />
 												<span
+													v-if="group.users[userId].computed.name"
 													:class="`text-sm text-nowrap ${
 														group.users[userId].status !== 'active' && 'text-muted-foreground'
 													}`"
 												>
-													{{ group.users[userId].nickname }}
+													{{ group.users[userId].computed.name }}
 												</span>
+												<Skeleton v-else class="w-18 h-5" />
 											</label>
 											<span
 												v-if="values.to?.type !== 'unequal'"

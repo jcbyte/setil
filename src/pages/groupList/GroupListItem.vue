@@ -59,10 +59,12 @@ const yourBalanceStr = computed(() => {
 			<AvatarStack
 				avatar-class="border border-background"
 				:avatars="
-					group.topUsers.map(([, topUserData]) => ({
-						src: topUserData.public?.photoUrl ?? null,
-						name: topUserData.nickname,
-					}))
+					group.topUsers
+						.filter(([, topUserData]) => topUserData.computed.name)
+						.map(([, topUserData]) => ({
+							src: topUserData.public?.photoUrl ?? null,
+							name: topUserData.computed.name!,
+						}))
 				"
 				:total-count="group.userCount"
 			/>

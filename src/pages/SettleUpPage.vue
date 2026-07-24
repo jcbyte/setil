@@ -5,13 +5,13 @@ import CopyButton from "@/components/CopyButton.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -28,11 +28,11 @@ import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/firebase/types";
 import { noGroup } from "@/util/app";
 import {
-  CurrencySettings,
-  formatCurrency,
-  fromFirestoreAmount,
-  getBalanceStr,
-  toFirestoreAmount,
+	CurrencySettings,
+	formatCurrency,
+	fromFirestoreAmount,
+	getBalanceStr,
+	toFirestoreAmount,
 } from "@/util/currency";
 import { type PaymentDetails } from "@/util/paymentDetails";
 import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
@@ -210,7 +210,7 @@ const onSubmit = handleSubmit(async (values) => {
 		sendNotification(
 			groupId,
 			group.value.data.name,
-			`${group.value.users[values.from].nickname} paid ${group.value.users[values.to].nickname} ${formatCurrency(
+			`${group.value.users[values.from].computed.name} paid ${group.value.users[values.to].computed.name} ${formatCurrency(
 				values.amount,
 				group.value.data.currency,
 				false,
@@ -278,12 +278,17 @@ async function openBankDetailsDialog() {
 							<div class="flex flex-col sm:flex-row justify-between items-center gap-2">
 								<div class="flex items-center gap-2">
 									<Avatar
+										v-if="group.users[userPayment.from].computed.name"
 										:src="group.users[userPayment.from].public?.photoUrl ?? null"
-										:name="group.users[userPayment.from].nickname"
+										:name="group.users[userPayment.from].computed.name!"
 										class="size-10"
 									/>
+									<Skeleton v-else class="size-10 rounded-full" />
 									<div class="flex flex-col gap-1">
-										<span class="text-sm">{{ group.users[userPayment.from].nickname }}</span>
+										<span v-if="group.users[userPayment.from].computed.name" class="text-sm">
+											{{ group.users[userPayment.from].computed.name }}
+										</span>
+										<Skeleton v-else class="w-18 h-5" />
 										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-userPayment.amount)" />
 									</div>
 								</div>
@@ -292,14 +297,19 @@ async function openBankDetailsDialog() {
 								</div>
 								<div class="flex items-center gap-2">
 									<div class="flex flex-col gap-1 text-right">
-										<span class="text-sm">{{ group.users[userPayment.to].nickname }}</span>
+										<span v-if="group.users[userPayment.to].computed.name" class="text-sm">
+											{{ group.users[userPayment.to].computed.name }}
+										</span>
+										<Skeleton v-else class="w-18 h-5" />
 										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(userPayment.amount)" />
 									</div>
 									<Avatar
+										v-if="group.users[userPayment.to].computed.name"
 										:src="group.users[userPayment.to].public?.photoUrl ?? null"
-										:name="group.users[userPayment.to].nickname"
+										:name="group.users[userPayment.to].computed.name!"
 										class="size-10"
 									/>
+									<Skeleton v-else class="size-10 rounded-full" />
 								</div>
 							</div>
 							<Button variant="outline" @click="fillForm(userPayment)">Record this payment</Button>
@@ -334,11 +344,16 @@ async function openBankDetailsDialog() {
 													<SelectValue placeholder="Select a member">
 														<div v-if="values.from" class="flex items-center gap-2">
 															<Avatar
+																v-if="group.users[values.from].computed.name"
 																:src="group.users[values.from].public?.photoUrl ?? null"
-																:name="group.users[values.from].nickname"
+																:name="group.users[values.from].computed.name!"
 																class="size-6"
 															/>
-															<span>{{ group.users[values.from].nickname }} </span>
+															<Skeleton v-else class="size-6 rounded-full" />
+															<span v-if="group.users[values.from].computed.name">
+																{{ group.users[values.from].computed.name }}
+															</span>
+															<Skeleton v-else class="w-18 h-5" />
 														</div>
 													</SelectValue>
 												</SelectTrigger>
@@ -347,13 +362,19 @@ async function openBankDetailsDialog() {
 												<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
 													<div class="flex items-center gap-2">
 														<Avatar
+															v-if="group.users[userId].computed.name"
 															:src="group.users[userId].public?.photoUrl ?? null"
-															:name="group.users[userId].nickname"
+															:name="group.users[userId].computed.name"
 															:class="`size-5 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 														/>
-														<span :class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`">
-															{{ group.users[userId].nickname }}
+														<Skeleton v-else class="size-5 rounded-full" />
+														<span
+															v-if="group.users[userId].computed.name"
+															:class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`"
+														>
+															{{ group.users[userId].computed.name }}
 														</span>
+														<Skeleton v-else class="w-18 h-5" />
 													</div>
 												</SelectItem>
 											</SelectContent>
@@ -371,11 +392,16 @@ async function openBankDetailsDialog() {
 													<SelectValue placeholder="Select a member">
 														<div v-if="values.to" class="flex items-center gap-2">
 															<Avatar
+																v-if="group.users[values.to].computed.name"
 																:src="group.users[values.to].public?.photoUrl ?? null"
-																:name="group.users[values.to].nickname"
+																:name="group.users[values.to].computed.name!"
 																class="size-6"
 															/>
-															<span>{{ group.users[values.to!].nickname }} </span>
+															<Skeleton v-else class="size-6 rounded-full" />
+															<span v-if="group.users[values.to].computed.name">
+																{{ group.users[values.to].computed.name }}
+															</span>
+															<Skeleton v-else class="w-18 h-5" />
 														</div>
 													</SelectValue>
 												</SelectTrigger>
@@ -384,13 +410,19 @@ async function openBankDetailsDialog() {
 												<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
 													<div class="flex items-center gap-2">
 														<Avatar
+															v-if="group.users[userId].computed.name"
 															:src="group.users[userId].public?.photoUrl ?? null"
-															:name="group.users[userId].nickname"
+															:name="group.users[userId].computed.name"
 															:class="`size-5 ${group.users[userId].status !== 'active' && 'opacity-70'}`"
 														/>
-														<span :class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`">
-															{{ group.users[userId].nickname }}
+														<Skeleton v-else class="size-5 rounded-full" />
+														<span
+															v-if="group.users[userId].computed.name"
+															:class="`${group.users[userId].status !== 'active' && 'text-muted-foreground'}`"
+														>
+															{{ group.users[userId].computed.name }}
 														</span>
+														<Skeleton v-else class="w-18 h-5" />
 													</div>
 												</SelectItem>
 											</SelectContent>
@@ -450,12 +482,14 @@ async function openBankDetailsDialog() {
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Bank Details</DialogTitle>
-					<DialogDescription> Where {{ group!.users[values.to!].nickname }} would like payment. </DialogDescription>
+					<DialogDescription>
+						Where {{ group!.users[values.to!].computed.name }} would like payment.
+					</DialogDescription>
 				</DialogHeader>
 
 				<Skeleton v-if="bankDetailsDialogProcessing" class="w-full h-[160px]" />
 				<div v-else-if="!bankDetailsData" class="text-center text-muted-foreground p-4 border border-border rounded-lg">
-					Looks like {{ group!.users[values.to!].nickname }} hasn't added their bank info yet.
+					Looks like {{ group!.users[values.to!].computed.name }} hasn't added their bank info yet.
 				</div>
 				<div v-else class="mx-2 py-2 border border-border rounded-lg">
 					<div v-if="bankDetailsData.type === 'UK'" class="grid grid-cols-2 gap-y-1 gap-x-2 items-center">
