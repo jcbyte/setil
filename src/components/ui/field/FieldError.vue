@@ -3,20 +3,27 @@ import type { HTMLAttributes } from "vue"
 import { computed } from "vue"
 import { cn } from "@/lib/utils"
 
+type ErrorItem = string | { message?: string } | undefined;
+
 const props = defineProps<{
   class?: HTMLAttributes["class"]
-  errors?: Array<{ message?: string } | undefined>
+  errors?: Array<ErrorItem>
 }>()
+
+const getErrorMessage = (err: ErrorItem): string | undefined => {
+  if (typeof err === "string") return err
+  return err?.message
+}
 
 const content = computed(() => {
   if (!props.errors || props.errors.length === 0)
     return null
 
-  if (props.errors.length === 1 && props.errors[0]?.message) {
-    return props.errors[0].message
+  if (props.errors.length === 1 && getErrorMessage(props.errors[0])) {
+    return getErrorMessage(props.errors[0])
   }
 
-  return props.errors.some(e => e?.message)
+  return props.errors.some(e => getErrorMessage(e))
     ? props.errors
     : null
 })
@@ -37,7 +44,7 @@ const content = computed(() => {
 
     <ul v-else-if="Array.isArray(content)" class="ml-4 flex list-disc flex-col gap-1">
       <li v-for="(error, index) in content" :key="index">
-        {{ error?.message }}
+        {{ getErrorMessage(error) }}
       </li>
     </ul>
   </div>

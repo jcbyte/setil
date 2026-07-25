@@ -47,7 +47,7 @@ import * as z from "zod";
 
 const router = useRouter();
 
-const dataLoaded = ref<boolean>(false);
+const hasDataLoaded = ref<boolean>(false);
 
 const nameSchema = toTypedSchema(
 	z.string().trim().min(1, "Name is required").max(50, "Name cannot exceed 50 characters"),
@@ -76,7 +76,7 @@ onMounted(async () => {
 	setNameValue(userData.public.name);
 	avatarSrc.value = userData.public.photoUrl;
 
-	dataLoaded.value = true;
+	hasDataLoaded.value = true;
 });
 
 async function updateName() {
@@ -200,7 +200,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 						<Field :data-invalid="!!nameErrorMessage">
 							<FieldLabel for="displayname" :disabled="isDisplayNameUpdating">Name</FieldLabel>
 							<div class="flex gap-2">
-								<InputGroup v-if="dataLoaded">
+								<InputGroup v-if="hasDataLoaded">
 									<InputGroupInput id="displayname" placeholder="Name" v-model="name" />
 									<InputGroupAddon>
 										<UserRound class="size-4" />
@@ -208,7 +208,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 								</InputGroup>
 								<Skeleton v-else class="w-full h-9" />
 								<Button
-									:disabled="isDisplayNameUpdating || !nameMeta.valid || !nameMeta.dirty || !dataLoaded"
+									:disabled="isDisplayNameUpdating || !nameMeta.valid || !nameMeta.dirty || !hasDataLoaded"
 									class="w-fit"
 									@click="updateName"
 								>
@@ -225,7 +225,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 								<FieldLabel>Profile Picture</FieldLabel>
 								<div class="flex gap-2">
 									<Button
-										:disabled="isAvatarUpdating || isAvatarClearing || !dataLoaded"
+										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
 										@click="() => avatarFileInput?.click()"
 									>
 										<LoaderIcon :icon="Camera" :loading="isAvatarUpdating" />
@@ -242,7 +242,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 									<Button
 										v-if="avatarSrc || isAvatarClearing"
 										variant="outline"
-										:disabled="isAvatarUpdating || isAvatarClearing || !dataLoaded"
+										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
 										@click="handleClearAvatar"
 									>
 										<LoaderIcon :icon="CircleX" :loading="isAvatarClearing" />
@@ -255,7 +255,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 							</Field>
 							<div class="relative flex justify-center items-center">
 								<Avatar
-									v-if="dataLoaded"
+									v-if="hasDataLoaded"
 									:src="avatarSrc ?? null"
 									:name="name ?? ''"
 									class="size-20 border-2 border-background ring-1 ring-border"

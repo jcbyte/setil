@@ -1,26 +1,34 @@
 <script setup lang="ts">
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import CardDescription from "@/components/ui/card/CardDescription.vue";
+import CardFooter from "@/components/ui/card/CardFooter.vue";
+import CardTitle from "@/components/ui/card/CardTitle.vue";
+import { Field, FieldLabel } from "@/components/ui/field";
+import FieldError from "@/components/ui/field/FieldError.vue";
+import FieldGroup from "@/components/ui/field/FieldGroup.vue";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { getPaymentDetails, setPaymentDetails, removePaymentDetails } from "@/firebase/firestore/user";
+import { getPaymentDetails, removePaymentDetails, setPaymentDetails } from "@/firebase/firestore/user";
 import { getUser } from "@/firebase/firestore/util";
 import { BankingSystemSettings, type PaymentDetails } from "@/util/paymentDetails";
 import { ArrowLeft, CircleX, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
-import { useForm } from "vee-validate";
-import { onMounted, ref } from "vue";
+import { useForm, Field as VeeField } from "vee-validate";
+import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
 
 const router = useRouter();
 
+const hasDataLoaded = ref<boolean>(false);
+
 const isDetailsUpdating = ref<boolean>(false);
-const isInitialLoading = ref<boolean>(true);
+const isDetailsClearing = ref<boolean>(false);
 
 const formSchema = toTypedSchema(
 	z
@@ -87,9 +95,11 @@ const formSchema = toTypedSchema(
 		}),
 );
 
-const { isFieldDirty, handleSubmit, setValues, values } = useForm({
+const { handleSubmit, setValues, values } = useForm({
 	validationSchema: formSchema,
+	keepValuesOnUnmount: true,
 });
+watch(values, (v) => console.log(v));
 
 onMounted(async () => {
 	const paymentDetails = await getPaymentDetails();
@@ -136,7 +146,7 @@ onMounted(async () => {
 		);
 	}
 
-	isInitialLoading.value = false;
+	hasDataLoaded.value = true;
 });
 
 const onSubmit = handleSubmit(async (values) => {
@@ -187,309 +197,263 @@ const onSubmit = handleSubmit(async (values) => {
 });
 
 async function clearDetails() {
-	isDetailsUpdating.value = true;
-
-	setValues(
-		{
-			UK_accountNumber: undefined,
-			UK_sortCode: undefined,
-			US_accountNumber: undefined,
-			US_routingNumber: undefined,
-			SEPA_BIC: undefined,
-			SEPA_IBAN: undefined,
-			SWIFT_IBAN: undefined,
-			SWIFT_SWIFT: undefined,
-			SWIFT_bankAddress: undefined,
-			SWIFT_bankName: undefined,
-		},
-		false,
-	);
+	isDetailsClearing.value = true;
 
 	try {
 		await removePaymentDetails();
+
+		setValues(
+			{
+				UK_accountNumber: undefined,
+				UK_sortCode: undefined,
+				US_accountNumber: undefined,
+				US_routingNumber: undefined,
+				SEPA_BIC: undefined,
+				SEPA_IBAN: undefined,
+				SWIFT_IBAN: undefined,
+				SWIFT_SWIFT: undefined,
+				SWIFT_bankAddress: undefined,
+				SWIFT_bankName: undefined,
+			},
+			false,
+		);
+
 		toast("Details Cleared", { description: "Poof! My payment info has vanished." });
 	} catch (e) {
 		toast.error("Error Clearing Details", { description: String(e) });
 	}
 
-	isDetailsUpdating.value = false;
+	isDetailsClearing.value = false;
 }
 </script>
 
 <template>
-	<div>
-		<div class="w-full flex flex-col gap-4 items-center">
-			<div class="w-full flex justify-between items-center">
-				<div class="flex gap-2 justify-center items-center">
-					<Button variant="ghost" class="size-9" @click="router.back()">
-						<ArrowLeft class="!size-6" />
-					</Button>
-					<span class="text-lg font-semibold">Payment Details</span>
-				</div>
-				<YourAccountSettings />
+	<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
+		<div class="flex justify-between items-center">
+			<div class="flex items-center gap-1">
+				<Button variant="ghost" size="icon" @click="router.push('/')">
+					<ArrowLeft class="!size-5.5" />
+				</Button>
+				<span class="text-lg font-semibold">Payment Details</span>
 			</div>
-
-			<div class="w-full max-w-[32rem] flex flex-col gap-4">
-				<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
-					<div class="flex flex-col">
-						<span class="text-lg font-semibold">Bank Details</span>
-						<span class="text-sm text-muted-foreground">How you want people to pay you</span>
-					</div>
-
-					<form class="flex flex-col gap-4" @submit="onSubmit">
-						<Skeleton v-if="isInitialLoading" class="rounded-lg h-[300px] w-full" />
-						<div v-else class="flex flex-col gap-2">
-							<FormField v-slot="{ componentField }" name="system" :validate-on-blur="isFieldDirty('system')">
-								<FormItem>
-									<FormLabel>Banking System</FormLabel>
-									<Select v-bind="componentField" :disabled="isDetailsUpdating">
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue />
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											<SelectItem
-												v-for="(bankingSystem, bankingSystemId) in BankingSystemSettings"
-												:value="bankingSystemId"
-											>
-												{{ bankingSystem.name }}
-											</SelectItem>
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							</FormField>
-
-							<FormField v-slot="{ componentField }" name="name" :validate-on-blur="isFieldDirty('name')">
-								<FormItem>
-									<FormLabel>Name</FormLabel>
-									<FormControl>
-										<Input
-											autocomplete="off"
-											type="text"
-											placeholder="John Smith"
-											:disabled="isDetailsUpdating"
-											v-bind="componentField"
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							</FormField>
-
-							<div v-if="values.system === 'UK'">
-								<FormField
-									v-slot="{ componentField }"
-									name="UK_sortCode"
-									:validate-on-blur="isFieldDirty('UK_sortCode')"
-								>
-									<FormItem>
-										<FormLabel>Sort Code</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="12-34-56"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-
-								<FormField
-									v-slot="{ componentField }"
-									name="UK_accountNumber"
-									:validate-on-blur="isFieldDirty('UK_accountNumber')"
-								>
-									<FormItem>
-										<FormLabel>Account Number</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="12345678"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-							</div>
-							<div v-else-if="values.system === 'US'">
-								<FormField
-									v-slot="{ componentField }"
-									name="US_routingNumber"
-									:validate-on-blur="isFieldDirty('US_routingNumber')"
-								>
-									<FormItem>
-										<FormLabel>Routing Number</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="123456789"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-
-								<FormField
-									v-slot="{ componentField }"
-									name="US_accountNumber"
-									:validate-on-blur="isFieldDirty('US_accountNumber')"
-								>
-									<FormItem>
-										<FormLabel>Account Number</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="1234567890"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-							</div>
-							<div v-else-if="values.system === 'SEPA'">
-								<FormField v-slot="{ componentField }" name="SEPA_IBAN" :validate-on-blur="isFieldDirty('SEPA_IBAN')">
-									<FormItem>
-										<FormLabel>IBAN</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="DE89370400440532013000"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-
-								<FormField v-slot="{ componentField }" name="SEPA_BIC" :validate-on-blur="isFieldDirty('SEPA_BIC')">
-									<FormItem>
-										<FormLabel>BIC / SWIFT Code (Optional)</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="DEUTDEFF"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-							</div>
-							<div v-else-if="values.system === 'SWIFT'">
-								<FormField
-									v-slot="{ componentField }"
-									name="SWIFT_SWIFT"
-									:validate-on-blur="isFieldDirty('SWIFT_SWIFT')"
-								>
-									<FormItem>
-										<FormLabel>BIC / SWIFT Code</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="DEUTDEFF"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-
-								<FormField v-slot="{ componentField }" name="SWIFT_IBAN" :validate-on-blur="isFieldDirty('SWIFT_IBAN')">
-									<FormItem>
-										<FormLabel>Account Number / IBAN</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="1234567890"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-
-								<FormField
-									v-slot="{ componentField }"
-									name="SWIFT_bankName"
-									:validate-on-blur="isFieldDirty('SWIFT_bankName')"
-								>
-									<FormItem>
-										<FormLabel>Bank Name (Optional)</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="Joel's Bank"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-
-								<FormField
-									v-slot="{ componentField }"
-									name="SWIFT_bankAddress"
-									:validate-on-blur="isFieldDirty('SWIFT_bankAddress')"
-								>
-									<FormItem>
-										<FormLabel>Bank Address (Optional)</FormLabel>
-										<FormControl>
-											<Input
-												autocomplete="off"
-												type="text"
-												placeholder="270 Park Avenue, New York, NY 10017"
-												:disabled="isDetailsUpdating"
-												v-bind="componentField"
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								</FormField>
-							</div>
-						</div>
-
-						<div class="flex gap-2 justify-between items-center">
-							<Button
-								type="button"
-								:disabled="isDetailsUpdating || isInitialLoading"
-								variant="outline"
-								class="w-fit place-self-end"
-								@click="clearDetails()"
-							>
-								<LoaderIcon :icon="CircleX" :loading="isDetailsUpdating" />
-								<span>Clear Details</span>
-							</Button>
-							<Button type="submit" :disabled="isDetailsUpdating || isInitialLoading" class="w-fit place-self-end">
-								<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
-								<span>Save</span>
-							</Button>
-						</div>
-					</form>
-				</div>
-			</div>
+			<YourAccountSettings />
 		</div>
+
+		<Card>
+			<CardHeader>
+				<CardTitle>Bank Details</CardTitle>
+				<CardDescription>How you want people to pay you</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<form v-if="hasDataLoaded" id="bank-details-form" @submit="onSubmit">
+					<FieldGroup>
+						<VeeField v-slot="{ componentField, errors }" name="system">
+							<Field :data-invalid="!!errors.length">
+								<FieldLabel for="system">Banking System</FieldLabel>
+								<Select v-bind="componentField" :disabled="isDetailsUpdating || isDetailsClearing">
+									<SelectTrigger id="system">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem
+											v-for="(bankingSystem, bankingSystemId) in BankingSystemSettings"
+											:value="bankingSystemId"
+										>
+											{{ bankingSystem.name }}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								<FieldError v-if="errors.length" :errors="errors" />
+							</Field>
+						</VeeField>
+
+						<VeeField v-slot="{ componentField, errors }" name="name">
+							<Field :data-invalid="!!errors.length">
+								<FieldLabel for="name">Full Name</FieldLabel>
+								<Input
+									id="name"
+									type="text"
+									v-bind="componentField"
+									placeholder="John Smith"
+									:disabled="isDetailsUpdating || isDetailsClearing"
+								/>
+								<FieldError v-if="errors" :errors="errors" />
+							</Field>
+						</VeeField>
+
+						<template v-if="values.system === 'UK'">
+							<VeeField v-slot="{ componentField, errors }" name="UK_sortCode">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="UK_sortCode">Sort Code</FieldLabel>
+									<Input
+										id="UK_sortCode"
+										type="text"
+										v-bind="componentField"
+										placeholder="12-34-56"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+
+							<VeeField v-slot="{ componentField, errors }" name="UK_accountNumber">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="UK_accountNumber">Account Number</FieldLabel>
+									<Input
+										id="UK_accountNumber"
+										type="text"
+										v-bind="componentField"
+										placeholder="12345678"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+						</template>
+
+						<template v-else-if="values.system === 'US'">
+							<VeeField v-slot="{ componentField, errors }" name="US_routingNumber">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="US_routingNumber">Routing Number</FieldLabel>
+									<Input
+										id="US_routingNumber"
+										type="text"
+										v-bind="componentField"
+										placeholder="123456789"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+
+							<VeeField v-slot="{ componentField, errors }" name="US_accountNumber">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="US_accountNumber">Account Number</FieldLabel>
+									<Input
+										id="US_accountNumber"
+										type="text"
+										v-bind="componentField"
+										placeholder="1234567890"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+						</template>
+
+						<template v-else-if="values.system === 'SEPA'">
+							<VeeField v-slot="{ componentField, errors }" name="SEPA_IBAN">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="SEPA_IBAN">IBAN</FieldLabel>
+									<Input
+										id="SEPA_IBAN"
+										type="text"
+										v-bind="componentField"
+										placeholder="DE89370400440532013000"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+
+							<VeeField v-slot="{ componentField, errors }" name="SEPA_BIC">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="SEPA_BIC">BIC / SWIFT Code (Optional)</FieldLabel>
+									<Input
+										id="SEPA_BIC"
+										type="text"
+										v-bind="componentField"
+										placeholder="DEUTDEFF"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+						</template>
+
+						<template v-else-if="values.system === 'SWIFT'">
+							<VeeField v-slot="{ componentField, errors }" name="SWIFT_SWIFT">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="SWIFT_SWIFT">BIC / SWIFT Code</FieldLabel>
+									<Input
+										id="SWIFT_SWIFT"
+										type="text"
+										v-bind="componentField"
+										placeholder="DEUTDEFF"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+
+							<VeeField v-slot="{ componentField, errors }" name="SWIFT_IBAN">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="SWIFT_IBAN">Account Number / IBAN</FieldLabel>
+									<Input
+										id="SWIFT_IBAN"
+										type="text"
+										v-bind="componentField"
+										placeholder="1234567890"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+
+							<VeeField v-slot="{ componentField, errors }" name="SWIFT_bankName">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="SWIFT_bankName">Bank Name (Optional)</FieldLabel>
+									<Input
+										id="SWIFT_bankName"
+										type="text"
+										v-bind="componentField"
+										placeholder="Joel's Bank"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+
+							<VeeField v-slot="{ componentField, errors }" name="SWIFT_bankAddress">
+								<Field :data-invalid="!!errors.length">
+									<FieldLabel for="SWIFT_bankAddress">Bank Address (Optional)</FieldLabel>
+									<Input
+										id="SWIFT_bankAddress"
+										type="text"
+										v-bind="componentField"
+										placeholder="270 Park Avenue, New York, NY 10017"
+										:disabled="isDetailsUpdating || isDetailsClearing"
+									/>
+									<FieldError v-if="errors" :errors="errors" />
+								</Field>
+							</VeeField>
+						</template>
+					</FieldGroup>
+				</form>
+				<Skeleton v-else class="rounded-lg h-88 w-full" />
+			</CardContent>
+
+			<CardFooter>
+				<Field orientation="horizontal">
+					<Button
+						type="button"
+						:disabled="isDetailsUpdating || isDetailsClearing || !hasDataLoaded"
+						variant="outline"
+						@click="clearDetails()"
+					>
+						<LoaderIcon :icon="CircleX" :loading="isDetailsClearing" />
+						<span>Remove</span>
+					</Button>
+					<Button
+						type="submit"
+						form="bank-details-form"
+						:disabled="isDetailsUpdating || isDetailsClearing || !hasDataLoaded"
+					>
+						<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
+						<span>Save</span>
+					</Button>
+				</Field>
+			</CardFooter>
+		</Card>
 	</div>
 </template>
