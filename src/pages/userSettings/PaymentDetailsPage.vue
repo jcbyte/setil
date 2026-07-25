@@ -26,6 +26,7 @@ import * as z from "zod";
 const router = useRouter();
 
 const hasDataLoaded = ref<boolean>(false);
+const hasDetailsSaved = ref<boolean | null>(null);
 
 const isDetailsUpdating = ref<boolean>(false);
 const isDetailsClearing = ref<boolean>(false);
@@ -95,7 +96,7 @@ const formSchema = toTypedSchema(
 		}),
 );
 
-const { handleSubmit, setValues, values } = useForm({
+const { handleSubmit, setValues, values, meta } = useForm({
 	validationSchema: formSchema,
 	keepValuesOnUnmount: true,
 });
@@ -135,6 +136,7 @@ onMounted(async () => {
 				SWIFT_bankAddress: paymentDetails.bankAddress ?? undefined,
 			});
 		}
+		hasDetailsSaved.value = true;
 	} else {
 		setValues(
 			{
@@ -143,6 +145,7 @@ onMounted(async () => {
 			},
 			false,
 		);
+		hasDetailsSaved.value = false;
 	}
 
 	hasDataLoaded.value = true;
@@ -186,6 +189,7 @@ const onSubmit = handleSubmit(async (values) => {
 		}
 
 		await setPaymentDetails(paymentDetails);
+		hasDetailsSaved.value = true;
 
 		toast("Details Updated", { description: "The universe may now shower me with funds." });
 	} catch (e) {
@@ -216,6 +220,7 @@ async function clearDetails() {
 			},
 			false,
 		);
+		hasDetailsSaved.value = true;
 
 		toast("Details Cleared", { description: "Poof! My payment info has vanished." });
 	} catch (e) {
@@ -436,7 +441,7 @@ async function clearDetails() {
 				<Field orientation="horizontal">
 					<Button
 						type="button"
-						:disabled="isDetailsUpdating || isDetailsClearing || !hasDataLoaded"
+						:disabled="isDetailsUpdating || isDetailsClearing || !hasDetailsSaved || !hasDataLoaded"
 						variant="outline"
 						@click="clearDetails()"
 					>
@@ -446,7 +451,7 @@ async function clearDetails() {
 					<Button
 						type="submit"
 						form="bank-details-form"
-						:disabled="isDetailsUpdating || isDetailsClearing || !hasDataLoaded"
+						:disabled="isDetailsUpdating || isDetailsClearing || !meta.valid || !meta.dirty || !hasDataLoaded"
 					>
 						<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
 						<span>Save</span>
