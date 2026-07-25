@@ -119,7 +119,7 @@ async function handleDeleteTransaction() {
 						<div class="flex flex-col gap-1">
 							<div
 								v-for="[transactionId, transaction] in groupedTransactions.transactions"
-								class="bg-secondary rounded-lg px-4 py-2 flex justify-between items-center gap-4"
+								class="bg-muted rounded-lg px-4 py-2 flex justify-between items-center gap-4"
 							>
 								<div class="flex items-center gap-2">
 									<div class="relative flex justify-center items-center">

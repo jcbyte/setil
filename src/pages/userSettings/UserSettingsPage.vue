@@ -56,10 +56,10 @@ const {
 	value: name,
 	errorMessage: nameErrorMessage,
 	meta: nameMeta,
-	setValue: setNameValue,
+	resetField: resetName,
 	validate: validateName,
 } = useField("name", nameSchema);
-const isDisplayNameUpdating = ref<boolean>(false);
+const isNameUpdating = ref<boolean>(false);
 
 const avatarSrc = ref<string | undefined>();
 const avatarErrorMessage = ref<string | undefined>();
@@ -73,7 +73,7 @@ const avatarCropper = ref<InstanceType<typeof Cropper> | undefined>();
 onMounted(async () => {
 	const userData = await getUserData();
 
-	setNameValue(userData.public.name);
+	resetName({ value: userData.public.name });
 	avatarSrc.value = userData.public.photoUrl;
 
 	hasDataLoaded.value = true;
@@ -83,7 +83,7 @@ async function updateName() {
 	const { valid, value: newName } = await validateName();
 	if (!valid || !newName) return;
 
-	isDisplayNameUpdating.value = true;
+	isNameUpdating.value = true;
 
 	try {
 		await setName(newName);
@@ -93,8 +93,8 @@ async function updateName() {
 		toast.error("Error Updating Name", { description: String(e) });
 	}
 
-	setNameValue(newName);
-	isDisplayNameUpdating.value = false;
+	resetName({ value: newName });
+	isNameUpdating.value = false;
 }
 
 async function handleAvatarFileChange(event: Event) {
@@ -198,21 +198,21 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 				<CardContent>
 					<FieldGroup>
 						<Field :data-invalid="!!nameErrorMessage">
-							<FieldLabel for="displayname" :disabled="isDisplayNameUpdating">Name</FieldLabel>
+							<FieldLabel for="name" :disabled="isNameUpdating">Name</FieldLabel>
 							<div class="flex gap-2">
 								<InputGroup v-if="hasDataLoaded">
-									<InputGroupInput id="displayname" placeholder="Name" v-model="name" />
+									<InputGroupInput id="name" placeholder="Name" v-model="name" />
 									<InputGroupAddon>
 										<UserRound class="size-4" />
 									</InputGroupAddon>
 								</InputGroup>
 								<Skeleton v-else class="w-full h-9" />
 								<Button
-									:disabled="isDisplayNameUpdating || !nameMeta.valid || !nameMeta.dirty || !hasDataLoaded"
+									:disabled="isNameUpdating || !nameMeta.valid || !nameMeta.dirty || !hasDataLoaded"
 									class="w-fit"
 									@click="updateName"
 								>
-									<LoaderIcon :icon="Check" :loading="isDisplayNameUpdating" />
+									<LoaderIcon :icon="Check" :loading="isNameUpdating" />
 									<span>Update</span>
 								</Button>
 							</div>
@@ -281,12 +281,12 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 				<CardContent>
 					<Field class="flex flex-row justify-between items-center">
 						<div class="space-y-1">
-							<FieldLabel>Theme</FieldLabel>
+							<FieldLabel for="theme">Theme</FieldLabel>
 							<FieldDescription>Choose your colour scheme</FieldDescription>
 						</div>
 
 						<Select v-model="selectedTheme">
-							<SelectTrigger class="w-full max-w-38">
+							<SelectTrigger id="theme" class="w-full max-w-38">
 								<div v-if="selectedTheme" class="flex items-center gap-2">
 									<component :is="themeDetail[selectedTheme].icon" class="size-4" />
 									<span>{{ themeDetail[selectedTheme].name }}</span>

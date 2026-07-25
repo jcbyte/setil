@@ -96,7 +96,7 @@ const formSchema = toTypedSchema(
 		}),
 );
 
-const { handleSubmit, setValues, values, meta } = useForm({
+const { handleSubmit, resetForm, values, meta } = useForm({
 	validationSchema: formSchema,
 	keepValuesOnUnmount: true,
 });
@@ -106,45 +106,52 @@ onMounted(async () => {
 
 	if (paymentDetails) {
 		if (paymentDetails.type === "UK") {
-			setValues({
-				system: "UK",
-				name: paymentDetails.name,
-				UK_accountNumber: paymentDetails.accountNumber,
-				UK_sortCode: paymentDetails.sortCode,
+			resetForm({
+				values: {
+					system: "UK",
+					name: paymentDetails.name,
+					UK_accountNumber: paymentDetails.accountNumber,
+					UK_sortCode: paymentDetails.sortCode,
+				},
 			});
 		} else if (paymentDetails.type === "US") {
-			setValues({
-				system: "US",
-				name: paymentDetails.name,
-				US_routingNumber: paymentDetails.routingNumber,
-				US_accountNumber: paymentDetails.accountNumber,
+			resetForm({
+				values: {
+					system: "US",
+					name: paymentDetails.name,
+					US_routingNumber: paymentDetails.routingNumber,
+					US_accountNumber: paymentDetails.accountNumber,
+				},
 			});
 		} else if (paymentDetails.type === "SEPA") {
-			setValues({
-				system: "SEPA",
-				name: paymentDetails.name,
-				SEPA_IBAN: paymentDetails.IBAN,
-				SEPA_BIC: paymentDetails.BIC ?? undefined,
+			resetForm({
+				values: {
+					system: "SEPA",
+					name: paymentDetails.name,
+					SEPA_IBAN: paymentDetails.IBAN,
+					SEPA_BIC: paymentDetails.BIC ?? undefined,
+				},
 			});
 		} else if (paymentDetails.type === "SWIFT") {
-			setValues({
-				system: "SWIFT",
-				name: paymentDetails.name,
-				SWIFT_SWIFT: paymentDetails.SWIFT,
-				SWIFT_IBAN: paymentDetails.IBAN,
-				SWIFT_bankName: paymentDetails.bankName ?? undefined,
-				SWIFT_bankAddress: paymentDetails.bankAddress ?? undefined,
+			resetForm({
+				values: {
+					system: "SWIFT",
+					name: paymentDetails.name,
+					SWIFT_SWIFT: paymentDetails.SWIFT,
+					SWIFT_IBAN: paymentDetails.IBAN,
+					SWIFT_bankName: paymentDetails.bankName ?? undefined,
+					SWIFT_bankAddress: paymentDetails.bankAddress ?? undefined,
+				},
 			});
 		}
 		hasDetailsSaved.value = true;
 	} else {
-		setValues(
-			{
+		resetForm({
+			values: {
 				system: "UK",
 				name: getUser().displayName ?? undefined,
 			},
-			false,
-		);
+		});
 		hasDetailsSaved.value = false;
 	}
 
@@ -205,8 +212,8 @@ async function clearDetails() {
 	try {
 		await removePaymentDetails();
 
-		setValues(
-			{
+		resetForm({
+			values: {
 				UK_accountNumber: undefined,
 				UK_sortCode: undefined,
 				US_accountNumber: undefined,
@@ -218,8 +225,7 @@ async function clearDetails() {
 				SWIFT_bankAddress: undefined,
 				SWIFT_bankName: undefined,
 			},
-			false,
-		);
+		});
 		hasDetailsSaved.value = true;
 
 		toast("Details Cleared", { description: "Poof! My payment info has vanished." });

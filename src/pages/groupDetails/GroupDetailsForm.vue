@@ -10,12 +10,14 @@ import CardTitle from "@/components/ui/card/CardTitle.vue";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
 import { Textarea } from "@/components/ui/textarea";
 import type { Currency } from "@/firebase/types";
 import { CurrencySettings } from "@/util/currency";
 import { Plus, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm, Field as VeeField } from "vee-validate";
+import { watch } from "vue";
 import * as z from "zod";
 
 export type GroupDetailsValues = {
@@ -26,7 +28,9 @@ export type GroupDetailsValues = {
 
 const props = defineProps<{
 	newGroup: boolean;
-	updating: boolean;
+	updating?: boolean;
+	initialLoading?: boolean;
+	initialValues?: Partial<GroupDetailsValues>;
 }>();
 const emit = defineEmits<{
 	submit: [details: GroupDetailsValues];
@@ -40,13 +44,21 @@ const formSchema = toTypedSchema(
 	}),
 );
 
-const { handleSubmit, setValues, meta } = useForm({
+const { handleSubmit, resetForm, meta } = useForm({
 	validationSchema: formSchema,
 });
 
 const onSubmit = handleSubmit(async (values) => {
 	emit("submit", values as GroupDetailsValues);
 });
+
+watch(
+	() => props.initialValues,
+	(values) => {
+		if (values) resetForm({ values });
+	},
+	{ immediate: true },
+);
 </script>
 
 <template>
@@ -63,7 +75,15 @@ const onSubmit = handleSubmit(async (values) => {
 					<VeeField v-slot="{ componentField, errors }" name="name">
 						<Field :data-invalid="!!errors.length">
 							<FieldLabel for="name">Group Name</FieldLabel>
-							<Input id="name" type="text" v-bind="componentField" placeholder="Germany Trip" :disabled="updating" />
+							<Input
+								v-if="!initialLoading"
+								id="name"
+								type="text"
+								v-bind="componentField"
+								placeholder="Germany Trip"
+								:disabled="updating"
+							/>
+							<Skeleton v-else class="w-full h-9" />
 							<FieldError v-if="errors" :errors="errors" />
 						</Field>
 					</VeeField>
@@ -72,11 +92,13 @@ const onSubmit = handleSubmit(async (values) => {
 						<Field :data-invalid="!!errors.length">
 							<FieldLabel for="description">Description</FieldLabel>
 							<Textarea
+								v-if="!initialLoading"
 								id="description"
 								v-bind="componentField"
 								placeholder="Expenses for Munich Trip."
 								:disabled="updating"
 							/>
+							<Skeleton v-else class="w-full h-16" />
 							<FieldError v-if="errors" :errors="errors" />
 						</Field>
 					</VeeField>
@@ -84,7 +106,7 @@ const onSubmit = handleSubmit(async (values) => {
 					<VeeField v-slot="{ componentField, errors }" name="currency">
 						<Field :data-invalid="!!errors.length">
 							<FieldLabel for="currency">Currency</FieldLabel>
-							<Select v-bind="componentField" :disabled="updating">
+							<Select v-if="!initialLoading" v-bind="componentField" :disabled="updating">
 								<SelectTrigger id="currency">
 									<SelectValue placeholder="Euro (€)" />
 								</SelectTrigger>
@@ -94,6 +116,7 @@ const onSubmit = handleSubmit(async (values) => {
 									</SelectItem>
 								</SelectContent>
 							</Select>
+							<Skeleton v-else class="w-full h-9" />
 							<FieldError v-if="errors.length" :errors="errors" />
 						</Field>
 					</VeeField>
@@ -106,7 +129,7 @@ const onSubmit = handleSubmit(async (values) => {
 				<Button
 					type="submit"
 					form="group-details-form"
-					:disabled="updating || !meta.valid || !meta.dirty"
+					:disabled="updating || !meta.valid || !meta.dirty || initialLoading"
 					class="w-fit place-self-end"
 				>
 					<LoaderIcon :icon="newGroup ? Plus : Save" :loading="updating" />
