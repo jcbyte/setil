@@ -20,7 +20,7 @@ const props = defineProps<{
 					'group relative flex flex-col cursor-pointer transition hover:border-primary/40 hover:shadow-md',
 					// ! Target `CardHeader`; it is required
 					'[&>*:first-child]:pr-12',
-					$attrs.class as string,
+					props.class,
 				)
 			"
 		>

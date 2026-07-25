@@ -28,7 +28,7 @@ const yourBalanceStr = computed(() => {
 </script>
 
 <template>
-	<NavCard :to="`/group/${groupId}`">
+	<NavCard :to="`/group/${groupId}`" class="h-full">
 		<CardHeader class="pr-12">
 			<CardTitle>{{ group.group.name }}</CardTitle>
 			<CardDescription v-if="group.group.description">{{ group.group.description }}</CardDescription>
