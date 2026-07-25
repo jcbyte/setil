@@ -2,8 +2,8 @@ import { db } from "@/firebase/firebase";
 import { getUser } from "@/firebase/firestore/util";
 import type { PublicUserData, UserData } from "@/firebase/types";
 import { doc, DocumentReference } from "firebase/firestore";
-import { computed, onUnmounted, type Ref } from "vue";
-import { useLiveDoc } from "./useLiveDoc";
+import { computed, onScopeDispose, type Ref } from "vue";
+import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";
 
 export interface CurrentUserData {
 	user: UserData | null;
@@ -26,13 +26,13 @@ export function useLiveCurrentUserData(onError?: (network: boolean) => void): Re
 
 	// Get the live data for the user
 	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
-	const { data: liveUserData, release: releaseUserData } = useLiveDoc(userRef, onError);
+	const { data: liveUserData, release: releaseUserData } = acquireLiveDoc(userRef, onError);
 
 	const userPublicRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
-	const { data: livePublicData, release: releasePublicData } = useLiveDoc(userPublicRef, onError);
+	const { data: livePublicData, release: releasePublicData } = acquireLiveDoc(userPublicRef, onError);
 
 	// Automatically cleanup the live subscribers when going out of scope
-	onUnmounted(() => {
+	onScopeDispose(() => {
 		releaseUserData();
 		releasePublicData();
 	});

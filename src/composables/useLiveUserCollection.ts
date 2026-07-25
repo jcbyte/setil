@@ -1,8 +1,8 @@
 import { db } from "@/firebase/firebase";
 import type { PublicUserData } from "@/firebase/types";
 import { doc, DocumentReference } from "firebase/firestore";
-import { onUnmounted, reactive, watch, type Ref } from "vue";
-import { useLiveDoc } from "./useLiveDoc";
+import { onScopeDispose, reactive, watch, type Ref } from "vue";
+import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";
 
 /**
  * Composable for subscribing to public profiles for multiple users.
@@ -24,35 +24,39 @@ export default function useLiveUserCollection(
 	const docReleasers = new Map<string, () => void>();
 
 	// Automatically cleanup the live subscribers when going out of scope
-	onUnmounted(() => {
+	onScopeDispose(() => {
 		docReleasers.forEach((release) => release());
 		docReleasers.clear();
 	});
 
-	watch(userIds, (requestedIds) => {
-		const requestedIdsSet = new Set(requestedIds);
-		const currentIds = Object.keys(publicUserData);
-		const currentIdsSet = new Set(currentIds);
+	watch(
+		userIds,
+		(requestedIds) => {
+			const requestedIdsSet = new Set(requestedIds);
+			const currentIds = Object.keys(publicUserData);
+			const currentIdsSet = new Set(currentIds);
 
-		// All users in the userIds list which we haven't loaded
-		const newUsers = requestedIds.filter((userId) => !currentIdsSet.has(userId));
-		newUsers.forEach((userId) => {
-			// Get their live public data and set it
-			const userPublicRef = doc(db, "users", userId, "public", "data") as DocumentReference<PublicUserData>;
-			const liveDoc = useLiveDoc(userPublicRef, (nw) => onError?.(nw, userId));
-			publicUserData[userId] = liveDoc.data;
-			docReleasers.set(userId, liveDoc.release);
-		});
+			// All users in the userIds list which we haven't loaded
+			const newUsers = requestedIds.filter((userId) => !currentIdsSet.has(userId));
+			newUsers.forEach((userId) => {
+				// Get their live public data and set it
+				const userPublicRef = doc(db, "users", userId, "public", "data") as DocumentReference<PublicUserData>;
+				const liveDoc = acquireLiveDoc(userPublicRef, (nw) => onError?.(nw, userId));
+				publicUserData[userId] = liveDoc.data;
+				docReleasers.set(userId, liveDoc.release);
+			});
 
-		// All users we have loaded which are not in the userIds list
-		const removedUsers = currentIds.filter((userId) => !requestedIdsSet.has(userId));
-		removedUsers.forEach((userId) => {
-			// Remove them from the list and unsubscribe to live updates
-			delete publicUserData[userId];
-			docReleasers.get(userId)?.();
-			docReleasers.delete(userId);
-		});
-	});
+			// All users we have loaded which are not in the userIds list
+			const removedUsers = currentIds.filter((userId) => !requestedIdsSet.has(userId));
+			removedUsers.forEach((userId) => {
+				// Remove them from the list and unsubscribe to live updates
+				delete publicUserData[userId];
+				docReleasers.get(userId)?.();
+				docReleasers.delete(userId);
+			});
+		},
+		{ immediate: true },
+	);
 
 	return publicUserData;
 }

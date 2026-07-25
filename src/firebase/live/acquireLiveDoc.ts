@@ -26,7 +26,7 @@ const liveDocs = new Map<string, CachedLiveDoc>();
  *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */
-export function useLiveDoc<T>(
+export function acquireLiveDoc<T>(
 	docRef: DocumentReference<T>,
 	onError?: (network: boolean) => void,
 ): { data: Ref<T | null>; loaded: Ref<boolean>; release: () => void } {

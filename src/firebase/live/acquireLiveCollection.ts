@@ -1,6 +1,6 @@
 import { CollectionReference } from "firebase/firestore";
 import { type Ref } from "vue";
-import { useLiveQuery } from "./useLiveQuery";
+import { acquireLiveQuery } from "./acquireLiveQuery";
 
 interface CachedLiveCollection {
 	rec: Record<string, any>;
@@ -27,7 +27,7 @@ const liveCollections = new Map<string, CachedLiveCollection>();
  *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */
-export function useLiveCollection<T>(
+export function acquireLiveCollection<T>(
 	colRef: CollectionReference<T>,
 	onError?: (network: boolean) => void,
 ): { items: Record<string, T>; loaded: Ref<boolean>; release: () => void } {
@@ -53,7 +53,7 @@ export function useLiveCollection<T>(
 	}
 
 	// Get a live query of this collection
-	const { items, loaded, release: releaseQuery } = useLiveQuery(colRef, onError);
+	const { items, loaded, release: releaseQuery } = acquireLiveQuery(colRef, onError);
 	liveCollections.set(colKey, { rec: items, loaded, release: releaseQuery, refCount: 1 });
 
 	return { items, loaded, release };

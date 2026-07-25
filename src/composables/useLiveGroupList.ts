@@ -2,11 +2,11 @@ import { db } from "@/firebase/firebase";
 import { removeGroupFromUser } from "@/firebase/firestore/user";
 import type { GroupData, GroupUserData } from "@/firebase/types";
 import { collection, CollectionReference, doc, DocumentReference, query, where } from "firebase/firestore";
-import { computed, onUnmounted, reactive, ref, watch, type Ref } from "vue";
+import { computed, onScopeDispose, reactive, ref, watch, type Ref } from "vue";
+import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";
+import { acquireLiveQuery } from "../firebase/live/acquireLiveQuery";
 import { useCurrentUser } from "./useCurrentUser";
 import { useLiveCurrentUserData } from "./useLiveCurrentUserData";
-import { useLiveDoc } from "./useLiveDoc";
-import { useLiveQuery } from "./useLiveQuery";
 
 export type GroupListData = {
 	group: GroupData;
@@ -42,7 +42,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 	const docReleasers = new Map<string, () => void>();
 
 	// Automatically cleanup the live subscribers when going out of scope
-	onUnmounted(() => {
+	onScopeDispose(() => {
 		docReleasers.forEach((release) => release());
 		docReleasers.clear();
 	});
@@ -62,7 +62,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 			newGroups.forEach((groupId) => {
 				// Get the live group data
 				const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
-				const { data: groupData, release: releaseGroupData } = useLiveDoc(groupRef, (nw) => {
+				const { data: groupData, release: releaseGroupData } = acquireLiveDoc(groupRef, (nw) => {
 					if (nw) return onError?.(nw, groupId);
 					// If the group cannot be accessed remove from the users account
 					// This should be due to being removed or deleted.
@@ -75,7 +75,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 					items: groupActiveUsers,
 					loaded: groupActiveUsersLoaded,
 					release: releaseGroupActiveUsers,
-				} = useLiveQuery(activeUsersQuery, (nw) => onError?.(nw, groupId));
+				} = acquireLiveQuery(activeUsersQuery, (nw) => onError?.(nw, groupId));
 
 				const groupListData = computed(() => {
 					if (!groupData.value) return null;
