@@ -42,7 +42,7 @@ const sortedGroups = computed(() =>
 			<Skeleton v-if="!groupListLoaded" v-for="_n in 4" class="rounded-lg h-42 w-full" />
 
 			<template v-else-if="Object.keys(groupList).length > 0" v-for="[groupId, group] in sortedGroups">
-				<GroupListItem v-if="group" :group="group" @click="router.push(`/group/${groupId}`)" class="w-full" />
+				<GroupListItem v-if="group" :group-id="groupId" :group="group" />
 				<Skeleton v-else class="rounded-lg h-42 w-full" />
 			</template>
 

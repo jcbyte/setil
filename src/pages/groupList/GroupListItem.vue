@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import AvatarStack from "@/components/AvatarStack.vue";
 import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import NavCard from "@/components/NavCard.vue";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { GroupListDataWithUserPublic } from "@/composables/useLiveGroupListWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
 import { getLastUpdatedStr } from "@/util/time";
@@ -9,6 +10,7 @@ import { ChevronRight } from "@lucide/vue";
 import { computed } from "vue";
 
 const props = defineProps<{
+	groupId: string;
 	group: GroupListDataWithUserPublic;
 }>();
 
@@ -26,10 +28,7 @@ const yourBalanceStr = computed(() => {
 </script>
 
 <template>
-	<Card
-		role="link"
-		class="group relative flex flex-col cursor-pointer transition hover:border-primary/40 hover:shadow-md"
-	>
+	<NavCard :to="`/group/${groupId}`">
 		<CardHeader class="pr-12">
 			<CardTitle>{{ group.group.name }}</CardTitle>
 			<CardDescription v-if="group.group.description">{{ group.group.description }}</CardDescription>
@@ -57,5 +56,5 @@ const yourBalanceStr = computed(() => {
 		<ChevronRight
 			class="absolute right-5 top-5 size-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground"
 		/>
-	</Card>
+	</NavCard>
 </template>
