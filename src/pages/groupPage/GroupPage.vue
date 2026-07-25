@@ -24,17 +24,14 @@ import GroupSummary from "./GroupSummary.vue";
 
 const route = useRoute();
 const router = useRouter();
-const groupId = getRouteParam(route.params.groupId);
+const groupId = computed(() => getRouteParam(route.params.groupId));
 
-if (!groupId) {
-	noGroup(router);
-	throw "No groupId";
-}
 const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 
-const activeUsers = computed(() =>
-	group.value.users ? Object.values(group.value.users).filter((user) => user.status === "active") : [],
-);
+const activeUsers = computed(() => {
+	if (!group.value?.users) return [];
+	return Object.values(group.value.users).filter((user) => user.status === "active");
+});
 
 type Tab = "summary" | "activity";
 const tabSettings: Record<Tab, { title: string }> = {
@@ -53,11 +50,11 @@ watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
 const isAddingMember = ref<boolean>(false);
 
 async function addMember() {
-	if (!groupId || !group.value || !group.value.data) return;
+	if (!groupId.value || !group.value || !group.value.data) return;
 
 	isAddingMember.value = true;
 	try {
-		await inviteUser(groupId, group.value.data.name);
+		await inviteUser(groupId.value, group.value.data.name);
 	} catch (e) {
 		toast.error("Error Creating Invite Link", { description: String(e) });
 	}
@@ -107,7 +104,7 @@ watch(currentTab, (newTab, oldTab) => {
 				<Button variant="ghost" size="icon" @click="router.push('/')">
 					<ArrowLeft class="!size-5.5" />
 				</Button>
-				<span v-if="group.data" class="text-lg font-semibold">{{ group.data.name }}</span>
+				<span v-if="group?.data" class="text-lg font-semibold">{{ group.data.name }}</span>
 				<Skeleton v-else class="w-28 h-7" />
 			</div>
 			<div class="flex items-center gap-2">
@@ -126,12 +123,14 @@ watch(currentTab, (newTab, oldTab) => {
 						<TabsTrigger v-for="tab in tabOrder" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
 					</TabsList>
 				</Tabs>
-				<div class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
+
+				<div v-if="groupId && group" class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
 					<Transition :name="tabTransition" mode="out-in">
 						<GroupSummary v-if="currentTab === 'summary'" :group="group" />
 						<GroupActivity v-else-if="currentTab === 'activity'" :group-id="groupId" :group="group" />
 					</Transition>
 				</div>
+				<Skeleton v-else class="w-full h-56" />
 
 				<div class="flex gap-2">
 					<Button
@@ -166,7 +165,7 @@ watch(currentTab, (newTab, oldTab) => {
 				</div>
 			</div>
 
-			<Card v-if="group.data" class="relative h-fit min-w-68 max-w-none md:max-w-96">
+			<Card v-if="group?.data" class="relative h-fit min-w-68 max-w-none md:max-w-96">
 				<CardHeader>
 					<CardTitle>Group Info</CardTitle>
 					<CardDescription v-if="group.data.description">{{ group.data.description }}</CardDescription>

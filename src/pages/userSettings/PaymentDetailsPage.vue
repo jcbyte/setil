@@ -246,7 +246,7 @@ async function clearDetails() {
 			</CardHeader>
 			<CardContent>
 				<form v-if="hasDataLoaded" id="bank-details-form" @submit="onSubmit">
-					<FieldGroup>
+					<FieldGroup class="gap-5">
 						<VeeField v-slot="{ componentField, errors }" name="system">
 							<Field :data-invalid="!!errors.length">
 								<FieldLabel for="system">Banking System</FieldLabel>
