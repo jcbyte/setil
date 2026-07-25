@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
-import GroupDetailsPage from "./pages/GroupDetailsPage.vue";
+import CreateGroupPage from "./pages/groupDetails/CreateGroupPage.vue";
+import EditGroupPage from "./pages/groupDetails/EditGroupPage.vue";
 import GroupListPage from "./pages/groupList/GroupListPage.vue";
 import GroupPage from "./pages/groupPage/GroupPage.vue";
 import InvitePage from "./pages/InvitePage.vue";
@@ -27,12 +28,12 @@ const routes = [
 	},
 	{
 		path: "/create",
-		component: GroupDetailsPage,
+		component: CreateGroupPage,
 		name: "CreateGroupPage",
 	},
 	{
 		path: "/group/:groupId/edit",
-		component: GroupDetailsPage,
+		component: EditGroupPage,
 		name: "EditGroupPage",
 	},
 	{

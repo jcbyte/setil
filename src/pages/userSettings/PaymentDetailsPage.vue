@@ -18,7 +18,7 @@ import { BankingSystemSettings, type PaymentDetails } from "@/util/paymentDetail
 import { ArrowLeft, CircleX, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm, Field as VeeField } from "vee-validate";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
@@ -99,7 +99,6 @@ const { handleSubmit, setValues, values } = useForm({
 	validationSchema: formSchema,
 	keepValuesOnUnmount: true,
 });
-watch(values, (v) => console.log(v));
 
 onMounted(async () => {
 	const paymentDetails = await getPaymentDetails();
