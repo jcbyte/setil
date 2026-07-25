@@ -9,7 +9,7 @@ const version = __APP_VERSION__;
 
 <template>
 	<div class="flex min-h-dvh items-center justify-center">
-		<Card class="-mt-16">
+		<Card class="-mt-16 min-w-none sm:min-w-sm">
 			<CardContent class="flex flex-col items-center gap-4 p-8">
 				<div class="flex size-12 items-center justify-center rounded-full bg-muted">
 					<Wrench class="size-6 text-muted-foreground" />
