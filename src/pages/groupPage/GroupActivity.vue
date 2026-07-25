@@ -63,7 +63,7 @@ interface MonthTransactionGroup {
 
 const groupedSortedTransactions = computed(() => {
 	const groups: MonthTransactionGroup[] = [];
-	sortedTransactions.value.forEach(([transactionId, transaction]) => {
+	sortedTransactions.value.forEach(([transactionId, transaction]: [string, Transaction]) => {
 		const monthGroup = transaction.date.toDate().toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
 		let lastGroup = groups[groups.length - 1];
@@ -74,8 +74,6 @@ const groupedSortedTransactions = computed(() => {
 
 		lastGroup.transactions.push([transactionId, transaction]);
 	});
-
-	console.log(groups);
 
 	return groups;
 });
