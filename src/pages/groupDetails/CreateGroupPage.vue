@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { createGroup as firestoreCreateGroup } from "@/firebase/firestore/group.ts";
+import type { Currency } from "@/firebase/types.ts";
 import { ArrowLeft } from "@lucide/vue";
 import { Timestamp } from "firebase/firestore";
 import { ref } from "vue";
@@ -20,7 +21,7 @@ async function createGroup(details: GroupDetailsValues) {
 		const newGroupId = await firestoreCreateGroup({
 			name: details.name,
 			description: details.description ?? null,
-			currency: details.currency,
+			currency: details.currency as Currency,
 			lastUpdate: Timestamp.now(),
 		});
 
