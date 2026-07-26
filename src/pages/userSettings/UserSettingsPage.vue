@@ -182,7 +182,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button variant="ghost" size="icon" @click="router.push('/')">
+					<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
 						<ArrowLeft class="!size-5.5" />
 					</Button>
 					<span class="text-lg font-semibold">User Settings</span>
@@ -208,6 +208,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 								</InputGroup>
 								<Skeleton v-else class="w-full h-9" />
 								<Button
+									type="button"
 									:disabled="isNameUpdating || !nameMeta.valid || !nameMeta.dirty || !hasDataLoaded"
 									class="w-fit"
 									@click="updateName"
@@ -225,6 +226,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 								<FieldLabel>Profile Picture</FieldLabel>
 								<div class="flex gap-2">
 									<Button
+										type="button"
 										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
 										@click="() => avatarFileInput?.click()"
 									>
@@ -241,6 +243,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 									/>
 									<Button
 										v-if="avatarSrc || isAvatarClearing"
+										type="button"
 										variant="outline"
 										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
 										@click="handleClearAvatar"
@@ -331,7 +334,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 
 				<DialogFooter>
 					<DialogClose as-child>
-						<Button variant="outline" type="button" :disabled="isAvatarUpdating">Cancel</Button>
+						<Button type="button" variant="outline" :disabled="isAvatarUpdating">Cancel</Button>
 					</DialogClose>
 					<Button type="button" :disabled="isAvatarUpdating" @click="handleAvatarSave">
 						<LoaderIcon :icon="Crop" :loading="isAvatarUpdating" />

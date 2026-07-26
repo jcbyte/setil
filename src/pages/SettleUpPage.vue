@@ -12,13 +12,13 @@ import CardFooter from "@/components/ui/card/CardFooter.vue";
 import CardHeader from "@/components/ui/card/CardHeader.vue";
 import CardTitle from "@/components/ui/card/CardTitle.vue";
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -35,11 +35,11 @@ import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/firebase/types";
 import { noGroup } from "@/util/app";
 import {
-	CurrencySettings,
-	formatCurrency,
-	fromFirestoreAmount,
-	getBalanceStr,
-	toFirestoreAmount,
+  CurrencySettings,
+  formatCurrency,
+  fromFirestoreAmount,
+  getBalanceStr,
+  toFirestoreAmount,
 } from "@/util/currency";
 import { type PaymentDetails } from "@/util/paymentDetails";
 import { resolveGroupDebts, type SimpleTransaction } from "@/util/split";
@@ -207,7 +207,7 @@ async function openBankDetailsDialog() {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
+					<Button type="button" variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
 						<ArrowLeft class="!size-5.5" />
 					</Button>
 					<span class="text-lg font-semibold">Setil Up</span>
@@ -262,7 +262,7 @@ async function openBankDetailsDialog() {
 									<Skeleton v-else class="size-10 rounded-full" />
 								</div>
 							</div>
-							<Button variant="outline" @click="fillForm(payment)">Record this payment</Button>
+							<Button type="button" variant="outline" @click="fillForm(payment)">Record this payment</Button>
 						</div>
 						<Skeleton v-else v-for="_ in 3" class="w-full h-55 sm:h-32" />
 					</div>

@@ -39,7 +39,7 @@ async function createGroup(details: GroupDetailsValues) {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button variant="ghost" size="icon" @click="router.push('/')">
+					<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
 						<ArrowLeft class="!size-5.5" />
 					</Button>
 					<span class="text-lg font-semibold">Create Group</span>

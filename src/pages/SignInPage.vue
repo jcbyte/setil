@@ -22,7 +22,7 @@ const version = __APP_VERSION__;
 
 				<Separator />
 
-				<Button @click="signIn()" class="px-8">
+				<Button type="button" @click="signIn()" class="px-8">
 					<img :src="GoogleGLogo" class="size-5" />
 					<span class="font-semibold">Continue with Google</span>
 				</Button>

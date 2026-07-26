@@ -31,7 +31,7 @@ const sortedGroups = computed(() =>
 			<div class="flex gap-2 justify-center items-center">
 				<YourAccountSettings />
 
-				<Button @click="router.push('/create')">
+				<Button type="button" @click="router.push('/create')">
 					<Plus :stroke-width="3" />
 					<span class="font-semibold">New Group</span>
 				</Button>
@@ -55,7 +55,7 @@ const sortedGroups = computed(() =>
 					<EmptyDescription>Create or join a group to start splitting expenses</EmptyDescription>
 				</EmptyHeader>
 				<EmptyContent>
-					<Button @click="router.push('/create')">New Group</Button>
+					<Button type="button" @click="router.push('/create')">New Group</Button>
 				</EmptyContent>
 			</Empty>
 		</div>

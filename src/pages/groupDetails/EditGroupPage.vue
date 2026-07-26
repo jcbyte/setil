@@ -369,7 +369,7 @@ async function deleteGroup() {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
+					<Button type="button" variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
 						<ArrowLeft class="!size-5.5" />
 					</Button>
 					<span class="text-lg font-semibold">Group Settings</span>
@@ -417,6 +417,7 @@ async function deleteGroup() {
 							<Dot v-if="currentGroupUser?.nickname || isMyNicknameClearing" class="size-4 text-muted-foreground" />
 							<Button
 								v-if="currentGroupUser?.nickname || isMyNicknameClearing"
+								type="button"
 								variant="link"
 								:disabled="isMyNicknameUpdating || isMyNicknameClearing"
 								class="h-5 p-0 text-sm text-muted-foreground"
@@ -435,6 +436,7 @@ async function deleteGroup() {
 							</InputGroup>
 							<Skeleton v-else class="w-full h-9" />
 							<Button
+								type="button"
 								:disabled="
 									isMyNicknameUpdating ||
 									isMyNicknameClearing ||
@@ -495,6 +497,7 @@ async function deleteGroup() {
 										/>
 										<div class="flex gap-1">
 											<Button
+												type="button"
 												class="size-9"
 												@click="acceptMemberRename(userId)"
 												:disabled="memberNewNickname[userId].isUpdating || memberNewNickname[userId].errorMessage"
@@ -502,6 +505,7 @@ async function deleteGroup() {
 												<LoaderIcon :icon="Check" :loading="memberNewNickname[userId].isUpdating" />
 											</Button>
 											<Button
+												type="button"
 												variant="outline"
 												class="size-9"
 												@click="cancelMemberRename(userId)"
@@ -516,7 +520,11 @@ async function deleteGroup() {
 									v-if="group.data && currentUser?.uid === group.data.owner && !memberNicknamesModifying.has(userId)"
 								>
 									<DropdownMenuTrigger as-child>
-										<Button variant="outline" :disabled="userId === group.data.owner || memberIsUpdating.has(userId)">
+										<Button
+											type="button"
+											variant="outline"
+											:disabled="userId === group.data.owner || memberIsUpdating.has(userId)"
+										>
 											<LoaderIcon
 												v-if="userId !== group.data.owner"
 												:icon="ChevronDown"
@@ -577,7 +585,7 @@ async function deleteGroup() {
 					<Skeleton v-else v-for="_ in 4" class="w-52 h-11" />
 				</CardContent>
 				<CardFooter>
-					<Button variant="secondary" :disabled="isAddingMember" class="w-full" @click="addMember">
+					<Button type="button" variant="secondary" :disabled="isAddingMember" class="w-full" @click="addMember">
 						<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
 						<span>Add Member</span>
 					</Button>
@@ -596,7 +604,7 @@ async function deleteGroup() {
 								<span>Leave Group</span>
 								<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
 							</div>
-							<Button variant="outline" @click="leaveDialog.openDialog">
+							<Button type="button" variant="outline" @click="leaveDialog.openDialog">
 								<LogOut />
 								<span>Leave</span>
 							</Button>
@@ -609,7 +617,7 @@ async function deleteGroup() {
 									<span>Delete Group</span>
 									<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>
 								</div>
-								<Button variant="destructive" @click="deleteDialog.openDialog">
+								<Button type="button" variant="destructive" @click="deleteDialog.openDialog">
 									<Trash />
 									<span>Delete</span>
 								</Button>
@@ -633,10 +641,15 @@ async function deleteGroup() {
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter class="gap-2">
-						<Button variant="outline" :disabled="promoteDialog.processing.value" @click="promoteDialog.closeDialog">
+						<Button
+							type="button"
+							variant="outline"
+							:disabled="promoteDialog.processing.value"
+							@click="promoteDialog.closeDialog"
+						>
 							Cancel
 						</Button>
-						<Button :disabled="promoteDialog.processing.value" @click="promoteMember">
+						<Button type="button" :disabled="promoteDialog.processing.value" @click="promoteMember">
 							<LoaderIcon :icon="ArrowBigUpDash" :loading="promoteDialog.processing.value" />
 							<span>Promote</span>
 						</Button>
@@ -657,10 +670,15 @@ async function deleteGroup() {
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter class="gap-2">
-						<Button variant="outline" :disabled="removeDialog.processing.value" @click="removeDialog.closeDialog">
+						<Button
+							type="button"
+							variant="outline"
+							:disabled="removeDialog.processing.value"
+							@click="removeDialog.closeDialog"
+						>
 							Cancel
 						</Button>
-						<Button variant="destructive" :disabled="removeDialog.processing.value" @click="removeMember">
+						<Button type="button" variant="destructive" :disabled="removeDialog.processing.value" @click="removeMember">
 							<LoaderIcon :icon="UserMinus" :loading="removeDialog.processing.value" />
 							<span>Remove</span>
 						</Button>
@@ -675,10 +693,15 @@ async function deleteGroup() {
 						<DialogDescription>Your data will remain in the group until all debts are resolved.</DialogDescription>
 					</DialogHeader>
 					<DialogFooter class="gap-2">
-						<Button variant="outline" :disabled="leaveDialog.processing.value" @click="leaveDialog.closeDialog">
+						<Button
+							type="button"
+							variant="outline"
+							:disabled="leaveDialog.processing.value"
+							@click="leaveDialog.closeDialog"
+						>
 							Cancel
 						</Button>
-						<Button :disabled="leaveDialog.processing.value" @click="leaveGroup">
+						<Button type="button" :disabled="leaveDialog.processing.value" @click="leaveGroup">
 							<LoaderIcon :icon="LogOut" :loading="leaveDialog.processing.value" />
 							<span>Leave</span>
 						</Button>
@@ -695,10 +718,15 @@ async function deleteGroup() {
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter class="gap-2">
-						<Button variant="outline" :disabled="deleteDialog.processing.value" @click="deleteDialog.closeDialog">
+						<Button
+							type="button"
+							variant="outline"
+							:disabled="deleteDialog.processing.value"
+							@click="deleteDialog.closeDialog"
+						>
 							Cancel
 						</Button>
-						<Button variant="destructive" :disabled="deleteDialog.processing.value" @click="deleteGroup">
+						<Button type="button" variant="destructive" :disabled="deleteDialog.processing.value" @click="deleteGroup">
 							<LoaderIcon :icon="Trash" :loading="deleteDialog.processing.value" />
 							<span>Delete</span>
 						</Button>

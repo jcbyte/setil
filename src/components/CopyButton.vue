@@ -23,7 +23,7 @@ async function copy() {
 </script>
 
 <template>
-	<Button variant="ghost" size="icon" v-bind="$attrs" @click="copy()">
+	<Button type="button" variant="ghost" size="icon" v-bind="$attrs" @click="copy()">
 		<Check v-if="copied" />
 		<Copy v-else />
 	</Button>

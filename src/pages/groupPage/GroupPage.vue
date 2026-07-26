@@ -101,14 +101,19 @@ watch(currentTab, (newTab, oldTab) => {
 	<div class="mx-auto w-full max-w-4xl flex flex-col gap-4">
 		<div class="flex justify-between items-center">
 			<div class="flex items-center gap-1">
-				<Button variant="ghost" size="icon" @click="router.push('/')">
+				<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
 					<ArrowLeft class="!size-5.5" />
 				</Button>
 				<span v-if="group?.data" class="text-lg font-semibold">{{ group.data.name }}</span>
 				<Skeleton v-else class="w-28 h-7" />
 			</div>
 			<div class="flex items-center gap-2">
-				<Button variant="outline" class="size-9 sm:size-auto" @click="router.push(`/group/${groupId}/edit`)">
+				<Button
+					type="button"
+					variant="outline"
+					class="size-9 sm:size-auto"
+					@click="router.push(`/group/${groupId}/edit`)"
+				>
 					<Settings />
 					<span class="hidden sm:inline">Group Settings</span>
 				</Button>
@@ -148,6 +153,7 @@ watch(currentTab, (newTab, oldTab) => {
 								onClick: () => router.push(`/group/${groupId}/settle`),
 							},
 						]"
+						type="button"
 						variant="outline"
 						class="h-full flex-1 p-4"
 						@click="groupButton.onClick"
@@ -197,7 +203,7 @@ watch(currentTab, (newTab, oldTab) => {
 					</div>
 				</CardContent>
 				<CardFooter>
-					<Button variant="secondary" class="w-full" :disabled="isAddingMember" @click="addMember">
+					<Button type="button" variant="secondary" class="w-full" :disabled="isAddingMember" @click="addMember">
 						<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
 						<span>Add Member</span>
 					</Button>

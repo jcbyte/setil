@@ -200,10 +200,20 @@ async function handleDeleteTransaction() {
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter class="gap-2">
-					<Button variant="outline" :disabled="deleteConfirmDialogProcessing" @click="closeDeleteConfirmDialog">
+					<Button
+						type="button"
+						variant="outline"
+						:disabled="deleteConfirmDialogProcessing"
+						@click="closeDeleteConfirmDialog"
+					>
 						Cancel
 					</Button>
-					<Button variant="destructive" :disabled="deleteConfirmDialogProcessing" @click="handleDeleteTransaction">
+					<Button
+						type="button"
+						variant="destructive"
+						:disabled="deleteConfirmDialogProcessing"
+						@click="handleDeleteTransaction"
+					>
 						<LoaderIcon :icon="Trash" :loading="deleteConfirmDialogProcessing" />
 						<span>Delete</span>
 					</Button>

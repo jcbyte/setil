@@ -229,6 +229,7 @@ defineExpose<TransactionDetailsFormExposed>({
 								<Popover>
 									<PopoverTrigger as-child>
 										<Button
+											type="button"
 											variant="outline"
 											id="date"
 											:class="`w-full font-normal ${!value && 'text-muted-foreground'}`"
@@ -383,6 +384,7 @@ defineExpose<TransactionDetailsFormExposed>({
 										</template>
 									</div>
 									<Button
+										type="button"
 										variant="outline"
 										@click="
 											() => {

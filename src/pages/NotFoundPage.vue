@@ -24,7 +24,7 @@ const router = useRouter();
 
 				<Separator />
 
-				<Button variant="outline" class="min-w-36" @click="router.push('/')">
+				<Button type="button" variant="outline" class="min-w-36" @click="router.push('/')">
 					<span class="font-semibold">Return Home</span>
 				</Button>
 			</CardContent>
