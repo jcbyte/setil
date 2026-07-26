@@ -18,6 +18,11 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Empty from "@/components/ui/empty/Empty.vue";
+import EmptyDescription from "@/components/ui/empty/EmptyDescription.vue";
+import EmptyHeader from "@/components/ui/empty/EmptyHeader.vue";
+import EmptyMedia from "@/components/ui/empty/EmptyMedia.vue";
+import EmptyTitle from "@/components/ui/empty/EmptyTitle.vue";
 import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
@@ -26,7 +31,7 @@ import type { Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";
-import { EllipsisVertical, FilePen, Trash } from "@lucide/vue";
+import { EllipsisVertical, FilePen, FileText, Trash } from "@lucide/vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
@@ -108,15 +113,15 @@ async function handleDeleteTransaction() {
 			</CardHeader>
 			<CardContent>
 				<div class="flex flex-col gap-4">
-					<div
-						v-if="group.transactions"
-						v-for="groupedTransactions in groupedSortedTransactions"
-						class="flex flex-col gap-1"
-					>
-						<span class="text-sm text-muted-foreground font-semibold uppercase">{{
-							groupedTransactions.monthGroup
-						}}</span>
-						<div class="flex flex-col gap-1">
+					<template v-if="group.transactions">
+						<div
+							v-if="groupedSortedTransactions.length > 0"
+							v-for="groupedTransactions in groupedSortedTransactions"
+							class="flex flex-col gap-1"
+						>
+							<span class="text-sm text-muted-foreground font-semibold uppercase">
+								{{ groupedTransactions.monthGroup }}
+							</span>
 							<div
 								v-for="[transactionId, transaction] in groupedTransactions.transactions"
 								class="bg-muted rounded-lg px-4 py-2 flex justify-between items-center gap-4"
@@ -185,8 +190,23 @@ async function handleDeleteTransaction() {
 								</div>
 							</div>
 						</div>
+
+						<div v-else>
+							<Empty>
+								<EmptyHeader>
+									<EmptyMedia variant="icon">
+										<FileText />
+									</EmptyMedia>
+									<EmptyTitle>No activity</EmptyTitle>
+									<EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						</div>
+					</template>
+					<div v-else v-for="i in 3" class="flex flex-col gap-1">
+						<Skeleton class="w-34 h-5" />
+						<Skeleton v-for="_ in i * 2" class="w-full h-15" />
 					</div>
-					<Skeleton v-else />
 				</div>
 			</CardContent>
 		</Card>
