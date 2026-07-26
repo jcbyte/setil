@@ -1,4 +1,3 @@
-<!-- src/components/ui/card/LinkCard.vue -->
 <script setup lang="ts">
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";

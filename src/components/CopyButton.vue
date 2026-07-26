@@ -18,7 +18,7 @@ async function copy() {
 
 	copyRemoverTimeout.value = setTimeout(() => {
 		copied.value = false;
-	}, 5000);
+	}, 4000);
 }
 </script>
 

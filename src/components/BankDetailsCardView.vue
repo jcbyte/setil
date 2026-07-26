@@ -53,7 +53,7 @@ const presentation = computed<{ title: string; rows: { label: string; value: str
 
 		default:
 			return {
-				title: "Unknown Bank Account Details",
+				title: "Unsupported Bank Account Details",
 				rows: [],
 			};
 	}
