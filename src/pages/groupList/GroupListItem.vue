@@ -19,10 +19,10 @@ const lastUpdatedStr = computed(() => getLastUpdatedStr(props.group.group.lastUp
 const yourBalanceStr = computed(() => {
 	return getBalanceStr(
 		props.group.myBalance,
-		props.group.group.currency,
 		(b) => `You're owed ${b}`,
 		(b) => `You owe ${b}`,
 		() => "All Setil'd",
+		props.group.group.currency,
 	);
 });
 </script>

@@ -16,6 +16,16 @@ export const CurrencySettings: Record<Currency, CurrencyData> = {
 	pln: { name: "Polish Zloty", symbol: " zł", symbolAfter: true, separator: ",", decimals: 2 },
 };
 
+export function fromFirestoreAmount(amount: number, currency: Currency) {
+	const decimalMultiplier = Math.pow(10, CurrencySettings[currency].decimals);
+	return Math.floor(amount) / decimalMultiplier;
+}
+
+export function toFirestoreAmount(amount: number, currency: Currency): number {
+	const decimalMultiplier = Math.pow(10, CurrencySettings[currency].decimals);
+	return Math.round(amount * decimalMultiplier);
+}
+
 export function formatCurrency(amount: number, currency: Currency, firebaseAmount: boolean = true): string {
 	const currencySetting = CurrencySettings[currency];
 
@@ -32,22 +42,12 @@ export function formatCurrency(amount: number, currency: Currency, firebaseAmoun
 	);
 }
 
-export function fromFirestoreAmount(amount: number, currency: Currency) {
-	const decimalMultiplier = Math.pow(10, CurrencySettings[currency].decimals);
-	return Math.floor(amount) / decimalMultiplier;
-}
-
-export function toFirestoreAmount(amount: number, currency: Currency): number {
-	const decimalMultiplier = Math.pow(10, CurrencySettings[currency].decimals);
-	return Math.round(amount * decimalMultiplier);
-}
-
 export function getBalanceStr(
 	balance: number,
-	currency: Currency,
 	positiveGenerator: (formattedBal: string) => string,
 	negativeGenerator: (formattedBal: string) => string,
 	neutralGenerator: () => string,
+	currency: Currency,
 ): BalanceStr {
 	const formattedBal = formatCurrency(Math.abs(balance), currency);
 

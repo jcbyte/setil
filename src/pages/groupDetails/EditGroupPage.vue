@@ -40,7 +40,7 @@ import {
 	removeUser,
 } from "@/firebase/firestore/group.ts";
 import { inviteUser, noGroup } from "@/util/app.ts";
-import { getNonHistoricalUsers, getRouteParam } from "@/util/util";
+import { getRouteParam, getStatusUsers } from "@/util/util";
 import {
 	ArrowBigUpDash,
 	ArrowLeft,
@@ -188,7 +188,7 @@ async function clearMyNickname() {
 	isMyNicknameClearing.value = false;
 }
 
-const nonHistoricalUsers = computed(() => (group.value?.users ? getNonHistoricalUsers(group.value.users) : {}));
+const nonHistoricalUsers = computed(() => getStatusUsers(group.value?.users ?? {}, new Set(["active", "left"])));
 
 const memberNewNickname = ref<
 	Record<string, { nickname: string | undefined; isUpdating: boolean; errorMessage?: string }>

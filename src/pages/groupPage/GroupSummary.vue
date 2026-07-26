@@ -20,10 +20,10 @@ const usersBalanceStr = computed<Record<string, BalanceStr> | null>(() => {
 			userId,
 			getBalanceStr(
 				user.balance,
-				currency,
 				(b) => `is owed ${b}`,
 				(b) => `owes ${b}`,
 				() => "is all Setil'd",
+				currency,
 			),
 		]),
 	);
