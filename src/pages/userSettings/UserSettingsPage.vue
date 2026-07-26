@@ -2,7 +2,12 @@
 import { removeAvatar, uploadAvatar } from "@/cloudinary/avatar";
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
+import NavCard from "@/components/NavCard.vue";
 import Button from "@/components/ui/button/Button.vue";
+import { Card, CardHeader } from "@/components/ui/card";
+import CardContent from "@/components/ui/card/CardContent.vue";
+import CardDescription from "@/components/ui/card/CardDescription.vue";
+import CardTitle from "@/components/ui/card/CardTitle.vue";
 import { Dialog } from "@/components/ui/dialog";
 import DialogClose from "@/components/ui/dialog/DialogClose.vue";
 import DialogContent from "@/components/ui/dialog/DialogContent.vue";
@@ -10,15 +15,17 @@ import DialogDescription from "@/components/ui/dialog/DialogDescription.vue";
 import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
 import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
 import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
-import { Input } from "@/components/ui/input";
+import { Field, FieldDescription, FieldError, FieldGroup } from "@/components/ui/field";
+import FieldLabel from "@/components/ui/field/FieldLabel.vue";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserData, setName } from "@/firebase/firestore/user";
 import {
 	ArrowLeft,
 	Camera,
 	Check,
-	ChevronRight,
 	CircleX,
 	Crop,
 	LoaderCircle,
@@ -28,7 +35,9 @@ import {
 	UserRound,
 	type LucideProps,
 } from "@lucide/vue";
+import { toTypedSchema } from "@vee-validate/zod";
 import { useColorMode, type BasicColorSchema } from "@vueuse/core";
+import { useField } from "vee-validate";
 import { onMounted, ref, type FunctionalComponent } from "vue";
 import { CircleStencil, Cropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
@@ -38,18 +47,25 @@ import * as z from "zod";
 
 const router = useRouter();
 
-const displayName = ref<string | undefined>();
-const displayNameErrors = ref<string | undefined>();
-const displayNameValidation = z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters");
+const hasDataLoaded = ref<boolean>(false);
 
-function validateDisplayName() {
-	const parsedName = displayNameValidation.safeParse(displayName.value);
-	displayNameErrors.value = parsedName.success ? undefined : parsedName.error.issues[0].message;
-}
+const nameSchema = toTypedSchema(
+	z.string().trim().min(1, "Name is required").max(50, "Name cannot exceed 50 characters"),
+);
+const {
+	value: name,
+	errorMessage: nameErrorMessage,
+	meta: nameMeta,
+	resetField: resetName,
+	validate: validateName,
+} = useField("name", nameSchema);
+const isNameUpdating = ref<boolean>(false);
 
 const avatarSrc = ref<string | undefined>();
-const avatarErrors = ref<string | undefined>();
-
+const avatarErrorMessage = ref<string | undefined>();
+const avatarFileInput = ref<HTMLInputElement | null>(null);
+const isAvatarUpdating = ref<boolean>(false);
+const isAvatarClearing = ref<boolean>(false);
 const isCropperOpen = ref(false);
 const newAvatarSrc = ref<string | undefined>();
 const avatarCropper = ref<InstanceType<typeof Cropper> | undefined>();
@@ -57,43 +73,40 @@ const avatarCropper = ref<InstanceType<typeof Cropper> | undefined>();
 onMounted(async () => {
 	const userData = await getUserData();
 
-	displayName.value = userData.public.name;
+	resetName({ value: userData.public.name });
 	avatarSrc.value = userData.public.photoUrl;
+
+	hasDataLoaded.value = true;
 });
 
-const isDisplayNameUpdating = ref<boolean>(false);
-
 async function updateName() {
-	const cleanName = displayName.value?.trim();
-	if (!cleanName) return;
+	const { valid, value: newName } = await validateName();
+	if (!valid || !newName) return;
 
-	isDisplayNameUpdating.value = true;
+	isNameUpdating.value = true;
 
 	try {
-		await setName(cleanName);
+		await setName(newName);
 
 		toast("Name Updated", { description: "Please try not to forget it." });
 	} catch (e) {
 		toast.error("Error Updating Name", { description: String(e) });
 	}
 
-	isDisplayNameUpdating.value = false;
+	resetName({ value: newName });
+	isNameUpdating.value = false;
 }
-
-const avatarFileInput = ref<HTMLInputElement | null>(null);
-const isAvatarUpdating = ref<boolean>(false);
-const isAvatarClearing = ref<boolean>(false);
 
 async function handleAvatarFileChange(event: Event) {
 	const file = (event.target as HTMLInputElement).files?.[0];
 	if (!file) return;
 
 	// Check file size
-	if (file.size > 1024 * 1024 * 4) {
-		avatarErrors.value = "The selected file exceeds 4 MB";
+	if (file.size > 1024 * 1024 * 5) {
+		avatarErrorMessage.value = "The selected file exceeds 5 MB";
 		return;
 	}
-	avatarErrors.value = undefined;
+	avatarErrorMessage.value = undefined;
 
 	newAvatarSrc.value = URL.createObjectURL(file);
 	if (avatarFileInput.value) avatarFileInput.value.value = "";
@@ -166,61 +179,55 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 
 <template>
 	<div>
-		<div class="w-full flex flex-col gap-4 items-center">
-			<div class="w-full flex justify-between items-center">
-				<div class="flex gap-2 justify-center items-center">
-					<Button variant="ghost" class="size-9" @click="router.back()">
-						<ArrowLeft class="!size-6" />
+		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
+			<div class="flex justify-between items-center">
+				<div class="flex items-center gap-1">
+					<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
+						<ArrowLeft class="!size-5.5" />
 					</Button>
 					<span class="text-lg font-semibold">User Settings</span>
 				</div>
 				<YourAccountSettings />
 			</div>
 
-			<div class="w-full max-w-[32rem] flex flex-col gap-4">
-				<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
-					<div class="flex flex-col">
-						<span class="text-lg font-semibold">Profile</span>
-						<span class="text-sm text-muted-foreground">How you are seen by others</span>
-					</div>
-
-					<div class="flex flex-col gap-2">
-						<span :class="`text-sm font-[500] ${displayNameErrors && 'text-destructive'}`">Display Name</span>
-						<div class="flex justify-center items-center gap-2">
-							<div class="relative w-full">
-								<Input
-									v-model:model-value="displayName"
-									class="pl-8"
-									autocomplete="off"
-									type="text"
-									placeholder="Name"
-									:disabled="isDisplayNameUpdating"
-									@update:model-value="validateDisplayName"
-								/>
-								<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
-									<UserRound class="size-4" />
-								</span>
+			<Card>
+				<CardHeader>
+					<CardTitle>Profile</CardTitle>
+					<CardDescription>How you're seen by others</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<FieldGroup>
+						<Field :data-invalid="!!nameErrorMessage">
+							<FieldLabel for="name" :disabled="isNameUpdating">Name</FieldLabel>
+							<div class="flex gap-2">
+								<InputGroup v-if="hasDataLoaded">
+									<InputGroupInput id="name" placeholder="Name" v-model="name" />
+									<InputGroupAddon>
+										<UserRound class="size-4" />
+									</InputGroupAddon>
+								</InputGroup>
+								<Skeleton v-else class="w-full h-9" />
+								<Button
+									type="button"
+									:disabled="isNameUpdating || !nameMeta.valid || !nameMeta.dirty || !hasDataLoaded"
+									class="w-fit"
+									@click="updateName"
+								>
+									<LoaderIcon :icon="Check" :loading="isNameUpdating" />
+									<span>Update</span>
+								</Button>
 							</div>
-							<Button type="button" :disabled="isDisplayNameUpdating" class="w-fit" @click="updateName">
-								<LoaderIcon :icon="Check" :loading="isDisplayNameUpdating" />
-								<span>Update</span>
-							</Button>
-						</div>
-						<span class="text-[12.8px] text-muted-foreground"> You can use a different nickname in each group </span>
-						<span v-if="displayNameErrors" class="text-[12.8px] text-destructive">{{ displayNameErrors }}</span>
-					</div>
+							<FieldDescription>You can use a different nickname in each group</FieldDescription>
+							<FieldError v-if="nameErrorMessage">{{ nameErrorMessage }}</FieldError>
+						</Field>
 
-					<div class="flex flex-col gap-2">
-						<div class="flex justify-between items-center gap-3">
-							<div class="flex flex-col gap-2">
-								<div class="flex flex-col">
-									<span class="text-sm font-[500]">Profile Picture</span>
-									<span class="text-[12.8px] text-muted-foreground">Select an image under 4 MB </span>
-								</div>
+						<div class="flex justify-between items-center gap-2">
+							<Field>
+								<FieldLabel>Profile Picture</FieldLabel>
 								<div class="flex gap-2">
 									<Button
 										type="button"
-										:disabled="isAvatarUpdating || isAvatarClearing"
+										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
 										@click="() => avatarFileInput?.click()"
 									>
 										<LoaderIcon :icon="Camera" :loading="isAvatarUpdating" />
@@ -235,23 +242,28 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 										@change="handleAvatarFileChange"
 									/>
 									<Button
-										v-if="avatarSrc"
+										v-if="avatarSrc || isAvatarClearing"
 										type="button"
 										variant="outline"
-										:disabled="isAvatarUpdating || isAvatarClearing"
+										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
 										@click="handleClearAvatar"
 									>
 										<LoaderIcon :icon="CircleX" :loading="isAvatarClearing" />
 										<span>Remove</span>
 									</Button>
 								</div>
-							</div>
+								<FieldDescription>Select an image under 5 MB</FieldDescription>
+
+								<FieldError v-if="avatarErrorMessage">{{ avatarErrorMessage }}</FieldError>
+							</Field>
 							<div class="relative flex justify-center items-center">
 								<Avatar
+									v-if="hasDataLoaded"
 									:src="avatarSrc ?? null"
-									:name="displayName ?? ''"
+									:name="name ?? ''"
 									class="size-20 border-2 border-background ring-1 ring-border"
 								/>
+								<Skeleton v-else class="size-20 rounded-full" />
 								<div
 									v-if="isAvatarUpdating || isAvatarClearing"
 									class="absolute inset-0 flex justify-center items-center rounded-full bg-black/40 backdrop-blur-[3px]"
@@ -260,25 +272,24 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 								</div>
 							</div>
 						</div>
-						<span v-if="avatarErrors" class="text-[12.8px] text-destructive">{{ avatarErrors }}</span>
-					</div>
-				</div>
-			</div>
+					</FieldGroup>
+				</CardContent>
+			</Card>
 
-			<div class="w-full max-w-[32rem] flex flex-col gap-4">
-				<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
-					<div class="flex flex-col">
-						<span class="text-lg font-semibold">Appearance</span>
-						<span class="text-sm text-muted-foreground">Personalise how Setil looks</span>
-					</div>
-
-					<div class="flex justify-between items-center gap-2">
-						<div class="flex flex-col">
-							<span class="text-sm font-[500]">Theme</span>
-							<span class="text-[12.8px] text-muted-foreground text-nowrap">Choose your colour scheme</span>
+			<Card>
+				<CardHeader>
+					<CardTitle>Appearance</CardTitle>
+					<CardDescription>Personalise how Setil looks</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<Field class="flex flex-row justify-between items-center">
+						<div class="space-y-1">
+							<FieldLabel for="theme">Theme</FieldLabel>
+							<FieldDescription>Choose your colour scheme</FieldDescription>
 						</div>
+
 						<Select v-model="selectedTheme">
-							<SelectTrigger class="w-full max-w-38">
+							<SelectTrigger id="theme" class="w-full max-w-38">
 								<div v-if="selectedTheme" class="flex items-center gap-2">
 									<component :is="themeDetail[selectedTheme].icon" class="size-4" />
 									<span>{{ themeDetail[selectedTheme].name }}</span>
@@ -293,19 +304,16 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 								</SelectItem>
 							</SelectContent>
 						</Select>
-					</div>
-				</div>
-			</div>
+					</Field>
+				</CardContent>
+			</Card>
 
-			<div class="w-full max-w-[32rem] flex flex-col gap-4" @click="router.push('/settings/payment')">
-				<div class="border border-border rounded-lg flex justify-between items-center p-4">
-					<div class="flex flex-col">
-						<span class="text-lg font-semibold">Payment Details</span>
-						<span class="text-sm text-muted-foreground">Add or update your payment details</span>
-					</div>
-					<ChevronRight />
-				</div>
-			</div>
+			<NavCard to="/settings/payment">
+				<CardHeader>
+					<CardTitle>Payment Details</CardTitle>
+					<CardDescription>Add or update your payment details</CardDescription>
+				</CardHeader>
+			</NavCard>
 		</div>
 
 		<Dialog :open="isCropperOpen" @update:open="(opened) => !opened && cleanupCloseCropper()">
@@ -326,7 +334,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 
 				<DialogFooter>
 					<DialogClose as-child>
-						<Button variant="outline" type="button" :disabled="isAvatarUpdating">Cancel</Button>
+						<Button type="button" variant="outline" :disabled="isAvatarUpdating">Cancel</Button>
 					</DialogClose>
 					<Button type="button" :disabled="isAvatarUpdating" @click="handleAvatarSave">
 						<LoaderIcon :icon="Crop" :loading="isAvatarUpdating" />

@@ -1,36 +1,34 @@
 <script setup lang="ts">
-import { cn } from "@/lib/utils";
-import { Check } from "@lucide/vue";
-import type { CheckboxRootEmits, CheckboxRootProps } from "reka-ui";
-import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from "reka-ui";
-import { computed, type HTMLAttributes } from "vue";
+import type { CheckboxRootEmits, CheckboxRootProps } from 'reka-ui'
 
-const props = defineProps<CheckboxRootProps & { class?: HTMLAttributes["class"] }>();
-const emits = defineEmits<CheckboxRootEmits>();
+import type { HTMLAttributes } from 'vue'
+import { CheckIcon } from '@lucide/vue'
+import { reactiveOmit } from '@vueuse/core'
+import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from 'reka-ui'
+import { cn } from '@/lib/utils'
 
-const delegatedProps = computed(() => {
-	const { class: _, ...delegated } = props;
+const props = defineProps<CheckboxRootProps & { class?: HTMLAttributes['class'] }>()
+const emits = defineEmits<CheckboxRootEmits>()
 
-	return delegated;
-});
+const delegatedProps = reactiveOmit(props, 'class')
 
-const forwarded = useForwardPropsEmits(delegatedProps, emits);
+const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
 
 <template>
-	<CheckboxRoot
-		v-bind="forwarded"
-		:class="
-			cn(
-				'peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
-				props.class,
-			)
-		"
-	>
-		<CheckboxIndicator class="flex h-full w-full items-center justify-center text-current">
-			<slot>
-				<Check class="h-4 w-4" />
-			</slot>
-		</CheckboxIndicator>
-	</CheckboxRoot>
+  <CheckboxRoot
+    v-slot="slotProps"
+    data-slot="checkbox"
+    v-bind="forwarded"
+    :class="cn('border-input dark:bg-input/30 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary data-checked:border-primary aria-invalid:aria-checked:border-primary aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 flex size-4 items-center justify-center rounded-[4px] border transition-colors focus-visible:ring-3 aria-invalid:ring-3 peer relative shrink-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50', props.class)"
+  >
+    <CheckboxIndicator
+      data-slot="checkbox-indicator"
+      class="[&>svg]:size-3.5 grid place-content-center text-current transition-none"
+    >
+      <slot v-bind="slotProps">
+        <CheckIcon />
+      </slot>
+    </CheckboxIndicator>
+  </CheckboxRoot>
 </template>

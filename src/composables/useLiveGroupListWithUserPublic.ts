@@ -4,7 +4,6 @@ import useLiveGroupList from "./useLiveGroupList";
 import type { GroupUserDataWithPublic } from "./useLiveGroupWithUserPublic";
 import useLiveUserCollection from "./useLiveUserCollection";
 
-// export type GroupUserDataWithPublic = GroupUserData & { public: PublicUserData | null };
 export type GroupListDataWithUserPublic = Omit<GroupListData, "topUsers"> & {
 	topUsers: [string, GroupUserDataWithPublic][];
 };
@@ -49,7 +48,7 @@ export default function useLiveGroupListWithUserPublic(
 		Object.fromEntries(
 			Object.entries(groupList).map(([groupId, groupRef]) => {
 				const group = unref(groupRef);
-				if (!group) return [groupId, group];
+				if (!group) return [groupId, null];
 
 				// Merge public data into each user
 				const mergedUsers: [string, GroupUserDataWithPublic][] = group.topUsers.map(([userId, userData]) => {

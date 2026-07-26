@@ -1,14 +1,14 @@
 import { db } from "@/firebase/firebase";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { collection, CollectionReference, doc, DocumentReference } from "firebase/firestore";
-import { computed, onUnmounted, type Ref } from "vue";
-import { useLiveCollection } from "./useLiveCollection";
-import { useLiveDoc } from "./useLiveDoc";
+import { ref, watch, watchEffect, type Ref } from "vue";
+import { acquireLiveCollection } from "../firebase/live/acquireLiveCollection";
+import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";
 
 export interface Group {
-	data: GroupData;
-	users: Record<string, GroupUserData>;
-	transactions: Record<string, Transaction>;
+	data: GroupData | null;
+	users: Record<string, GroupUserData> | null;
+	transactions: Record<string, Transaction> | null;
 }
 
 /**
@@ -18,48 +18,58 @@ export interface Group {
  * in a single reactive object. Automatically handles cleanup of all subscriptions
  * on component unmount.
  *
- * @param {string | null} groupId - The static id of the group to subscribe to, or null
+ * @param {Ref<string | null>} groupId - The reactive id of the group to subscribe to
  * @param {Function} [onError] - Optional callback for error handling. Called with:
  *   - network: boolean - true if error is network related, false if access related
  * @returns {Ref<Group | null>} Reactive ref containing the complete group data, or null
  *   if groupId is null or the group has not loaded yet
  */
-export function useLiveGroup(groupId: string | null, onError?: (network: boolean) => void): Ref<Group | null> {
-	if (!groupId) return computed(() => null);
+export function useLiveGroup(groupId: Ref<string | null>, onError?: (network: boolean) => void): Ref<Group | null> {
+	const activeGroupData = ref<Group | null>(null);
 
-	// Get the live data and collections for the group
-	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
-	const { data: liveGroupData, release: releaseGroupData } = useLiveDoc(groupRef, onError);
-	const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
-	const {
-		items: liveGroupUsers,
-		loaded: liveGroupUsersLoaded,
-		release: releaseGroupUsers,
-	} = useLiveCollection(groupUsersRef, onError);
-	const groupTransactionsRef = collection(groupRef, "transactions") as CollectionReference<Transaction>;
-	const {
-		items: liveGroupTransactions,
-		loaded: liveGroupTransactionsLoaded,
-		release: releaseGroupTransactions,
-	} = useLiveCollection(groupTransactionsRef, onError);
+	watch(
+		groupId,
+		(id, _, onCleanup) => {
+			activeGroupData.value = null;
+			if (!id) return;
 
-	// Automatically cleanup the live subscribers when going out of scope
-	onUnmounted(() => {
-		releaseGroupData();
-		releaseGroupUsers();
-		releaseGroupTransactions();
-	});
+			// Get the live data and collections for the group
+			const groupRef = doc(db, "groups", id) as DocumentReference<GroupData>;
+			const { data: liveGroupData, release: releaseGroupData } = acquireLiveDoc(groupRef, onError);
 
-	// Return null until all parts of the group have loaded
-	const group = computed<Group | null>(() => {
-		if (!liveGroupData.value || !liveGroupUsersLoaded.value || !liveGroupTransactionsLoaded.value) return null;
+			const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
+			const {
+				items: liveGroupUsers,
+				loaded: liveGroupUsersLoaded,
+				release: releaseGroupUsers,
+			} = acquireLiveCollection(groupUsersRef, onError);
 
-		return {
-			data: liveGroupData.value!,
-			users: liveGroupUsers,
-			transactions: liveGroupTransactions,
-		};
-	});
+			const groupTransactionsRef = collection(groupRef, "transactions") as CollectionReference<Transaction>;
+			const {
+				items: liveGroupTransactions,
+				loaded: liveGroupTransactionsLoaded,
+				release: releaseGroupTransactions,
+			} = acquireLiveCollection(groupTransactionsRef, onError);
 
-	return group;
+			// Collapse the group data into a single value
+			const stopWatchEffect = watchEffect(() => {
+				activeGroupData.value = {
+					data: liveGroupData.value,
+					users: liveGroupUsersLoaded.value ? liveGroupUsers : null,
+					transactions: liveGroupTransactionsLoaded.value ? liveGroupTransactions : null,
+				};
+			});
+
+			// Automatically cleanup the live subscribers when going out of scope
+			onCleanup(() => {
+				stopWatchEffect();
+				releaseGroupData();
+				releaseGroupUsers();
+				releaseGroupTransactions();
+			});
+		},
+		{ immediate: true },
+	);
+
+	return activeGroupData;
 }

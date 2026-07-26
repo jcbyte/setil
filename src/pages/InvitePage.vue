@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Card from "@/components/ui/card/Card.vue";
+import CardContent from "@/components/ui/card/CardContent.vue";
 import { joinGroup } from "@/firebase/firestore/group";
 import { sendNotification } from "@/firebase/messaging";
 import { getRouteParam } from "@/util/util";
@@ -46,10 +48,13 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div class="flex items-center justify-center">
-		<div class="flex flex-col items-center justify-center gap-4 border border-border p-8 min-w-80 rounded-lg">
-			<Loader class="animate-spin !size-12" />
-			<span class="text-muted-foreground font-semibold">Validating Invite Link</span>
-		</div>
+	<!-- 100dvh - 2rem; accounting for `p-4` on all pages from `App.vue` -->
+	<div class="flex min-h-[calc(100dvh-2rem)] items-center justify-center">
+		<Card class="-translate-y-8 min-w-none sm:min-w-sm">
+			<CardContent class="flex flex-col items-center gap-4 p-8">
+				<Loader class="animate-spin !size-14" />
+				<span class="text-lg text-muted-foreground font-semibold">Validating Invite Link</span>
+			</CardContent>
+		</Card>
 	</div>
 </template>

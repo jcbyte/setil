@@ -16,7 +16,7 @@ import { reactive, ref, type Ref } from "vue";
  *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */
-export function useLiveQuery<T>(
+export function acquireLiveQuery<T>(
 	query: Query<T>,
 	onError?: (network: boolean) => void,
 ): { items: Record<string, T>; loaded: Ref<boolean>; release: () => void } {

@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
-import GroupDetailsPage from "./pages/GroupDetailsPage.vue";
+import CreateGroupPage from "./pages/groupDetails/CreateGroupPage.vue";
+import EditGroupPage from "./pages/groupDetails/EditGroupPage.vue";
 import GroupListPage from "./pages/groupList/GroupListPage.vue";
 import GroupPage from "./pages/groupPage/GroupPage.vue";
 import InvitePage from "./pages/InvitePage.vue";
 import NotFoundPage from "./pages/NotFoundPage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
-import TransactionPage from "./pages/TransactionPage.vue";
+import CreateTransactionPage from "./pages/transactionPage/CreateTransactionPage.vue";
+import EditTransactionPage from "./pages/transactionPage/EditTransactionPage.vue";
 import PaymentDetailsPage from "./pages/userSettings/PaymentDetailsPage.vue";
 import UserSettingsPage from "./pages/userSettings/UserSettingsPage.vue";
 
@@ -27,12 +29,12 @@ const routes = [
 	},
 	{
 		path: "/create",
-		component: GroupDetailsPage,
+		component: CreateGroupPage,
 		name: "CreateGroupPage",
 	},
 	{
 		path: "/group/:groupId/edit",
-		component: GroupDetailsPage,
+		component: EditGroupPage,
 		name: "EditGroupPage",
 	},
 	{
@@ -42,12 +44,12 @@ const routes = [
 	},
 	{
 		path: "/group/:groupId/transaction",
-		component: TransactionPage,
+		component: CreateTransactionPage,
 		name: "NewTransactionPage",
 	},
 	{
 		path: "/group/:groupId/transaction/:transactionId",
-		component: TransactionPage,
+		component: EditTransactionPage,
 		name: "EditTransactionPage",
 	},
 	{

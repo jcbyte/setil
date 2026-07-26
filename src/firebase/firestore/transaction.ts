@@ -1,4 +1,4 @@
-import { sumRecord } from "@/util/util";
+import { sumRecordValues } from "@/util/util";
 import {
 	addDoc,
 	collection,
@@ -27,7 +27,7 @@ function updateGroupBalances(groupRef: DocumentReference, batch: WriteBatch, fro
 
 	// Add the total credit onto the from user
 	const fromUserRef = doc(groupRef, "users", from) as DocumentReference<GroupUserData>;
-	batch.update(fromUserRef, { [`balance`]: increment(sumRecord(otherTo)) });
+	batch.update(fromUserRef, { [`balance`]: increment(sumRecordValues(otherTo)) });
 
 	// Update each receiver with their new balances
 	Object.entries(otherTo).forEach(([toUser, toAmount]) => {

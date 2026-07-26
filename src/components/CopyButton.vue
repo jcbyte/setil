@@ -18,13 +18,12 @@ async function copy() {
 
 	copyRemoverTimeout.value = setTimeout(() => {
 		copied.value = false;
-	}, 5000);
+	}, 4000);
 }
 </script>
 
 <template>
-	<Button variant="secondary" class="w-fit" @click="copy()">
-		{{ text }}
+	<Button type="button" variant="ghost" size="icon" v-bind="$attrs" @click="copy()">
 		<Check v-if="copied" />
 		<Copy v-else />
 	</Button>

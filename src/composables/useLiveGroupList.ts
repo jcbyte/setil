@@ -1,11 +1,12 @@
 import { db } from "@/firebase/firebase";
 import { removeGroupFromUser } from "@/firebase/firestore/user";
-import type { GroupData, GroupUserData, UserData } from "@/firebase/types";
+import type { GroupData, GroupUserData } from "@/firebase/types";
 import { collection, CollectionReference, doc, DocumentReference, query, where } from "firebase/firestore";
-import { computed, onUnmounted, reactive, ref, watch, type Ref } from "vue";
+import { computed, onScopeDispose, reactive, ref, watch, type Ref } from "vue";
+import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";
+import { acquireLiveQuery } from "../firebase/live/acquireLiveQuery";
 import { useCurrentUser } from "./useCurrentUser";
-import { useLiveDoc } from "./useLiveDoc";
-import { useLiveQuery } from "./useLiveQuery";
+import { useLiveCurrentUserData } from "./useLiveCurrentUserData";
 
 export type GroupListData = {
 	group: GroupData;
@@ -34,27 +35,24 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 	loaded: Ref<boolean>;
 } {
 	const currentUser = useCurrentUser();
-
-	const userRef = doc(db, "users", currentUser.value!.uid) as DocumentReference<UserData>;
-	const { data: userData, release: releaseUserData } = useLiveDoc(userRef, (nw) => onError?.(nw));
+	const currentUserData = useLiveCurrentUserData((nw) => onError?.(nw));
 
 	const groupList = reactive<Record<string, Ref<GroupListData | null>>>({});
 	const loaded = ref<boolean>(false);
 	const docReleasers = new Map<string, () => void>();
 
 	// Automatically cleanup the live subscribers when going out of scope
-	onUnmounted(() => {
-		releaseUserData();
+	onScopeDispose(() => {
 		docReleasers.forEach((release) => release());
 		docReleasers.clear();
 	});
 
 	watch(
-		userData,
+		currentUserData,
 		(newUserData) => {
-			if (!newUserData) return;
+			if (!newUserData.user) return;
 
-			const requestedGroups = newUserData.groups;
+			const requestedGroups = newUserData.user.groups;
 			const requestedGroupsSet = new Set(requestedGroups);
 			const currentGroups = Object.keys(groupList);
 			const currentGroupsSet = new Set(currentGroups);
@@ -64,7 +62,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 			newGroups.forEach((groupId) => {
 				// Get the live group data
 				const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
-				const { data: groupData, release: releaseGroupData } = useLiveDoc(groupRef, (nw) => {
+				const { data: groupData, release: releaseGroupData } = acquireLiveDoc(groupRef, (nw) => {
 					if (nw) return onError?.(nw, groupId);
 					// If the group cannot be accessed remove from the users account
 					// This should be due to being removed or deleted.
@@ -77,7 +75,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 					items: groupActiveUsers,
 					loaded: groupActiveUsersLoaded,
 					release: releaseGroupActiveUsers,
-				} = useLiveQuery(activeUsersQuery, (nw) => onError?.(nw, groupId));
+				} = acquireLiveQuery(activeUsersQuery, (nw) => onError?.(nw, groupId));
 
 				const groupListData = computed(() => {
 					if (!groupData.value) return null;
