@@ -12,53 +12,43 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
 import { Textarea } from "@/components/ui/textarea";
-import type { Currency } from "@/firebase/types";
 import { CurrencySettings } from "@/util/currency";
 import { Plus, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm, Field as VeeField } from "vee-validate";
-import { watch } from "vue";
 import * as z from "zod";
-
-export type GroupDetailsValues = {
-	name: string;
-	description?: string;
-	currency: Currency;
-};
 
 const props = defineProps<{
 	newGroup: boolean;
 	updating?: boolean;
 	initialLoading?: boolean;
-	initialValues?: Partial<GroupDetailsValues>;
 }>();
 const emit = defineEmits<{
 	submit: [details: GroupDetailsValues];
 }>();
 
-const formSchema = toTypedSchema(
-	z.object({
-		name: z.string().min(1, "Group name is required").max(50, "Group name cannot exceed 50 characters"),
-		description: z.string().optional(),
-		currency: z.string().refine((val) => Object.keys(CurrencySettings).includes(val), "Must select a valid currency"),
-	}),
-);
+const formSchema = z.object({
+	name: z.string().min(1, "Group name is required").max(50, "Group name cannot exceed 50 characters"),
+	description: z.string().optional(),
+	currency: z.string().refine((val) => Object.keys(CurrencySettings).includes(val), "Must select a valid currency"),
+});
+export type GroupDetailsValues = z.infer<typeof formSchema>;
+const typedFormSchema = toTypedSchema(formSchema);
 
 const { handleSubmit, resetForm, meta } = useForm({
-	validationSchema: formSchema,
+	validationSchema: typedFormSchema,
 });
 
-const onSubmit = handleSubmit(async (values) => {
+const onSubmit = handleSubmit((values) => {
 	emit("submit", values as GroupDetailsValues);
 });
 
-watch(
-	() => props.initialValues,
-	(values) => {
-		if (values) resetForm({ values });
-	},
-	{ immediate: true },
-);
+export type GroupDetailsFormExposed = {
+	reset: (values: Partial<GroupDetailsValues>) => void;
+};
+defineExpose<GroupDetailsFormExposed>({
+	reset: (values) => resetForm({ values }),
+});
 </script>
 
 <template>
@@ -125,17 +115,14 @@ watch(
 		</CardContent>
 
 		<CardFooter>
-			<Field orientation="horizontal">
-				<Button
-					type="submit"
-					form="group-details-form"
-					:disabled="updating || !meta.valid || !meta.dirty || initialLoading"
-					class="w-fit place-self-end"
-				>
-					<LoaderIcon :icon="newGroup ? Plus : Save" :loading="updating" />
-					<span>{{ newGroup ? "Create Group" : "Save Changes" }}</span>
-				</Button>
-			</Field>
+			<Button
+				type="submit"
+				form="group-details-form"
+				:disabled="updating || !meta.valid || !meta.dirty || initialLoading"
+			>
+				<LoaderIcon :icon="newGroup ? Plus : Save" :loading="updating" />
+				<span>{{ newGroup ? "Create Group" : "Save Changes" }}</span>
+			</Button>
 		</CardFooter>
 	</Card>
 </template>

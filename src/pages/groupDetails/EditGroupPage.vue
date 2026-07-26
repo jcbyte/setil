@@ -39,6 +39,7 @@ import {
 	promoteUser,
 	removeUser,
 } from "@/firebase/firestore/group.ts";
+import type { Currency } from "@/firebase/types.ts";
 import { inviteUser, noGroup } from "@/util/app.ts";
 import { getRouteParam, getStatusUsers } from "@/util/util";
 import {
@@ -63,7 +64,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import z from "zod";
-import GroupDetailsForm, { type GroupDetailsValues } from "./GroupDetailsForm.vue";
+import GroupDetailsForm, { type GroupDetailsFormExposed, type GroupDetailsValues } from "./GroupDetailsForm.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -78,7 +79,7 @@ const group = useLiveGroupWithUserPublic(groupId, () => {
 
 const hasGroupDataLoaded = ref(false);
 const hasGroupUsersLoaded = ref(false);
-const detailsFormInitialValues = ref<Partial<GroupDetailsValues>>();
+const groupDetailsForm = ref<GroupDetailsFormExposed | null>(null);
 
 watch(
 	group,
@@ -90,11 +91,11 @@ watch(
 		}
 
 		if (!hasGroupDataLoaded.value && groupValue.data) {
-			detailsFormInitialValues.value = {
+			groupDetailsForm.value?.reset({
 				name: groupValue.data.name,
 				description: groupValue.data.description ?? undefined,
 				currency: groupValue.data.currency,
-			};
+			});
 
 			hasGroupDataLoaded.value = true;
 		}
@@ -120,7 +121,7 @@ async function updateGroup(details: GroupDetailsValues) {
 		await firestoreUpdateGroup(groupId.value, {
 			name: details.name,
 			description: details.description ?? null,
-			currency: details.currency,
+			currency: details.currency as Currency,
 		});
 
 		toast("Group Details Updated", { description: "Like a fresh coat of paint." });
@@ -377,9 +378,9 @@ async function deleteGroup() {
 			</div>
 
 			<GroupDetailsForm
+				ref="groupDetailsForm"
 				:new-group="false"
 				:initial-loading="!hasGroupDataLoaded"
-				:initial-values="detailsFormInitialValues"
 				:updating="isGroupDetailsUpdating"
 				@submit="updateGroup"
 			/>
