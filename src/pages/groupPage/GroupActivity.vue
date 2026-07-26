@@ -25,7 +25,7 @@ import { deleteTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
-import { getLeftUsersInTransaction, sumRecord } from "@/util/split";
+import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";
 import { EllipsisVertical, FilePen, Trash } from "@lucide/vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
@@ -154,8 +154,8 @@ async function handleDeleteTransaction() {
 										<span>
 											{{
 												props.group.data
-													? formatCurrency(sumRecord(transaction.to), props.group.data.currency)
-													: sumRecord(transaction.to)
+													? formatCurrency(sumRecordValues(transaction.to), props.group.data.currency)
+													: sumRecordValues(transaction.to)
 											}}
 										</span>
 										<span class="text-sm text-muted-foreground text-nowrap">

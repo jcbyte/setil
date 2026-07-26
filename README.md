@@ -42,7 +42,7 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
 
 Setil uses a greedy algorithm to resolve debts in $O(n)$ time. Instead of tracking individual "who owes who" records for every transaction, it maintains a global balance for each user within the group.
 
-The `resolveGroupDebts` function ([SettleUpPage.vue](src/pages/SettleUpPage.vue)) categorises users into Creditors and Debtors, then matches them (using a highest absolute value heuristic) to minimise the total number of transfers.
+The `resolveGroupDebts` function ([split.ts](src/util/split.ts)) categorises users into Creditors and Debtors, then matches them (using a highest absolute value heuristic) to minimise the total number of transfers.
 
 Example
 

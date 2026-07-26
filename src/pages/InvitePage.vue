@@ -3,7 +3,7 @@ import Card from "@/components/ui/card/Card.vue";
 import CardContent from "@/components/ui/card/CardContent.vue";
 import { joinGroup } from "@/firebase/firestore/group";
 import { sendNotification } from "@/firebase/messaging";
-import { getRouteParam } from "@/util/split";
+import { getRouteParam } from "@/util/util";
 import { Loader } from "@lucide/vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";

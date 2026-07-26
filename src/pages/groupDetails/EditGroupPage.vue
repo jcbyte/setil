@@ -40,7 +40,7 @@ import {
 	removeUser,
 } from "@/firebase/firestore/group.ts";
 import { inviteUser, noGroup } from "@/util/app.ts";
-import { getRouteParam } from "@/util/split";
+import { getNonHistoricalUsers, getRouteParam } from "@/util/util";
 import {
 	ArrowBigUpDash,
 	ArrowLeft,
@@ -72,7 +72,7 @@ const groupId = computed(() => getRouteParam(route.params.groupId));
 
 const group = useLiveGroupWithUserPublic(groupId, () => {
 	if (!groupId.value) return; // If this is not a group, then do not error
-	// if (leaveDialogProcessing.value || deleteDialogProcessing.value) return; // If we are currently leaving/deleting, we may not have access to do not error
+	if (leaveDialog.processing.value || deleteDialog.processing.value) return; // If we are currently leaving/deleting, we may not have access, so do not error; we will redirect
 	noGroup(router); // An error has actually occurred
 });
 
@@ -188,11 +188,7 @@ async function clearMyNickname() {
 	isMyNicknameClearing.value = false;
 }
 
-const nonHistoricalUsers = computed(() =>
-	group.value?.users
-		? Object.fromEntries(Object.entries(group.value.users).filter(([, user]) => user.status !== "history"))
-		: {},
-);
+const nonHistoricalUsers = computed(() => (group.value?.users ? getNonHistoricalUsers(group.value.users) : {}));
 
 const memberNewNickname = ref<
 	Record<string, { nickname: string | undefined; isUpdating: boolean; errorMessage?: string }>
@@ -577,7 +573,7 @@ async function deleteGroup() {
 							</span>
 						</div>
 					</template>
-					<Skeleton v-else v-for="_ in 4" class="w-90 h-23" />
+					<Skeleton v-else v-for="_ in 4" class="w-52 h-11" />
 				</CardContent>
 				<CardFooter>
 					<Button variant="secondary" :disabled="isAddingMember" class="w-full" @click="addMember">

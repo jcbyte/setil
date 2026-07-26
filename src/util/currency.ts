@@ -47,7 +47,7 @@ export function getBalanceStr(
 	currency: Currency,
 	positiveGenerator: (formattedBal: string) => string,
 	negativeGenerator: (formattedBal: string) => string,
-	neutralGenerator: () => string
+	neutralGenerator: () => string,
 ): BalanceStr {
 	const formattedBal = formatCurrency(Math.abs(balance), currency);
 

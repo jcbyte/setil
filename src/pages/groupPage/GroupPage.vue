@@ -14,7 +14,7 @@ import Tabs from "@/components/ui/tabs/Tabs.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { inviteUser, noGroup } from "@/util/app";
-import { getRouteParam } from "@/util/split.ts";
+import { getRouteParam } from "@/util/util.ts";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
