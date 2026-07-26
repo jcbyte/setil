@@ -64,6 +64,13 @@ const usersBalanceStr = computed<Record<string, BalanceStr> | null>(() => {
 					<BalanceStrBadge v-if="usersBalanceStr" :balance-str="usersBalanceStr[userId]" />
 					<Skeleton v-else class="w-24 h-5.5" />
 				</div>
+				<div v-else v-for="_ in 3" class="flex justify-between items-center">
+					<div class="flex justify-center items-center gap-2">
+						<Skeleton class="size-9 rounded-full" />
+						<Skeleton class="w-22 h-6" />
+					</div>
+					<Skeleton class="w-24 h-5.5" />
+				</div>
 			</div>
 		</CardContent>
 	</Card>
