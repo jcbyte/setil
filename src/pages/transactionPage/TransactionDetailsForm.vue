@@ -92,7 +92,7 @@ export type TransactionDetailsValues = z.infer<typeof formSchema>;
 
 const currentUser = useCurrentUser();
 
-const { handleSubmit, resetForm, setFieldValue, setFieldError, values, meta, validateField } = useForm({
+const { handleSubmit, resetForm, setFieldValue, values, meta, validateField } = useForm({
 	validationSchema: typedFormSchema,
 	initialValues: {
 		date: today(getLocalTimeZone()),
@@ -363,7 +363,7 @@ defineExpose<TransactionDetailsFormExposed>({
 														:model-value="values.to?.people?.[userId]?.num"
 														@update:modelValue="
 															(v) => {
-																setFieldValue(`to.people.${userId}.num`, v, false);
+																setFieldValue(`to.people.${userId}.num`, v !== '' ? Number(v) : undefined, false);
 																validateField('to');
 															}
 														"
