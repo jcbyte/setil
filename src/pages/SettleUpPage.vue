@@ -89,11 +89,19 @@ const currencySetting = computed(() =>
 
 const formSchema = toTypedSchema(
 	z.object({
-		from: z.string(),
-		// .refine((val) => group.value && Object.keys(group.value.users).includes(val), "Must select a valid member"),
-		to: z.string(),
-		// .refine((val) => group.value && Object.keys(group.value.users).includes(val), "Must select a valid member"),
-		amount: z.number().refine((val) => val > 0, "An amount is required"),
+		from: z
+			.string()
+			.refine(
+				(val) => group.value?.users && Object.keys(group.value.users).includes(val),
+				"Must select a valid member",
+			),
+		to: z
+			.string()
+			.refine(
+				(val) => group.value?.users && Object.keys(group.value.users).includes(val),
+				"Must select a valid member",
+			),
+		amount: z.coerce.number().refine((val) => val > 0, "An amount is required"),
 	}),
 );
 
