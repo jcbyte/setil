@@ -311,8 +311,10 @@ defineExpose<TransactionDetailsFormExposed>({
 									</TabsList>
 								</Tabs>
 								<div class="flex flex-col gap-2 bg-muted p-2 rounded-lg">
-									<div class="grid grid-cols-[max-content_minmax(0,1fr)_minmax(0,1fr)_max-content] items-center gap-2">
-										<div v-for="(user, userId) in activeUsers" class="contents">
+									<div
+										class="grid grid-cols-[max-content_minmax(0,1fr)_minmax(0,1fr)_max-content] items-center gap-2 gap-x-3"
+									>
+										<template v-for="(user, userId) in activeUsers">
 											<Checkbox
 												class="col-start-1 size-5"
 												:id="`user-${userId}`"
@@ -326,7 +328,7 @@ defineExpose<TransactionDetailsFormExposed>({
 												:disabled="updating"
 											/>
 
-											<label :for="`user-${userId}`" class="flex items-center gap-2">
+											<label :for="`user-${userId}`" class="flex items-center gap-1.5 min-h-9">
 												<Avatar
 													v-if="user.computed.name"
 													:src="user.public?.photoUrl ?? null"
@@ -378,7 +380,7 @@ defineExpose<TransactionDetailsFormExposed>({
 													</InputGroupAddon>
 												</InputGroup>
 											</div>
-										</div>
+										</template>
 									</div>
 									<Button
 										variant="outline"
