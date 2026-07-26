@@ -41,10 +41,10 @@ async function createTransaction(transaction: Transaction) {
 				group.value!.data.currency,
 				false,
 			)}.`,
-			`/group/${groupId}?tab=activity`,
+			`/group/${groupId.value}?tab=activity`,
 		);
 
-		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
+		router.push({ path: `/group/${groupId.value}`, query: { tab: "activity" } });
 	} catch (e) {
 		toast.error("Error Saving Expense Details", { description: String(e) });
 	}

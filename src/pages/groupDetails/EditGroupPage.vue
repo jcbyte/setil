@@ -79,6 +79,7 @@ const group = useLiveGroupWithUserPublic(groupId, () => {
 
 const hasGroupDataLoaded = ref(false);
 const hasGroupUsersLoaded = ref(false);
+
 const groupDetailsForm = ref<GroupDetailsFormExposed | null>(null);
 
 watch(

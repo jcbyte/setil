@@ -101,7 +101,7 @@ async function updateTransaction(transaction: Transaction) {
 
 			<TransactionDetailsForm
 				ref="transactionDetailsForm"
-				:new-transaction="true"
+				:new-transaction="false"
 				:group="group"
 				:initial-loading="!hasThisTransactionLoaded"
 				:updating="isTransactionUpdating"

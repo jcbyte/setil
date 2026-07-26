@@ -226,7 +226,7 @@ defineExpose<TransactionDetailsFormExposed>({
 						<VeeField v-slot="{ componentField, value, errors }" name="date">
 							<Field :data-invalid="!!errors.length">
 								<FieldLabel for="date">Date</FieldLabel>
-								<Popover>
+								<Popover v-if="!initialLoading">
 									<PopoverTrigger as-child>
 										<Button
 											type="button"
@@ -247,6 +247,7 @@ defineExpose<TransactionDetailsFormExposed>({
 										/>
 									</PopoverContent>
 								</Popover>
+								<Skeleton v-else class="w-full h-9" />
 								<FieldError v-if="errors.length" :errors="errors" />
 							</Field>
 						</VeeField>
