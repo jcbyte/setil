@@ -105,7 +105,7 @@ const formSchema = toTypedSchema(
 	}),
 );
 
-const { handleSubmit, resetForm, values } = useForm({
+const { handleSubmit, setValues, values, meta } = useForm({
 	validationSchema: formSchema,
 	initialValues: { from: currentUser.value?.uid },
 });
@@ -139,12 +139,11 @@ const recordPaymentPulser = ref<HTMLElement | null>(null);
 async function fillForm(userPayment: SimpleTransaction) {
 	if (!group.value?.data) return;
 
-	resetForm({
-		values: {
-			from: userPayment.from,
-			to: userPayment.to,
-			amount: fromFirestoreAmount(userPayment.amount, group.value.data.currency),
-		},
+	// Don't reset as we want the form to be "dirty"
+	setValues({
+		from: userPayment.from,
+		to: userPayment.to,
+		amount: fromFirestoreAmount(userPayment.amount, group.value.data.currency),
 	});
 
 	if (!recordPaymentPulser.value) return;
@@ -208,7 +207,7 @@ async function openBankDetailsDialog() {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button variant="ghost" size="icon" @click="`/group/${groupId}`">
+					<Button variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
 						<ArrowLeft class="!size-5.5" />
 					</Button>
 					<span class="text-lg font-semibold">Setil Up</span>
@@ -278,7 +277,7 @@ async function openBankDetailsDialog() {
 				<CardContent>
 					<form id="payment-form" @submit="onSubmit">
 						<FieldGroup>
-							<div class="flex gap-2">
+							<div class="flex items-center gap-2">
 								<VeeField v-slot="{ componentField, errors }" name="from">
 									<Field :data-invalid="!!errors.length">
 										<FieldLabel for="from">Send from</FieldLabel>
@@ -332,7 +331,7 @@ async function openBankDetailsDialog() {
 					</form>
 				</CardContent>
 				<CardFooter class="justify-between">
-					<Button type="submit" form="payment-form" :disabled="isMakingPayment">
+					<Button type="submit" form="payment-form" :disabled="isMakingPayment || !meta.valid">
 						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
 						<span>Record Payment</span>
 					</Button>
