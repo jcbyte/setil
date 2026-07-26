@@ -297,6 +297,7 @@ defineExpose<TransactionDetailsFormExposed>({
 							<FieldLabel>Split with</FieldLabel>
 							<div class="flex flex-col gap-2">
 								<Tabs
+									v-if="!initialLoading"
 									:model-value="values.to?.type"
 									@update:model-value="
 										(v) => {
@@ -311,11 +312,13 @@ defineExpose<TransactionDetailsFormExposed>({
 										<TabsTrigger value="ratio" :disabled="updating">Ratio</TabsTrigger>
 									</TabsList>
 								</Tabs>
-								<div class="flex flex-col gap-2 bg-muted p-2 rounded-lg">
+								<Skeleton v-else class="w-full h-9" />
+
+								<div v-if="!initialLoading" class="flex flex-col gap-2 bg-muted p-2 rounded-lg">
 									<div
 										class="grid grid-cols-[max-content_minmax(0,1fr)_minmax(0,1fr)_max-content] items-center gap-2 gap-x-3"
 									>
-										<template v-for="(user, userId) in activeUsers">
+										<template v-if="group?.users" v-for="(user, userId) in activeUsers">
 											<Checkbox
 												class="col-start-1 size-5"
 												:id="`user-${userId}`"
@@ -382,6 +385,7 @@ defineExpose<TransactionDetailsFormExposed>({
 												</InputGroup>
 											</div>
 										</template>
+										<Skeleton v-else v-for="_ in 3" class="col-span-full h-9" />
 									</div>
 									<Button
 										type="button"
@@ -400,6 +404,7 @@ defineExpose<TransactionDetailsFormExposed>({
 										{{ allSelected ? "Deselect All" : "Select All" }}
 									</Button>
 								</div>
+								<Skeleton v-else class="w-full h-42" />
 							</div>
 							<FieldError v-if="errors.length" :errors="errors" />
 						</Field>
