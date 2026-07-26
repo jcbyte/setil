@@ -324,7 +324,7 @@ async function openBankDetailsDialog() {
 										</InputGroupAddon>
 									</InputGroup>
 
-									<FieldError v-if="errors" :errors="errors" />
+									<FieldError v-if="errors.length" :errors="errors" />
 								</Field>
 							</VeeField>
 						</FieldGroup>

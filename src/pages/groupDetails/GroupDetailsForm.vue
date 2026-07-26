@@ -74,7 +74,7 @@ defineExpose<GroupDetailsFormExposed>({
 								:disabled="updating"
 							/>
 							<Skeleton v-else class="w-full h-9" />
-							<FieldError v-if="errors" :errors="errors" />
+							<FieldError v-if="errors.length" :errors="errors" />
 						</Field>
 					</VeeField>
 
@@ -89,7 +89,7 @@ defineExpose<GroupDetailsFormExposed>({
 								:disabled="updating"
 							/>
 							<Skeleton v-else class="w-full h-16" />
-							<FieldError v-if="errors" :errors="errors" />
+							<FieldError v-if="errors.length" :errors="errors" />
 						</Field>
 					</VeeField>
 

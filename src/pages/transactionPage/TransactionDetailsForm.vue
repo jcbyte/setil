@@ -92,7 +92,7 @@ export type TransactionDetailsValues = z.infer<typeof formSchema>;
 
 const currentUser = useCurrentUser();
 
-const { handleSubmit, resetForm, setFieldValue, validateField, values, meta } = useForm({
+const { handleSubmit, resetForm, setFieldValue, setFieldError, values, meta, validateField } = useForm({
 	validationSchema: typedFormSchema,
 	initialValues: {
 		date: today(getLocalTimeZone()),
@@ -142,14 +142,12 @@ function resolveBalances(): Record<string, number> | null {
 				Object.fromEntries(selectedUsers.map(([userId, userData]) => [userId, userData!.num!])),
 			);
 	}
-
-	return {};
 }
 
 const splitValue = computed(resolveBalances);
 
 const allSelected = computed<boolean>(
-	() => !Object.keys(activeUsers).some((userId) => !values.to?.people?.[userId]?.selected),
+	() => !Object.keys(activeUsers.value).some((userId) => !values.to?.people?.[userId]?.selected),
 );
 
 const onSubmit = handleSubmit((values) => {
@@ -199,7 +197,7 @@ defineExpose<TransactionDetailsFormExposed>({
 								:disabled="updating"
 							/>
 							<Skeleton v-else class="w-full h-9" />
-							<FieldError v-if="errors" :errors="errors" />
+							<FieldError v-if="errors.length" :errors="errors" />
 						</Field>
 					</VeeField>
 
@@ -221,12 +219,12 @@ defineExpose<TransactionDetailsFormExposed>({
 									</InputGroupAddon>
 								</InputGroup>
 								<Skeleton v-else class="w-full h-9" />
-								<FieldError v-if="errors" :errors="errors" />
+								<FieldError v-if="errors.length" :errors="errors" />
 							</Field>
 						</VeeField>
 
 						<VeeField v-slot="{ componentField, value, errors }" name="date">
-							<Field :data-invalid="!!errors">
+							<Field :data-invalid="!!errors.length">
 								<FieldLabel for="date">Date</FieldLabel>
 								<Popover>
 									<PopoverTrigger as-child>
@@ -248,7 +246,7 @@ defineExpose<TransactionDetailsFormExposed>({
 										/>
 									</PopoverContent>
 								</Popover>
-								<FieldError v-if="errors" :errors="errors" />
+								<FieldError v-if="errors.length" :errors="errors" />
 							</Field>
 						</VeeField>
 					</div>
@@ -301,7 +299,7 @@ defineExpose<TransactionDetailsFormExposed>({
 									:model-value="values.to?.type"
 									@update:model-value="
 										(v) => {
-											setFieldValue('to.type', v as TransactionDetailsValues['to']['type']);
+											setFieldValue('to.type', v as TransactionDetailsValues['to']['type'], false);
 											validateField('to');
 										}
 									"
@@ -321,7 +319,7 @@ defineExpose<TransactionDetailsFormExposed>({
 												:model-value="values.to?.people?.[userId]?.selected ?? false"
 												@update:modelValue="
 													(v) => {
-														setFieldValue(`to.people.${userId}.selected`, Boolean(v));
+														setFieldValue(`to.people.${userId}.selected`, Boolean(v), false);
 														validateField('to');
 													}
 												"
@@ -365,7 +363,7 @@ defineExpose<TransactionDetailsFormExposed>({
 														:model-value="values.to?.people?.[userId]?.num"
 														@update:modelValue="
 															(v) => {
-																setFieldValue(`to.people.${userId}.num`, v);
+																setFieldValue(`to.people.${userId}.num`, v, false);
 																validateField('to');
 															}
 														"
@@ -388,7 +386,7 @@ defineExpose<TransactionDetailsFormExposed>({
 											() => {
 												const targetValue = !allSelected;
 												Object.keys(activeUsers).forEach((userId) => {
-													setFieldValue(`to.people.${userId}.selected`, targetValue);
+													setFieldValue(`to.people.${userId}.selected`, targetValue, false);
 												});
 												validateField('to');
 											}
