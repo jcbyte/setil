@@ -21,13 +21,13 @@ auth.onAuthStateChanged((user) => {
 	if (user) requestNotifications();
 });
 
+// Skip custom page animations when the browser displays one, i.e. iOS swipe back
 const route = useRoute();
 const skipPageTransition = ref(false);
 
 function handleNavigate(event: NavigateEvent) {
 	skipPageTransition.value = event.hasUAVisualTransition;
 }
-
 onMounted(() => {
 	window.navigation?.addEventListener("navigate", handleNavigate);
 });
@@ -54,7 +54,8 @@ const resolvedTheme = useColorMode().state;
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-else class="w-full overflow-hidden">
 					<router-view v-slot="{ Component }">
-						<Transition :name="skipPageTransition ? 'no-page-transition' : 'fade-slide'" mode="out-in">
+						<!-- Ensure mode is not 'out-in' when disabling css, as we do not want a transition lifecycle -->
+						<Transition name="fade-slide" :mode="!skipPageTransition ? 'out-in' : 'default'" :css="!skipPageTransition">
 							<component :is="Component" class="overflow-visible" />
 						</Transition>
 					</router-view>
