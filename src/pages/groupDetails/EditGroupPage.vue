@@ -2,18 +2,15 @@
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import Card from "@/components/ui/card/Card.vue";
-import CardContent from "@/components/ui/card/CardContent.vue";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardHeader from "@/components/ui/card/CardHeader.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
-import Dialog from "@/components/ui/dialog/Dialog.vue";
-import DialogContent from "@/components/ui/dialog/DialogContent.vue";
-import DialogDescription from "@/components/ui/dialog/DialogDescription.vue";
-import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
-import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
-import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -22,14 +19,14 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import Input from "@/components/ui/input/Input.vue";
-import Separator from "@/components/ui/separator/Separator.vue";
-import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { useControlledDialog } from "@/composables/useControlledDialog.ts";
-import { useCurrentUser } from "@/composables/useCurrentUser.ts";
-import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic.ts";
+import { useControlledDialog } from "@/composables/useControlledDialog";
+import { useCurrentUser } from "@/composables/useCurrentUser";
+import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic";
 import {
 	changeUserNickname,
 	clearUserNickname,
@@ -38,9 +35,9 @@ import {
 	updateGroup as firestoreUpdateGroup,
 	promoteUser,
 	removeUser,
-} from "@/firebase/firestore/group.ts";
-import type { Currency } from "@/firebase/types.ts";
-import { inviteUser, noGroup } from "@/util/app.ts";
+} from "@/firebase/firestore/group";
+import type { Currency } from "@/firebase/types";
+import { inviteUser, noGroup } from "@/util/app";
 import { getRouteParam, getStatusUsers } from "@/util/util";
 import {
 	ArrowBigUpDash,
@@ -61,7 +58,7 @@ import {
 import { toTypedSchema } from "@vee-validate/zod";
 import { useField } from "vee-validate";
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import z from "zod";
 import GroupDetailsForm, { type GroupDetailsFormExposed, type GroupDetailsValues } from "./GroupDetailsForm.vue";
@@ -370,9 +367,11 @@ async function deleteGroup() {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button type="button" variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
-						<ArrowLeft class="!size-5.5" />
-					</Button>
+					<RouterLink :to="`/group/${groupId}`">
+						<Button type="button" variant="ghost" size="icon">
+							<ArrowLeft class="size-5.5" />
+						</Button>
+					</RouterLink>
 					<span class="text-lg font-semibold">Group Settings</span>
 				</div>
 				<YourAccountSettings />
@@ -392,7 +391,7 @@ async function deleteGroup() {
 					<CardDescription>How others see you in this group</CardDescription>
 				</CardHeader>
 				<CardContent class="flex flex-col gap-3">
-					<div v-if="currentGroupUser" class="flex items-center gap-2 bg-muted w-fit min-w-1/3 rounded-lg py-2 px-4">
+					<div v-if="currentGroupUser" class="flex items-center gap-2 bg-muted w-fit sm:min-w-52 rounded-lg py-2 px-4">
 						<Avatar
 							v-if="currentGroupUser.computed.name"
 							:src="currentGroupUser.public?.photoUrl ?? null"
@@ -410,7 +409,7 @@ async function deleteGroup() {
 							<Skeleton v-else class="w-16 h-4 mt-1" />
 						</div>
 					</div>
-					<Skeleton v-else class="w-46 h-10" />
+					<Skeleton v-else class="w-46 sm:w-52 h-10" />
 
 					<Field :data-invalid="!!myNicknameErrorMessage">
 						<div class="flex items-center gap-1">
@@ -467,7 +466,7 @@ async function deleteGroup() {
 				<CardContent class="flex flex-col gap-2">
 					<template v-if="group?.users">
 						<div v-for="(user, userId) in nonHistoricalUsers" class="flex flex-col gap-2">
-							<div class="flex justify-between items-center gap-2">
+							<div class="flex justify-between items-center gap-4">
 								<div class="flex flex-1 items-center gap-2">
 									<Avatar
 										v-if="user.computed.name"
@@ -546,7 +545,7 @@ async function deleteGroup() {
 											"
 										>
 											<div class="flex items-center gap-2">
-												<Pencil class="!size-4" />
+												<Pencil class="size-4" />
 												<span>Rename</span>
 											</div>
 										</DropdownMenuItem>
@@ -555,7 +554,7 @@ async function deleteGroup() {
 											:disabled="!user.nickname || memberNicknamesClearing.has(userId)"
 										>
 											<div class="flex items-center gap-2">
-												<CircleX class="!size-4" />
+												<CircleX class="size-4" />
 												<span>Clear Nickname</span>
 											</div>
 										</DropdownMenuItem>
@@ -564,14 +563,14 @@ async function deleteGroup() {
 											:disabled="user.status !== 'active'"
 										>
 											<div class="flex items-center gap-2">
-												<ArrowBigUpDash class="!size-4" />
+												<ArrowBigUpDash class="size-4" />
 												<span>Promote</span>
 											</div>
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem @click="removeDialog.openDialog({ userId })" :disabled="user.status !== 'active'">
 											<div class="flex items-center gap-2">
-												<UserMinus class="text-destructive !size-4" />
+												<UserMinus class="text-destructive size-4" />
 												<span class="text-destructive">Remove</span>
 											</div>
 										</DropdownMenuItem>
@@ -600,7 +599,7 @@ async function deleteGroup() {
 				</CardHeader>
 				<CardContent>
 					<div class="flex flex-col gap-4">
-						<div class="flex justify-between items-center gap-2">
+						<div class="flex justify-between items-center gap-4">
 							<div class="flex flex-col gap-1">
 								<span>Leave Group</span>
 								<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
@@ -613,7 +612,7 @@ async function deleteGroup() {
 
 						<template v-if="group?.data && currentUser?.uid === group.data.owner">
 							<Separator />
-							<div v-if="currentUser?.uid === group.data.owner" class="flex justify-between items-center gap-2">
+							<div v-if="currentUser?.uid === group.data.owner" class="flex justify-between items-center gap-4">
 								<div class="flex flex-col gap-1">
 									<span>Delete Group</span>
 									<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic.ts";
-import { createTransaction as firebaseCreateTransaction } from "@/firebase/firestore/transaction.ts";
-import { sendNotification } from "@/firebase/messaging.ts";
-import type { Transaction } from "@/firebase/types.ts";
-import { noGroup } from "@/util/app.ts";
-import { formatCurrency, fromFirestoreAmount } from "@/util/currency.ts";
-import { getLeftUsersInTransaction, getRouteParam, sumRecordValues } from "@/util/util";
+import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
+import { createTransaction as firebaseCreateTransaction } from "@/firebase/firestore/transaction";
+import { sendNotification } from "@/firebase/messaging";
+import type { Transaction } from "@/firebase/types";
+import { noGroup } from "@/util/app";
+import { formatCurrency, fromFirestoreAmount } from "@/util/currency";
+import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";
 import { ArrowLeft } from "@lucide/vue";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -19,6 +19,8 @@ const route = useRoute();
 
 const groupId = computed(() => getRouteParam(route.params.groupId));
 const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
+
+const shownUsers = computed(() => getStatusUsers(group.value?.users ?? {}, new Set(["active"])));
 
 const isTransactionCreating = ref<boolean>(false);
 
@@ -58,9 +60,11 @@ async function createTransaction(transaction: Transaction) {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button type="button" variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
-						<ArrowLeft class="!size-5.5" />
-					</Button>
+					<RouterLink :to="`/group/${groupId}`">
+						<Button type="button" variant="ghost" size="icon">
+							<ArrowLeft class="size-5.5" />
+						</Button>
+					</RouterLink>
 					<span class="text-lg font-semibold">New Expense</span>
 				</div>
 				<YourAccountSettings />
@@ -69,6 +73,7 @@ async function createTransaction(transaction: Transaction) {
 			<TransactionDetailsForm
 				:new-transaction="true"
 				:group="group"
+				:shown-users="shownUsers"
 				:updating="isTransactionCreating"
 				@submit="createTransaction"
 			/>

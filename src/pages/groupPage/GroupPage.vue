@@ -2,22 +2,17 @@
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import CardContent from "@/components/ui/card/CardContent.vue";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardHeader from "@/components/ui/card/CardHeader.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Tabs from "@/components/ui/tabs/Tabs.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { inviteUser, noGroup } from "@/util/app";
-import { getRouteParam } from "@/util/util.ts";
+import { getRouteParam } from "@/util/util";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import GroupActivity from "./GroupActivity.vue";
 import GroupSummary from "./GroupSummary.vue";
@@ -100,23 +95,22 @@ watch(currentTab, (newTab, oldTab) => {
 <template>
 	<div class="mx-auto w-full max-w-4xl flex flex-col gap-4">
 		<div class="flex justify-between items-center">
-			<div class="flex items-center gap-1">
-				<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
-					<ArrowLeft class="!size-5.5" />
-				</Button>
-				<span v-if="group?.data" class="text-lg font-semibold">{{ group.data.name }}</span>
+			<div class="flex items-center gap-1 min-w-0">
+				<RouterLink to="/">
+					<Button type="button" variant="ghost" size="icon">
+						<ArrowLeft class="size-5.5" />
+					</Button>
+				</RouterLink>
+				<span v-if="group?.data" class="text-lg font-semibold truncate">{{ group.data.name }}</span>
 				<Skeleton v-else class="w-28 h-7" />
 			</div>
 			<div class="flex items-center gap-2">
-				<Button
-					type="button"
-					variant="outline"
-					class="size-9 sm:size-auto"
-					@click="router.push(`/group/${groupId}/edit`)"
-				>
-					<Settings />
-					<span class="hidden sm:inline">Group Settings</span>
-				</Button>
+				<RouterLink :to="`/group/${groupId}/edit`">
+					<Button type="button" variant="outline" class="size-9 sm:size-auto">
+						<Settings />
+						<span class="hidden sm:inline">Group Settings</span>
+					</Button>
+				</RouterLink>
 				<YourAccountSettings />
 			</div>
 		</div>
@@ -138,40 +132,40 @@ watch(currentTab, (newTab, oldTab) => {
 				<Skeleton v-else class="w-full h-56" />
 
 				<div class="flex gap-2">
-					<Button
+					<RouterLink
 						v-for="groupButton in [
 							{
 								icon: ReceiptText,
 								title: 'Add Expense',
 								description: 'Record a new expense',
-								onClick: () => router.push(`/group/${groupId}/transaction`),
+								link: `/group/${groupId}/transaction`,
 							},
 							{
 								icon: Wallet,
 								title: 'Setil Up',
 								description: 'Settle member\'s debts',
-								onClick: () => router.push(`/group/${groupId}/settle`),
+								link: `/group/${groupId}/settle`,
 							},
 						]"
-						type="button"
-						variant="outline"
-						class="h-full flex-1 p-4"
-						@click="groupButton.onClick"
+						:to="groupButton.link"
+						class="contents"
 					>
-						<div class="flex flex-col items-center gap-2">
-							<div class="bg-muted p-3 rounded-lg aspect-square flex justify-center items-center">
-								<component :is="groupButton.icon" class="!size-6" />
+						<Button type="button" variant="outline" class="h-full flex-1 p-4">
+							<div class="flex flex-col items-center gap-2">
+								<div class="bg-muted p-3 rounded-lg aspect-square flex justify-center items-center">
+									<component :is="groupButton.icon" class="size-6" />
+								</div>
+								<div class="flex flex-col items-center">
+									<span class="text-md font-semibold">{{ groupButton.title }}</span>
+									<span class="text-sm text-muted-foreground">{{ groupButton.description }}</span>
+								</div>
 							</div>
-							<div class="flex flex-col items-center">
-								<span class="text-md font-semibold">{{ groupButton.title }}</span>
-								<span class="text-sm text-muted-foreground">{{ groupButton.description }}</span>
-							</div>
-						</div>
-					</Button>
+						</Button>
+					</RouterLink>
 				</div>
 			</div>
 
-			<Card v-if="group?.data" class="relative h-fit min-w-68 max-w-none md:max-w-96">
+			<Card v-if="group?.data" class="h-fit min-w-68 md:max-w-92">
 				<CardHeader>
 					<CardTitle>Group Info</CardTitle>
 					<CardDescription v-if="group.data.description">{{ group.data.description }}</CardDescription>

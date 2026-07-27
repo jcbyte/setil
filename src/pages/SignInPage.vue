@@ -8,8 +8,8 @@ import { signIn } from "@/util/app";
 const version = __APP_VERSION__;
 </script>
 
+<!-- 100dvh - 2rem; accounting for `p-4` on all pages from `App.vue` -->
 <template>
-	<!-- 100dvh - 2rem; accounting for `p-4` on all pages from `App.vue` -->
 	<div class="flex min-h-[calc(100dvh-2rem)] w-full items-center justify-center">
 		<Card class="-translate-y-8 min-w-none sm:min-w-sm">
 			<CardContent class="flex flex-col items-center gap-4 p-8">

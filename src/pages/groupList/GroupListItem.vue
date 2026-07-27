@@ -6,7 +6,6 @@ import { CardContent, CardDescription, CardHeader, CardTitle } from "@/component
 import type { GroupListDataWithUserPublic } from "@/composables/useLiveGroupListWithUserPublic";
 import { getBalanceStr } from "@/util/currency";
 import { getLastUpdatedStr } from "@/util/time";
-import { ChevronRight } from "@lucide/vue";
 import { computed } from "vue";
 
 const props = defineProps<{
@@ -30,14 +29,16 @@ const yourBalanceStr = computed(() => {
 <template>
 	<NavCard :to="`/group/${groupId}`" class="h-full">
 		<CardHeader class="pr-12">
-			<CardTitle>{{ group.group.name }}</CardTitle>
-			<CardDescription v-if="group.group.description">{{ group.group.description }}</CardDescription>
+			<CardTitle class="truncate">{{ group.group.name }}</CardTitle>
+			<CardDescription v-if="group.group.description" class="line-clamp-3">
+				{{ group.group.description }}
+			</CardDescription>
 		</CardHeader>
 		<CardContent class="mt-auto">
 			<div class="flex justify-between items-end gap-2">
 				<div class="flex flex-col gap-2">
 					<BalanceStrBadge :balance-str="yourBalanceStr" />
-					<span class="text-sm text-muted-foreground">{{ lastUpdatedStr }}</span>
+					<span class="text-sm text-muted-foreground truncate">{{ lastUpdatedStr }}</span>
 				</div>
 				<AvatarStack
 					avatar-class="border border-background"
@@ -53,8 +54,5 @@ const yourBalanceStr = computed(() => {
 				/>
 			</div>
 		</CardContent>
-		<ChevronRight
-			class="absolute right-5 top-5 size-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground"
-		/>
 	</NavCard>
 </template>

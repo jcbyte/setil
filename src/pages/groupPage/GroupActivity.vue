@@ -18,12 +18,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Empty from "@/components/ui/empty/Empty.vue";
-import EmptyDescription from "@/components/ui/empty/EmptyDescription.vue";
-import EmptyHeader from "@/components/ui/empty/EmptyHeader.vue";
-import EmptyMedia from "@/components/ui/empty/EmptyMedia.vue";
-import EmptyTitle from "@/components/ui/empty/EmptyTitle.vue";
-import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import { deleteTransaction } from "@/firebase/firestore/transaction";
@@ -33,15 +29,12 @@ import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";
 import { EllipsisVertical, FilePen, FileText, Trash } from "@lucide/vue";
 import { computed } from "vue";
-import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 
 const props = defineProps<{
 	groupId: string;
 	group: GroupWithUserPublic;
 }>();
-
-const router = useRouter();
 
 const {
 	open: deleteConfirmDialogOpen,
@@ -126,7 +119,7 @@ async function handleDeleteTransaction() {
 								v-for="[transactionId, transaction] in groupedTransactions.transactions"
 								class="bg-muted rounded-lg px-4 py-2 flex justify-between items-center gap-4"
 							>
-								<div class="flex items-center gap-2">
+								<div class="flex items-center gap-2 min-w-0">
 									<div class="relative flex justify-center items-center">
 										<Avatar
 											v-if="props.group.users && props.group.users[transaction.from].computed.name"
@@ -140,12 +133,12 @@ async function handleDeleteTransaction() {
 											<component :is="CategorySettings[transaction.category].icon" class="size-3!" />
 										</div>
 									</div>
-									<div class="flex flex-col">
-										<span>{{ transaction.title }}</span>
-										<div class="flex items-center gap-1">
+									<div class="flex flex-col min-w-0">
+										<span class="truncate">{{ transaction.title }}</span>
+										<div class="flex items-center gap-1 min-w-0">
 											<span
 												v-if="props.group.users && props.group.users[transaction.from].computed.name"
-												class="text-sm text-muted-foreground text-nowrap"
+												class="text-sm text-muted-foreground min-w-0 truncate"
 											>
 												by {{ props.group.users[transaction.from].computed.name }}
 											</span>
@@ -169,20 +162,22 @@ async function handleDeleteTransaction() {
 									</div>
 									<DropdownMenu>
 										<DropdownMenuTrigger as-child>
-											<EllipsisVertical class="!size-5" />
+											<EllipsisVertical class="size-5" />
 										</DropdownMenuTrigger>
 										<DropdownMenuContent>
-											<DropdownMenuItem @click="router.push(`/group/${groupId}/transaction/${transactionId}`)">
-												<div class="w-full flex justify-between items-center">
-													<span>Edit</span>
-													<FilePen class="!size-5" />
-												</div>
-											</DropdownMenuItem>
+											<RouterLink :to="`/group/${groupId}/transaction/${transactionId}`">
+												<DropdownMenuItem>
+													<div class="w-full flex justify-between items-center">
+														<span>Edit</span>
+														<FilePen class="size-5" />
+													</div>
+												</DropdownMenuItem>
+											</RouterLink>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
 												<div class="w-full flex justify-between items-center">
 													<span class="text-red-400">Delete</span>
-													<Trash class="text-red-400 !size-5" />
+													<Trash class="text-red-400 size-5" />
 												</div>
 											</DropdownMenuItem>
 										</DropdownMenuContent>
@@ -191,17 +186,15 @@ async function handleDeleteTransaction() {
 							</div>
 						</div>
 
-						<div v-else>
-							<Empty>
-								<EmptyHeader>
-									<EmptyMedia variant="icon">
-										<FileText />
-									</EmptyMedia>
-									<EmptyTitle>No activity</EmptyTitle>
-									<EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
-								</EmptyHeader>
-							</Empty>
-						</div>
+						<Empty v-else>
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<FileText />
+								</EmptyMedia>
+								<EmptyTitle>No activity</EmptyTitle>
+								<EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					</template>
 					<div v-else v-for="i in 3" class="flex flex-col gap-1">
 						<Skeleton class="w-34 h-5" />

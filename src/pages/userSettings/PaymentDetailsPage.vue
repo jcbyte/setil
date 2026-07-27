@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
-import { Field, FieldLabel } from "@/components/ui/field";
-import FieldError from "@/components/ui/field/FieldError.vue";
-import FieldGroup from "@/components/ui/field/FieldGroup.vue";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,11 +14,9 @@ import { ArrowLeft, CircleX, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm, Field as VeeField } from "vee-validate";
 import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { RouterLink } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
-
-const router = useRouter();
 
 const hasDataLoaded = ref<boolean>(false);
 const hasDetailsSaved = ref<boolean | null>(null);
@@ -241,9 +234,11 @@ async function clearDetails() {
 	<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 		<div class="flex justify-between items-center">
 			<div class="flex items-center gap-1">
-				<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
-					<ArrowLeft class="!size-5.5" />
-				</Button>
+				<RouterLink to="/settings">
+					<Button type="button" variant="ghost" size="icon">
+						<ArrowLeft class="size-5.5" />
+					</Button>
+				</RouterLink>
 				<span class="text-lg font-semibold">Payment Details</span>
 			</div>
 			<YourAccountSettings />
@@ -443,26 +438,24 @@ async function clearDetails() {
 				<Skeleton v-else class="rounded-lg h-88 w-full" />
 			</CardContent>
 
-			<CardFooter>
-				<Field orientation="horizontal">
-					<Button
-						type="button"
-						:disabled="isDetailsUpdating || isDetailsClearing || !hasDetailsSaved || !hasDataLoaded"
-						variant="outline"
-						@click="clearDetails()"
-					>
-						<LoaderIcon :icon="CircleX" :loading="isDetailsClearing" />
-						<span>Remove</span>
-					</Button>
-					<Button
-						type="submit"
-						form="bank-details-form"
-						:disabled="isDetailsUpdating || isDetailsClearing || !meta.valid || !meta.dirty || !hasDataLoaded"
-					>
-						<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
-						<span>Save</span>
-					</Button>
-				</Field>
+			<CardFooter class="justify-between gap-2">
+				<Button
+					type="button"
+					:disabled="isDetailsUpdating || isDetailsClearing || !hasDetailsSaved || !hasDataLoaded"
+					variant="secondary"
+					@click="clearDetails()"
+				>
+					<LoaderIcon :icon="CircleX" :loading="isDetailsClearing" />
+					<span>Remove</span>
+				</Button>
+				<Button
+					type="submit"
+					form="bank-details-form"
+					:disabled="isDetailsUpdating || isDetailsClearing || !meta.valid || !meta.dirty || !hasDataLoaded"
+				>
+					<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
+					<span>Save</span>
+				</Button>
 			</CardFooter>
 		</Card>
 	</div>

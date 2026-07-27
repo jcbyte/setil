@@ -43,9 +43,9 @@ const usersBalanceStr = computed<Record<string, BalanceStr> | null>(() => {
 					v-for="(user, userId) in Object.fromEntries(
 						Object.entries(group.users).filter(([, user]) => user.status !== 'history'),
 					)"
-					class="flex justify-between items-center"
+					class="flex justify-between items-center gap-2"
 				>
-					<div class="flex justify-center items-center gap-2">
+					<div class="flex justify-center items-center gap-2 min-w-0">
 						<Avatar
 							v-if="user.computed.name"
 							:src="user.public?.photoUrl ?? null"
@@ -53,8 +53,8 @@ const usersBalanceStr = computed<Record<string, BalanceStr> | null>(() => {
 							:class="`size-8 ${user.status !== 'active' && 'opacity-70'}`"
 						/>
 						<Skeleton v-else class="size-9 rounded-full" />
-						<div v-if="user.computed.name" class="flex items-end gap-1">
-							<span :class="`${user.status !== 'active' && 'text-muted-foreground'}`">
+						<div v-if="user.computed.name" class="flex items-end gap-1 min-w-0">
+							<span :class="`${user.status !== 'active' && 'text-muted-foreground'} truncate`">
 								{{ user.computed.name }}
 							</span>
 							<span v-if="user.status !== 'active'" class="text-xs text-muted-foreground italic">(Left)</span>

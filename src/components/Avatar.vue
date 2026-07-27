@@ -10,7 +10,7 @@ defineProps<AvatarProp>();
 </script>
 
 <template>
-	<Avatar v-bind="$attrs">
+	<Avatar v-bind="$attrs" class="border border-border">
 		<AvatarImage :src="src ?? ''" :alt="name" />
 		<AvatarFallback>{{ name.substring(0, 2) }}</AvatarFallback>
 	</Avatar>

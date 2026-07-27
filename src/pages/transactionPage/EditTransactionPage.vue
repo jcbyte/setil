@@ -5,13 +5,13 @@ import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic
 import { updateTransaction as firestoreUpdateTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/firebase/types";
 import { noGroup } from "@/util/app";
-import { fromFirestoreAmount } from "@/util/currency.ts";
-import { gcdN } from "@/util/math.ts";
-import { getLeftUsersInTransaction, getRouteParam, sumRecordValues } from "@/util/util";
+import { fromFirestoreAmount } from "@/util/currency";
+import { gcdN } from "@/util/math";
+import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";
 import { fromDate, getLocalTimeZone } from "@internationalized/date";
 import { ArrowLeft } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import type { TransactionDetailsFormExposed } from "./TransactionDetailsForm.vue";
 import TransactionDetailsForm from "./TransactionDetailsForm.vue";
@@ -62,6 +62,18 @@ watch(
 	{ immediate: true },
 );
 
+const shownUsers = computed(() => {
+	if (!transactionId.value || !group.value?.users) return {};
+
+	const transaction = group.value?.transactions?.[transactionId.value];
+	if (!transaction) return {};
+
+	const activeUsers = getStatusUsers(group.value.users, new Set(["active"]));
+	const shownUserIds = new Set([...Object.keys(activeUsers), transaction.from, ...Object.keys(transaction.to)]);
+
+	return Object.fromEntries(Object.entries(group.value.users).filter(([userId]) => shownUserIds.has(userId)));
+});
+
 const isTransactionUpdating = ref<boolean>(false);
 
 async function updateTransaction(transaction: Transaction) {
@@ -91,9 +103,11 @@ async function updateTransaction(transaction: Transaction) {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button type="button" variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
-						<ArrowLeft class="!size-5.5" />
-					</Button>
+					<RouterLink :to="`/group/${groupId}`">
+						<Button type="button" variant="ghost" size="icon">
+							<ArrowLeft class="size-5.5" />
+						</Button>
+					</RouterLink>
 					<span class="text-lg font-semibold">Edit Expense</span>
 				</div>
 				<YourAccountSettings />
@@ -103,6 +117,7 @@ async function updateTransaction(transaction: Transaction) {
 				ref="transactionDetailsForm"
 				:new-transaction="false"
 				:group="group"
+				:shown-users="shownUsers"
 				:initial-loading="!hasThisTransactionLoaded"
 				:updating="isTransactionUpdating"
 				@submit="updateTransaction"

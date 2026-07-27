@@ -1,25 +1,20 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
-import type { BalanceStr } from "@/components/BalanceStrBadge.vue";
-import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
+import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
 import BankDetailsCardView from "@/components/BankDetailsCardView.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import Card from "@/components/ui/card/Card.vue";
-import CardContent from "@/components/ui/card/CardContent.vue";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardHeader from "@/components/ui/card/CardHeader.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,21 +30,21 @@ import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/firebase/types";
 import { noGroup } from "@/util/app";
 import {
-  CurrencySettings,
-  formatCurrency,
-  fromFirestoreAmount,
-  getBalanceStr,
-  toFirestoreAmount,
+	CurrencySettings,
+	formatCurrency,
+	fromFirestoreAmount,
+	getBalanceStr,
+	toFirestoreAmount,
 } from "@/util/currency";
 import { type PaymentDetails } from "@/util/paymentDetails";
 import { resolveGroupDebts, type SimpleTransaction } from "@/util/split";
 import { getLeftUsersInTransaction, getRouteParam, getStatusUsers } from "@/util/util";
-import { ArrowDown, ArrowLeft, ArrowRight, Landmark, Wallet } from "@lucide/vue";
+import { ArrowDown, ArrowLeft, ArrowRight, Landmark, PartyPopper, Wallet } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { useForm, Field as VeeField } from "vee-validate";
 import { computed, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
 
@@ -179,10 +174,10 @@ const onSubmit = handleSubmit(async (values) => {
 				group.value.data.currency,
 				false,
 			)}.`,
-			`/group/${groupId}?tab=summary`,
+			`/group/${groupId.value}?tab=summary`,
 		);
 
-		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
+		router.push({ path: `/group/${groupId.value}`, query: { tab: "activity" } });
 	} catch (e) {
 		toast.error("Error Saving Payment", { description: String(e) });
 	}
@@ -207,9 +202,11 @@ async function openBankDetailsDialog() {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button type="button" variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
-						<ArrowLeft class="!size-5.5" />
-					</Button>
+					<RouterLink :to="`/group/${groupId}`">
+						<Button type="button" variant="ghost" size="icon">
+							<ArrowLeft class="size-5.5" />
+						</Button>
+					</RouterLink>
 					<span class="text-lg font-semibold">Setil Up</span>
 				</div>
 				<YourAccountSettings />
@@ -222,48 +219,60 @@ async function openBankDetailsDialog() {
 				</CardHeader>
 				<CardContent>
 					<div class="flex flex-col gap-2">
-						<div
-							v-if="group?.users && requiredPayments"
-							v-for="payment in requiredPayments"
-							class="bg-muted rounded-lg p-4 flex flex-col gap-4"
-						>
-							<div class="flex flex-col sm:flex-row justify-between items-center gap-2.5">
-								<div class="flex items-center gap-2">
-									<Avatar
-										v-if="group.users[payment.from].computed.name"
-										:src="group.users[payment.from].public?.photoUrl ?? null"
-										:name="group.users[payment.from].computed.name!"
-										class="size-10"
-									/>
-									<Skeleton v-else class="size-10 rounded-full" />
-									<div class="flex flex-col gap-1">
-										<span v-if="group.users[payment.from].computed.name" class="text-sm">
-											{{ group.users[payment.from].computed.name }}
-										</span>
-										<Skeleton v-else class="w-18 h-5" />
-										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-payment.amount)" />
+						<template v-if="group?.users && requiredPayments">
+							<div
+								v-if="requiredPayments.length > 0"
+								v-for="payment in requiredPayments"
+								class="bg-muted rounded-lg p-4 flex flex-col gap-4"
+							>
+								<div class="flex flex-col sm:flex-row justify-between items-center gap-2.5">
+									<div class="flex items-center gap-2">
+										<Avatar
+											v-if="group.users[payment.from].computed.name"
+											:src="group.users[payment.from].public?.photoUrl ?? null"
+											:name="group.users[payment.from].computed.name!"
+											class="size-10"
+										/>
+										<Skeleton v-else class="size-10 rounded-full" />
+										<div class="flex flex-col gap-1">
+											<span v-if="group.users[payment.from].computed.name" class="text-sm">
+												{{ group.users[payment.from].computed.name }}
+											</span>
+											<Skeleton v-else class="w-18 h-5" />
+											<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-payment.amount)" />
+										</div>
+									</div>
+									<component :is="breakpointSplit(ArrowDown, ArrowRight, 'sm')" class="text-muted-foreground" />
+									<div class="flex items-center gap-2">
+										<div class="flex flex-col gap-1 text-right">
+											<span v-if="group.users[payment.to].computed.name" class="text-sm">
+												{{ group.users[payment.to].computed.name }}
+											</span>
+											<Skeleton v-else class="w-18 h-5" />
+											<BalanceStrBadge :balanceStr="getPaymentBalanceStr(payment.amount)" />
+										</div>
+										<Avatar
+											v-if="group.users[payment.to].computed.name"
+											:src="group.users[payment.to].public?.photoUrl ?? null"
+											:name="group.users[payment.to].computed.name!"
+											class="size-10"
+										/>
+										<Skeleton v-else class="size-10 rounded-full" />
 									</div>
 								</div>
-								<component :is="breakpointSplit(ArrowDown, ArrowRight, 'sm')" class="text-muted-foreground" />
-								<div class="flex items-center gap-2">
-									<div class="flex flex-col gap-1 text-right">
-										<span v-if="group.users[payment.to].computed.name" class="text-sm">
-											{{ group.users[payment.to].computed.name }}
-										</span>
-										<Skeleton v-else class="w-18 h-5" />
-										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(payment.amount)" />
-									</div>
-									<Avatar
-										v-if="group.users[payment.to].computed.name"
-										:src="group.users[payment.to].public?.photoUrl ?? null"
-										:name="group.users[payment.to].computed.name!"
-										class="size-10"
-									/>
-									<Skeleton v-else class="size-10 rounded-full" />
-								</div>
+								<Button type="button" variant="outline" @click="fillForm(payment)">Record this payment</Button>
 							</div>
-							<Button type="button" variant="outline" @click="fillForm(payment)">Record this payment</Button>
-						</div>
+
+							<Empty v-else>
+								<EmptyHeader>
+									<EmptyMedia variant="icon">
+										<PartyPopper />
+									</EmptyMedia>
+									<EmptyTitle>All Setil'd up!</EmptyTitle>
+									<EmptyDescription>No payments needed right now</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						</template>
 						<Skeleton v-else v-for="_ in 3" class="w-full h-55 sm:h-32" />
 					</div>
 				</CardContent>
@@ -330,12 +339,7 @@ async function openBankDetailsDialog() {
 						</FieldGroup>
 					</form>
 				</CardContent>
-				<CardFooter class="justify-between">
-					<Button type="submit" form="payment-form" :disabled="isMakingPayment || !meta.valid">
-						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
-						<span>Record Payment</span>
-					</Button>
-
+				<CardFooter class="justify-between gap-2">
 					<Button
 						v-if="values.to && group?.users?.[values.to].public?.hasBankDetails"
 						type="button"
@@ -344,6 +348,11 @@ async function openBankDetailsDialog() {
 					>
 						<Landmark />
 						<span>View Bank Details</span>
+					</Button>
+
+					<Button type="submit" form="payment-form" class="ms-auto" :disabled="isMakingPayment || !meta.valid">
+						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
+						<span>Record Payment</span>
 					</Button>
 				</CardFooter>
 				<div ref="recordPaymentPulser" class="absolute inset-0 bg-accent rounded-lg pointer-events-none opacity-0" />

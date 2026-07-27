@@ -1,41 +1,24 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
-import Button from "@/components/ui/button/Button.vue";
-import Calendar from "@/components/ui/calendar/Calendar.vue";
-import Card from "@/components/ui/card/Card.vue";
-import CardContent from "@/components/ui/card/CardContent.vue";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardHeader from "@/components/ui/card/CardHeader.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
-import Checkbox from "@/components/ui/checkbox/Checkbox.vue";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import FieldGroup from "@/components/ui/field/FieldGroup.vue";
-import InputGroup from "@/components/ui/input-group/InputGroup.vue";
-import InputGroupAddon from "@/components/ui/input-group/InputGroupAddon.vue";
-import InputGroupInput from "@/components/ui/input-group/InputGroupInput.vue";
-import Input from "@/components/ui/input/Input.vue";
-import Popover from "@/components/ui/popover/Popover.vue";
-import PopoverContent from "@/components/ui/popover/PopoverContent.vue";
-import PopoverTrigger from "@/components/ui/popover/PopoverTrigger.vue";
-import Select from "@/components/ui/select/Select.vue";
-import SelectContent from "@/components/ui/select/SelectContent.vue";
-import SelectItem from "@/components/ui/select/SelectItem.vue";
-import SelectTrigger from "@/components/ui/select/SelectTrigger.vue";
-import SelectValue from "@/components/ui/select/SelectValue.vue";
-import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
-import Tabs from "@/components/ui/tabs/Tabs.vue";
-import TabsList from "@/components/ui/tabs/TabsList.vue";
-import TabsTrigger from "@/components/ui/tabs/TabsTrigger.vue";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSelect from "@/components/UserSelect.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
+import type { GroupUserDataWithPublic, GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
 import { splitAmountEven, splitAmountRatio } from "@/util/split";
-import { getStatusUsers } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, today, type DateValue } from "@internationalized/date";
 import { CalendarIcon, Plus, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -48,6 +31,7 @@ import * as z from "zod";
 const props = defineProps<{
 	newTransaction: boolean;
 	group: GroupWithUserPublic | null;
+	shownUsers: Record<string, GroupUserDataWithPublic>;
 	updating?: boolean;
 	initialLoading?: boolean;
 }>();
@@ -108,8 +92,6 @@ const currencySetting = computed(() =>
 	props.group?.data?.currency ? CurrencySettings[props.group.data.currency] : null,
 );
 
-const activeUsers = computed(() => getStatusUsers(props.group?.users ?? {}, new Set(["active"])));
-
 const df = new DateFormatter(navigator.language, { dateStyle: "long" });
 
 function resolveBalances(): Record<string, number> | null {
@@ -147,7 +129,7 @@ function resolveBalances(): Record<string, number> | null {
 const splitValue = computed(resolveBalances);
 
 const allSelected = computed<boolean>(
-	() => !Object.keys(activeUsers.value).some((userId) => !values.to?.people?.[userId]?.selected),
+	() => !Object.keys(props.shownUsers).some((userId) => !values.to?.people?.[userId]?.selected),
 );
 
 const onSubmit = handleSubmit((values) => {
@@ -161,7 +143,6 @@ const onSubmit = handleSubmit((values) => {
 		to: resolvedBalances,
 		category: values.category as TransactionCategory,
 	};
-	console.log(transaction);
 
 	emit("submit", transaction);
 });
@@ -284,7 +265,7 @@ defineExpose<TransactionDetailsFormExposed>({
 								v-if="!initialLoading"
 								v-bind="componentField"
 								id="from"
-								:users="activeUsers"
+								:users="shownUsers"
 								:selected-user="values.from"
 								:disabled="updating"
 							/>
@@ -315,11 +296,11 @@ defineExpose<TransactionDetailsFormExposed>({
 								</Tabs>
 								<Skeleton v-else class="w-full h-9" />
 
-								<div v-if="!initialLoading" class="flex flex-col gap-2 bg-muted p-2 rounded-lg">
+								<div v-if="!initialLoading" class="flex flex-col gap-2 bg-muted p-2 sm:p-4 rounded-lg">
 									<div
-										class="grid grid-cols-[max-content_minmax(0,1fr)_minmax(0,1fr)_max-content] items-center gap-2 gap-x-3"
+										class="grid grid-cols-[max-content_minmax(0,1fr)_max-content_max-content] items-center gap-2 gap-x-3"
 									>
-										<template v-if="group?.users" v-for="(user, userId) in activeUsers">
+										<template v-if="group?.users" v-for="(user, userId) in shownUsers">
 											<Checkbox
 												class="col-start-1 size-5"
 												:id="`user-${userId}`"
@@ -333,7 +314,7 @@ defineExpose<TransactionDetailsFormExposed>({
 												:disabled="updating"
 											/>
 
-											<label :for="`user-${userId}`" class="flex items-center gap-1.5 min-h-9">
+											<label :for="`user-${userId}`" class="flex min-w-0 items-center gap-1.5 min-h-9">
 												<Avatar
 													v-if="user.computed.name"
 													:src="user.public?.photoUrl ?? null"
@@ -343,7 +324,7 @@ defineExpose<TransactionDetailsFormExposed>({
 												<Skeleton v-else class="size-6 rounded-full" />
 												<span
 													v-if="user.computed.name"
-													:class="`text-sm text-nowrap ${user.status !== 'active' && 'text-muted-foreground'}`"
+													:class="`text-sm ${user.status !== 'active' && 'text-muted-foreground'} truncate`"
 												>
 													{{ user.computed.name }}
 												</span>
@@ -394,7 +375,7 @@ defineExpose<TransactionDetailsFormExposed>({
 										@click="
 											() => {
 												const targetValue = !allSelected;
-												Object.keys(activeUsers).forEach((userId) => {
+												Object.keys(shownUsers).forEach((userId) => {
 													setFieldValue(`to.people.${userId}.selected`, targetValue, false);
 												});
 												validateField('to');
@@ -413,7 +394,7 @@ defineExpose<TransactionDetailsFormExposed>({
 				</FieldGroup>
 			</form>
 		</CardContent>
-		<CardFooter>
+		<CardFooter class="justify-end">
 			<Button
 				type="submit"
 				form="transaction-details-form"

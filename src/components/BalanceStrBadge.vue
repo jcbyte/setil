@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Badge } from "@/components/ui/badge";
-import Skeleton from "./ui/skeleton/Skeleton.vue";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface BalanceStr {
 	str: string;
@@ -14,13 +14,13 @@ defineProps<{
 
 <template>
 	<template v-if="balanceStr">
-		<Badge v-if="balanceStr.status === 'neutral'" variant="secondary" class="w-fit">
+		<Badge v-if="balanceStr.status === 'neutral'" variant="secondary" class="w-fit text-nowrap">
 			{{ balanceStr.str }}
 		</Badge>
-		<Badge v-else-if="balanceStr.status === 'negative'" variant="destructive" class="w-fit">
+		<Badge v-else-if="balanceStr.status === 'negative'" variant="destructive" class="w-fit text-nowrap">
 			{{ balanceStr.str }}
 		</Badge>
-		<Badge v-else variant="default" class="w-fit bg-emerald-600 hover:bg-emerald-700">
+		<Badge v-else variant="default" class="w-fit bg-emerald-600 hover:bg-emerald-700 text-nowrap">
 			{{ balanceStr.str }}
 		</Badge>
 	</template>

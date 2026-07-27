@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic";
 import Avatar from "./Avatar.vue";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Skeleton } from "./ui/skeleton";
 
 const props = defineProps<{
 	users: Record<string, GroupUserDataWithPublic>;
