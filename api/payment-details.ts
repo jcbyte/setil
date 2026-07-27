@@ -75,15 +75,21 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 		// Encrypt and store payment details
 		const encryptedPaymentDetails = encrypt(JSON.stringify(paymentDetails));
 
-		await paymentDetailsRef.set(encryptedPaymentDetails);
-		await userPublicDataRef.update({ hasBankDetails: true });
+		// Atomically commit to the db
+		const batch = db.batch();
+		batch.set(paymentDetailsRef, encryptedPaymentDetails);
+		batch.update(userPublicDataRef, { hasBankDetails: true });
+		await batch.commit();
 
 		return res.status(200).json({ success: true });
 	}
 
 	if (req.method === "DELETE") {
-		await userPublicDataRef.update({ hasBankDetails: false });
-		await paymentDetailsRef.delete();
+		// Atomically commit to the db
+		const batch = db.batch();
+		batch.delete(paymentDetailsRef);
+		batch.update(userPublicDataRef, { hasBankDetails: false });
+		await batch.commit();
 
 		return res.status(200).json({ success: true });
 	}
