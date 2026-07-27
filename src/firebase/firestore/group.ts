@@ -291,6 +291,10 @@ export async function leaveGroup(groupId: string) {
 		if (possibleOwners.length === 0) {
 			// Delete the group if the are no active users left
 			await deleteGroup(groupId);
+			await removeGroupFromUser(groupId);
+
+			// There is no more data in the group to modify, so we can return early
+			return;
 		} else {
 			// Set the owner to the new owner found
 			await updateDoc(groupRef, { owner: possibleOwners[0] });
