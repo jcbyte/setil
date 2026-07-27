@@ -67,7 +67,9 @@ const formSchema = z.object({
 				.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient"),
 		})
 		.refine(
-			(v) => v.type === "equal" || !Object.values(v.people).some((vo) => vo.selected && !vo.num),
+			(v) =>
+				v.type === "equal" ||
+				Object.values(v.people).every((vo) => !vo.selected || (vo.num !== undefined && vo.num > 0)),
 			"An amount is required for a selected member",
 		),
 });
