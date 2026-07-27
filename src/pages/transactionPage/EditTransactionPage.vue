@@ -8,7 +8,7 @@ import { noGroup } from "@/util/app";
 import { fromFirestoreAmount } from "@/util/currency";
 import { gcdN } from "@/util/math";
 import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";
-import { fromDate, getLocalTimeZone } from "@internationalized/date";
+import { fromDate, getLocalTimeZone, Time, toCalendarDate } from "@internationalized/date";
 import { ArrowLeft } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
@@ -37,6 +37,7 @@ watch(
 
 		if (!hasThisTransactionLoaded.value && groupValue.data && groupValue.transactions && transactionId.value) {
 			const transaction = groupValue.transactions[transactionId.value];
+
 			const transactionGcd = gcdN(Object.values(transaction.to).filter((v) => v));
 			const transactionPeople = Object.fromEntries(
 				Object.entries(transaction.to).map(([userId, amount]) => {
@@ -44,9 +45,12 @@ watch(
 				}),
 			);
 
+			const dateTime = fromDate(transaction.date.toDate(), getLocalTimeZone());
+
 			transactionDetailsForm.value?.reset({
 				title: transaction.title,
-				date: fromDate(transaction.date.toDate(), getLocalTimeZone()),
+				date: toCalendarDate(dateTime),
+				time: new Time(dateTime.hour, dateTime.minute).toString(),
 				from: transaction.from,
 				amount: fromFirestoreAmount(sumRecordValues(transaction.to), groupValue.data.currency),
 				category: transaction.category,
