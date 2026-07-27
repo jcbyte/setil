@@ -61,7 +61,7 @@ import {
 import { toTypedSchema } from "@vee-validate/zod";
 import { useField } from "vee-validate";
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import z from "zod";
 import GroupDetailsForm, { type GroupDetailsFormExposed, type GroupDetailsValues } from "./GroupDetailsForm.vue";
@@ -370,9 +370,11 @@ async function deleteGroup() {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button type="button" variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
-						<ArrowLeft class="!size-5.5" />
-					</Button>
+					<RouterLink :to="`/group/${groupId}`">
+						<Button type="button" variant="ghost" size="icon">
+							<ArrowLeft class="size-5.5" />
+						</Button>
+					</RouterLink>
 					<span class="text-lg font-semibold">Group Settings</span>
 				</div>
 				<YourAccountSettings />

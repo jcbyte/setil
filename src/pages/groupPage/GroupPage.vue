@@ -17,7 +17,7 @@ import { inviteUser, noGroup } from "@/util/app";
 import { getRouteParam } from "@/util/util.ts";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import GroupActivity from "./GroupActivity.vue";
 import GroupSummary from "./GroupSummary.vue";
@@ -101,9 +101,11 @@ watch(currentTab, (newTab, oldTab) => {
 	<div class="mx-auto w-full max-w-4xl flex flex-col gap-4">
 		<div class="flex justify-between items-center">
 			<div class="flex items-center gap-1">
-				<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
-					<ArrowLeft class="!size-5.5" />
-				</Button>
+				<RouterLink to="/">
+					<Button type="button" variant="ghost" size="icon">
+						<ArrowLeft class="size-5.5" />
+					</Button>
+				</RouterLink>
 				<span v-if="group?.data" class="text-lg font-semibold">{{ group.data.name }}</span>
 				<Skeleton v-else class="w-28 h-7" />
 			</div>

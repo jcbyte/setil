@@ -19,7 +19,7 @@ import { ArrowLeft, CircleX, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm, Field as VeeField } from "vee-validate";
 import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
 
@@ -241,9 +241,11 @@ async function clearDetails() {
 	<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 		<div class="flex justify-between items-center">
 			<div class="flex items-center gap-1">
-				<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
-					<ArrowLeft class="!size-5.5" />
-				</Button>
+				<RouterLink to="/settings">
+					<Button type="button" variant="ghost" size="icon">
+						<ArrowLeft class="size-5.5" />
+					</Button>
+				</RouterLink>
 				<span class="text-lg font-semibold">Payment Details</span>
 			</div>
 			<YourAccountSettings />

@@ -12,13 +12,13 @@ import CardFooter from "@/components/ui/card/CardFooter.vue";
 import CardHeader from "@/components/ui/card/CardHeader.vue";
 import CardTitle from "@/components/ui/card/CardTitle.vue";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -35,11 +35,11 @@ import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/firebase/types";
 import { noGroup } from "@/util/app";
 import {
-  CurrencySettings,
-  formatCurrency,
-  fromFirestoreAmount,
-  getBalanceStr,
-  toFirestoreAmount,
+	CurrencySettings,
+	formatCurrency,
+	fromFirestoreAmount,
+	getBalanceStr,
+	toFirestoreAmount,
 } from "@/util/currency";
 import { type PaymentDetails } from "@/util/paymentDetails";
 import { resolveGroupDebts, type SimpleTransaction } from "@/util/split";
@@ -49,7 +49,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { useForm, Field as VeeField } from "vee-validate";
 import { computed, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
 
@@ -207,9 +207,11 @@ async function openBankDetailsDialog() {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button type="button" variant="ghost" size="icon" @click="router.push(`/group/${groupId}`)">
-						<ArrowLeft class="!size-5.5" />
-					</Button>
+					<RouterLink :to="`/groups/${groupId}`">
+						<Button type="button" variant="ghost" size="icon">
+							<ArrowLeft class="size-5.5" />
+						</Button>
+					</RouterLink>
 					<span class="text-lg font-semibold">Setil Up</span>
 				</div>
 				<YourAccountSettings />
