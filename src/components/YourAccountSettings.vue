@@ -10,9 +10,6 @@ import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { useLiveCurrentUserData } from "@/composables/useLiveCurrentUserData";
 import { signOut } from "@/util/app";
 import { LogOut, Settings } from "@lucide/vue";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
 
 const currentUser = useCurrentUser();
 const currentUserData = useLiveCurrentUserData();
@@ -29,12 +26,14 @@ const currentUserData = useLiveCurrentUserData();
 			/>
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
-			<DropdownMenuItem @click="router.push('/settings')">
-				<div class="w-full flex justify-between items-center">
-					<span>Settings</span>
-					<Settings class="!size-5" />
-				</div>
-			</DropdownMenuItem>
+			<RouterLink to="/settings">
+				<DropdownMenuItem>
+					<div class="w-full flex justify-between items-center">
+						<span>Settings</span>
+						<Settings class="!size-5" />
+					</div>
+				</DropdownMenuItem>
+			</RouterLink>
 			<DropdownMenuItem @click="signOut">
 				<div class="w-full flex justify-between items-center">
 					<span class="text-red-400">Sign Out</span>

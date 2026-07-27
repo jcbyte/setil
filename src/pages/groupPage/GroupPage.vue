@@ -110,15 +110,12 @@ watch(currentTab, (newTab, oldTab) => {
 				<Skeleton v-else class="w-28 h-7" />
 			</div>
 			<div class="flex items-center gap-2">
-				<Button
-					type="button"
-					variant="outline"
-					class="size-9 sm:size-auto"
-					@click="router.push(`/group/${groupId}/edit`)"
-				>
-					<Settings />
-					<span class="hidden sm:inline">Group Settings</span>
-				</Button>
+				<RouterLink :to="`/group/${groupId}/edit`">
+					<Button type="button" variant="outline" class="size-9 sm:size-auto">
+						<Settings />
+						<span class="hidden sm:inline">Group Settings</span>
+					</Button>
+				</RouterLink>
 				<YourAccountSettings />
 			</div>
 		</div>
@@ -140,36 +137,35 @@ watch(currentTab, (newTab, oldTab) => {
 				<Skeleton v-else class="w-full h-56" />
 
 				<div class="flex gap-2">
-					<Button
+					<RouterLink
 						v-for="groupButton in [
 							{
 								icon: ReceiptText,
 								title: 'Add Expense',
 								description: 'Record a new expense',
-								onClick: () => router.push(`/group/${groupId}/transaction`),
+								link: `/group/${groupId}/transaction`,
 							},
 							{
 								icon: Wallet,
 								title: 'Setil Up',
 								description: 'Settle member\'s debts',
-								onClick: () => router.push(`/group/${groupId}/settle`),
+								link: `/group/${groupId}/settle`,
 							},
 						]"
-						type="button"
-						variant="outline"
-						class="h-full flex-1 p-4"
-						@click="groupButton.onClick"
+						:to="groupButton.link"
 					>
-						<div class="flex flex-col items-center gap-2">
-							<div class="bg-muted p-3 rounded-lg aspect-square flex justify-center items-center">
-								<component :is="groupButton.icon" class="!size-6" />
+						<Button type="button" variant="outline" class="h-full flex-1 p-4">
+							<div class="flex flex-col items-center gap-2">
+								<div class="bg-muted p-3 rounded-lg aspect-square flex justify-center items-center">
+									<component :is="groupButton.icon" class="!size-6" />
+								</div>
+								<div class="flex flex-col items-center">
+									<span class="text-md font-semibold">{{ groupButton.title }}</span>
+									<span class="text-sm text-muted-foreground">{{ groupButton.description }}</span>
+								</div>
 							</div>
-							<div class="flex flex-col items-center">
-								<span class="text-md font-semibold">{{ groupButton.title }}</span>
-								<span class="text-sm text-muted-foreground">{{ groupButton.description }}</span>
-							</div>
-						</div>
-					</Button>
+						</Button>
+					</RouterLink>
 				</div>
 			</div>
 

@@ -179,10 +179,10 @@ const onSubmit = handleSubmit(async (values) => {
 				group.value.data.currency,
 				false,
 			)}.`,
-			`/group/${groupId}?tab=summary`,
+			`/group/${groupId.value}?tab=summary`,
 		);
 
-		router.push({ path: `/group/${groupId}`, query: { tab: "activity" } });
+		router.push({ path: `/group/${groupId.value}`, query: { tab: "activity" } });
 	} catch (e) {
 		toast.error("Error Saving Payment", { description: String(e) });
 	}

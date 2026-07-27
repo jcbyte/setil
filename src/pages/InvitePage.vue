@@ -12,11 +12,11 @@ import { toast } from "vue-sonner";
 const route = useRoute();
 const router = useRouter();
 
-const routeGroupId = getRouteParam(route.params.groupId);
-const routeInviteCode = getRouteParam(route.params.inviteCode);
+const groupId = getRouteParam(route.params.groupId);
+const inviteCode = getRouteParam(route.params.inviteCode);
 
 onMounted(async () => {
-	if (!routeGroupId || !routeInviteCode) {
+	if (!groupId || !inviteCode) {
 		toast.error("Invalid Link", {
 			description: "Ensure this is a valid link.",
 		});
@@ -25,18 +25,13 @@ onMounted(async () => {
 	}
 
 	try {
-		const joinRes = await joinGroup(routeGroupId, routeInviteCode);
+		const joinRes = await joinGroup(groupId, inviteCode);
 
 		if (joinRes.new) {
 			toast("Joined Group", { description: "Time to make cents of things." });
-			sendNotification(
-				routeGroupId,
-				joinRes.groupName,
-				`${joinRes.userName} just joined the group!`,
-				`/group/${routeGroupId}`,
-			);
+			sendNotification(groupId, joinRes.groupName, `${joinRes.userName} just joined the group!`, `/group/${groupId}`);
 		}
-		router.push(`/group/${routeGroupId}`);
+		router.push(`/group/${groupId}`);
 	} catch {
 		toast.error("Couldn't Join Group", {
 			description: "Ensure this link has not expired.",

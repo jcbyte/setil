@@ -172,12 +172,14 @@ async function handleDeleteTransaction() {
 											<EllipsisVertical class="!size-5" />
 										</DropdownMenuTrigger>
 										<DropdownMenuContent>
-											<DropdownMenuItem @click="router.push(`/group/${groupId}/transaction/${transactionId}`)">
-												<div class="w-full flex justify-between items-center">
-													<span>Edit</span>
-													<FilePen class="!size-5" />
-												</div>
-											</DropdownMenuItem>
+											<RouterLink :to="`/group/${groupId}/transaction/${transactionId}`">
+												<DropdownMenuItem>
+													<div class="w-full flex justify-between items-center">
+														<span>Edit</span>
+														<FilePen class="!size-5" />
+													</div>
+												</DropdownMenuItem>
+											</RouterLink>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
 												<div class="w-full flex justify-between items-center">
