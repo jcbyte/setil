@@ -2,11 +2,14 @@ import { CollectionReference } from "firebase/firestore";
 import { type Ref } from "vue";
 import { acquireLiveQuery } from "./acquireLiveQuery";
 
+type ErrorHandler = (network: boolean) => void;
+
 interface CachedLiveCollection {
 	rec: Record<string, any>;
 	loaded: Ref<boolean>;
 	release: () => void;
 	refCount: number;
+	errorHandlers: Set<ErrorHandler>;
 }
 /** Cache for active live collection subscriptions across the application. */
 const liveCollections = new Map<string, CachedLiveCollection>();
@@ -29,15 +32,21 @@ const liveCollections = new Map<string, CachedLiveCollection>();
  */
 export function acquireLiveCollection<T>(
 	colRef: CollectionReference<T>,
-	onError?: (network: boolean) => void,
+	onError?: ErrorHandler,
 ): { items: Record<string, T>; loaded: Ref<boolean>; release: () => void } {
 	const colKey = colRef.path;
 
+	let released = false;
 	function release() {
 		const liveColRef = liveCollections.get(colKey);
 		if (!liveColRef) return;
 
+		if (released) return;
+		released = true;
+
 		liveColRef.refCount--;
+		if (onError) liveColRef.errorHandlers.delete(onError);
+
 		// If there is no more references, then cleanup
 		if (liveColRef.refCount <= 0) {
 			liveColRef.release();
@@ -49,12 +58,20 @@ export function acquireLiveCollection<T>(
 	const cachedCol = liveCollections.get(colKey);
 	if (cachedCol) {
 		cachedCol.refCount++;
+		if (onError) cachedCol.errorHandlers.add(onError);
 		return { items: cachedCol.rec, loaded: cachedCol.loaded, release };
 	}
 
+	const errorHandlers = new Set<ErrorHandler>();
+	if (onError) errorHandlers.add(onError);
+
 	// Get a live query of this collection
-	const { items, loaded, release: releaseQuery } = acquireLiveQuery(colRef, onError);
-	liveCollections.set(colKey, { rec: items, loaded, release: releaseQuery, refCount: 1 });
+	const {
+		items,
+		loaded,
+		release: releaseQuery,
+	} = acquireLiveQuery(colRef, (nw) => errorHandlers.forEach((handler) => handler(nw)));
+	liveCollections.set(colKey, { rec: items, loaded, release: releaseQuery, refCount: 1, errorHandlers });
 
 	return { items, loaded, release };
 }

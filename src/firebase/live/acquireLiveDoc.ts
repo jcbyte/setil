@@ -84,7 +84,7 @@ export function acquireLiveDoc<T>(
 		},
 		(error) => {
 			// If the firebase error is not related to network provide `network: false`
-			const nw = error.code === "not-found" || error.code === "permission-denied";
+			const nw = error.code !== "not-found" && error.code !== "permission-denied";
 			errorHandlers.forEach((handler) => handler(nw));
 		},
 	);
