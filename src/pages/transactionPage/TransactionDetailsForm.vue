@@ -92,13 +92,13 @@ const typedFormSchema = toTypedSchema(formSchema);
 export type TransactionDetailsValues = z.infer<typeof formSchema>;
 
 const currentUser = useCurrentUser();
-
 const timeNow = now(getLocalTimeZone());
+
 const { handleSubmit, resetForm, setFieldValue, values, meta, validateField } = useForm({
 	validationSchema: typedFormSchema,
 	initialValues: {
 		date: toCalendarDate(timeNow),
-		time: new Time(timeNow.hour, timeNow.minute).toString(),
+		time: new Time(timeNow.hour, timeNow.minute).toString().slice(0, 5),
 		category: "expense",
 		from: currentUser.value?.uid,
 		to: {

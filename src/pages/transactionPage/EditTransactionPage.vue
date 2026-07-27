@@ -50,7 +50,7 @@ watch(
 			transactionDetailsForm.value?.reset({
 				title: transaction.title,
 				date: toCalendarDate(dateTime),
-				time: new Time(dateTime.hour, dateTime.minute).toString(),
+				time: new Time(dateTime.hour, dateTime.minute).toString().slice(0, 5),
 				from: transaction.from,
 				amount: fromFirestoreAmount(sumRecordValues(transaction.to), groupValue.data.currency),
 				category: transaction.category,
