@@ -1,14 +1,5 @@
 import { sumRecordValues } from "@/util/util";
-import {
-	addDoc,
-	collection,
-	doc,
-	DocumentReference,
-	getDoc,
-	increment,
-	WriteBatch,
-	writeBatch,
-} from "firebase/firestore";
+import { collection, doc, DocumentReference, getDoc, increment, WriteBatch, writeBatch } from "firebase/firestore";
 import { db } from "../firebase";
 import type { GroupData, GroupUserData, Transaction } from "../types";
 import { updateGroupUpdateTime } from "./group";
@@ -54,7 +45,8 @@ export async function createTransaction(
 	// Add the transaction to the group
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 	const groupTransactionsRef = collection(groupRef, "transactions");
-	const transactionRef = await addDoc(groupTransactionsRef, transaction);
+	const transactionRef = doc(groupTransactionsRef);
+	batch.set(transactionRef, transaction);
 
 	// Update users balances
 	updateGroupBalances(groupRef, batch, transaction.from, transaction.to);
