@@ -55,8 +55,6 @@ const emit = defineEmits<{
 	submit: [details: Transaction];
 }>();
 
-console.log(props.shownUsers);
-
 const formSchema = z.object({
 	title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
 	amount: z // Must do all validation within refine, as we require no validation when values.to === "unequal"
@@ -161,7 +159,6 @@ const onSubmit = handleSubmit((values) => {
 		to: resolvedBalances,
 		category: values.category as TransactionCategory,
 	};
-	console.log(transaction);
 
 	emit("submit", transaction);
 });
