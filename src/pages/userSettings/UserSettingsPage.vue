@@ -47,6 +47,24 @@ import * as z from "zod";
 
 const router = useRouter();
 
+onMounted(() => {
+	const originPath = window.history.state?.back;
+	if (originPath && !originPath.startsWith("/settings")) {
+		sessionStorage.setItem("settings_origin", originPath);
+	}
+});
+
+function exitSettings() {
+	const originPath = sessionStorage.getItem("settings_origin");
+	if (originPath) {
+		sessionStorage.removeItem("settings_origin");
+		router.push(originPath);
+	} else {
+		// Fallback if /settings was opened directly
+		router.push("/");
+	}
+}
+
 const hasDataLoaded = ref<boolean>(false);
 
 const nameSchema = toTypedSchema(
@@ -182,8 +200,8 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<Button type="button" variant="ghost" size="icon" @click="router.push('/')">
-						<ArrowLeft class="!size-5.5" />
+					<Button type="button" variant="ghost" size="icon" @click="exitSettings">
+						<ArrowLeft class="size-5.5" />
 					</Button>
 					<span class="text-lg font-semibold">User Settings</span>
 				</div>
