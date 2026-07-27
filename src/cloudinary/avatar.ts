@@ -1,3 +1,4 @@
+import { fetchApiJson } from "@/api/api";
 import { db } from "@/firebase/firebase";
 import { getUser } from "@/firebase/firestore/util";
 import type { PublicUserData } from "@/firebase/types";
@@ -8,14 +9,14 @@ export async function uploadAvatar(avatarFile: File): Promise<string> {
 	const user = getUser();
 
 	// Retrieve the signature to upload to cloudinary
-	const res = await fetch("/api/avatar", {
+	const res = await fetchApiJson<{ cloudinaryDetails: CloudinaryDetails }>("/api/avatar", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-	}).then((res) => res.json());
-	const cldDetails = res.cloudinaryDetails as CloudinaryDetails;
+	});
+	const cldDetails = res.cloudinaryDetails;
 
 	// Construct the file upload using the signature and received upload parameters
 	const cldFormData = new FormData();
@@ -26,11 +27,23 @@ export async function uploadAvatar(avatarFile: File): Promise<string> {
 	cldFormData.append("file", avatarFile);
 
 	// Upload the avatar file directly to cloudinary
-	const cldResponse = await fetch(`https://api.cloudinary.com/v1_1/${cldDetails.cloudName}/image/upload`, {
-		method: "POST",
-		body: cldFormData,
-	}).then((res) => res.json());
-	const avatarUrl = cldResponse.secure_url as string;
+	let avatarUrl: string | undefined;
+	try {
+		const cldRes = await fetch(`https://api.cloudinary.com/v1_1/${cldDetails.cloudName}/image/upload`, {
+			method: "POST",
+			body: cldFormData,
+		});
+		const cldData = await cldRes.json();
+
+		if (!cldRes.ok) {
+			throw new Error(cldData.error?.message || `Cloudinary upload failed with status ${cldRes.status}`);
+		}
+
+		avatarUrl = cldData.secure_url;
+	} catch (e) {
+		throw e instanceof Error ? e : new Error("Network request to Cloudinary failed");
+	}
+	if (!avatarUrl) throw new Error("Avatar URL was not returned from Cloudinary");
 
 	// Update the firestore db with updated link
 	const userPublicDataRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
@@ -43,7 +56,7 @@ export async function uploadAvatar(avatarFile: File): Promise<string> {
 export async function removeAvatar() {
 	const user = getUser();
 
-	await fetch("/api/avatar", {
+	await fetchApiJson("/api/avatar", {
 		method: "DELETE",
 		headers: {
 			"Content-Type": "application/json",

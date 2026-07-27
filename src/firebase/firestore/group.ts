@@ -1,3 +1,4 @@
+import { fetchApiJson } from "@/api/api";
 import {
 	addDoc,
 	arrayUnion,
@@ -94,13 +95,13 @@ export async function deleteGroup(groupId: string) {
 
 	// Delete the group
 	// The group will be removed from other users groups when they call `getUserGroups`
-	await fetch(`/api/group?${queryParams.toString()}`, {
+	await fetchApiJson(`/api/group?${queryParams.toString()}`, {
 		method: "DELETE",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-	}).then((res) => res.json());
+	});
 }
 
 /**

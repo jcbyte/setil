@@ -55,7 +55,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 				return res.status(200).json({ success: true, paymentDetails: null });
 			}
 
-			const paymentDetails = decrypt(encryptedPaymentDetails);
+			const paymentDetailsObj = decrypt(encryptedPaymentDetails);
+			const paymentDetails = JSON.parse(paymentDetailsObj);
 
 			return res.status(200).json({ success: true, paymentDetails });
 		} catch (error) {

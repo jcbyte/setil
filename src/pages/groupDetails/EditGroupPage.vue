@@ -122,6 +122,7 @@ async function updateGroup(details: GroupDetailsValues) {
 			currency: details.currency as Currency,
 		});
 
+		groupDetailsForm.value?.reset(details);
 		toast("Group Details Updated", { description: "Like a fresh coat of paint." });
 	} catch (e) {
 		toast.error("Error Saving Group", { description: String(e) });

@@ -1,3 +1,4 @@
+import { fetchApiJson } from "@/api/api";
 import { getMessaging, isSupported, onRegistered, register } from "firebase/messaging";
 import { toast } from "vue-sonner";
 import { addFid } from "./firestore/user";
@@ -40,17 +41,15 @@ export async function requestNotifications() {
  * @param body body of the notification.
  * @returns true if it was successful.
  */
-export async function sendNotification(groupId: string, title: string, body: string, route?: string): Promise<boolean> {
+export async function sendNotification(groupId: string, title: string, body: string, route?: string) {
 	const user = getUser();
 
-	const res = await fetch("/api/send-group-notification", {
+	await fetchApiJson("/api/send-group-notification", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
 		body: JSON.stringify({ groupId: groupId, title, body, ...(route && { route }) }),
-	}).then((res) => res.json());
-
-	return res.success;
+	});
 }

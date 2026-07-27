@@ -189,6 +189,7 @@ const onSubmit = handleSubmit(async (values) => {
 		}
 
 		await setPaymentDetails(paymentDetails);
+		resetForm({ values });
 		hasDetailsSaved.value = true;
 
 		toast("Details Updated", { description: "The universe may now shower me with funds." });

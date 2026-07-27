@@ -1,3 +1,4 @@
+import { fetchApiJson } from "@/api/api";
 import type { PaymentDetails } from "@/util/paymentDetails";
 import {
 	arrayRemove,
@@ -125,21 +126,17 @@ export async function getPaymentDetails(userId?: string, groupId?: string): Prom
 		...(groupId ? { groupId } : {}),
 	});
 
-	const res = await fetch(`/api/payment-details?${queryParams.toString()}`, {
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${await user.getIdToken()}`,
+	const res = await fetchApiJson<{ paymentDetails: PaymentDetails | null }>(
+		`/api/payment-details?${queryParams.toString()}`,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${await user.getIdToken()}`,
+			},
 		},
-	}).then((res) => res.json());
-
-	if (res.paymentDetails === null) return null;
-	// If the response is incorrect return that no details have been set
-	try {
-		return JSON.parse(res.paymentDetails) as PaymentDetails;
-	} catch {
-		return null;
-	}
+	);
+	return res.paymentDetails;
 }
 
 /**
@@ -147,37 +144,33 @@ export async function getPaymentDetails(userId?: string, groupId?: string): Prom
  * @param details the payment details to set.
  * @returns true if it was successful.
  */
-export async function setPaymentDetails(details: PaymentDetails | null): Promise<boolean> {
+export async function setPaymentDetails(details: PaymentDetails | null) {
 	const user = getUser();
 
-	const res = await fetch("/api/payment-details", {
+	await fetchApiJson("/api/payment-details", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
 		body: JSON.stringify({ paymentDetails: details }),
-	}).then((res) => res.json());
-
-	return res.success;
+	});
 }
 
 /**
  * Clear our own payment details.
  * @returns true if it was successful.
  */
-export async function removePaymentDetails(): Promise<boolean> {
+export async function removePaymentDetails() {
 	const user = getUser();
 
-	const res = await fetch("/api/payment-details", {
+	await fetchApiJson("/api/payment-details", {
 		method: "DELETE",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-	}).then((res) => res.json());
-
-	return res.success;
+	});
 }
 
 /**
