@@ -19,8 +19,19 @@ import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
 import { splitAmountEven, splitAmountRatio } from "@/util/split";
-import { CalendarDate, DateFormatter, getLocalTimeZone, today, type DateValue } from "@internationalized/date";
-import { CalendarIcon, Plus, Save } from "@lucide/vue";
+import {
+	CalendarDate,
+	DateFormatter,
+	getLocalTimeZone,
+	now,
+	parseTime,
+	Time,
+	toCalendarDate,
+	toCalendarDateTime,
+	today,
+	type DateValue,
+} from "@internationalized/date";
+import { CalendarIcon, Clock, Plus, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { toDate } from "reka-ui/date";
@@ -49,6 +60,10 @@ const formSchema = z.object({
 			return val && typeof val === "number" && val > 0;
 		}, "An amount is required"),
 	date: z.custom<DateValue>().refine((v) => v, "A date is required"),
+	time: z
+		.string()
+		.regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Please enter a valid time (HH:mm)")
+		.transform(parseTime),
 	category: z.string().refine((val) => Object.keys(CategorySettings).includes(val), "Must select a valid category"),
 	from: z
 		.string()
@@ -77,11 +92,13 @@ const typedFormSchema = toTypedSchema(formSchema);
 export type TransactionDetailsValues = z.infer<typeof formSchema>;
 
 const currentUser = useCurrentUser();
+const timeNow = now(getLocalTimeZone());
 
 const { handleSubmit, resetForm, setFieldValue, values, meta, validateField } = useForm({
 	validationSchema: typedFormSchema,
 	initialValues: {
-		date: today(getLocalTimeZone()),
+		date: toCalendarDate(timeNow),
+		time: new Time(timeNow.hour, timeNow.minute).toString().slice(0, 5),
 		category: "expense",
 		from: currentUser.value?.uid,
 		to: {
@@ -141,7 +158,7 @@ const onSubmit = handleSubmit((values) => {
 	const transaction: Transaction = {
 		title: values.title,
 		from: values.from,
-		date: Timestamp.fromDate(values.date.toDate(getLocalTimeZone())),
+		date: Timestamp.fromDate(toCalendarDateTime(values.date, values.time).toDate(getLocalTimeZone())),
 		to: resolvedBalances,
 		category: values.category as TransactionCategory,
 	};
@@ -150,7 +167,7 @@ const onSubmit = handleSubmit((values) => {
 });
 
 export type TransactionDetailsFormExposed = {
-	reset: (values: Partial<TransactionDetailsValues>) => void;
+	reset: (values: Partial<z.input<typeof formSchema>>) => void;
 };
 defineExpose<TransactionDetailsFormExposed>({
 	reset: (values) => resetForm({ values }),
@@ -206,6 +223,32 @@ defineExpose<TransactionDetailsFormExposed>({
 							</Field>
 						</VeeField>
 
+						<VeeField v-slot="{ componentField, errors }" name="category">
+							<!-- todo could this be a horizontal radio group of icons? Could look nicer -->
+							<Field :data-invalid="!!errors.length">
+								<FieldLabel for="category">Category</FieldLabel>
+								<Select v-if="!initialLoading" v-bind="componentField" :disabled="updating">
+									<SelectTrigger id="category">
+										<SelectValue placeholder="Expense" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem v-for="(category, categoryId) in CategorySettings" :value="categoryId">
+											<div class="flex items-center gap-2">
+												<div class="bg-secondary rounded-lg size-6 flex justify-center items-center">
+													<component :is="category.icon" class="size-4" />
+												</div>
+												<span>{{ category.name }}</span>
+											</div>
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								<Skeleton v-else class="w-full h-9" />
+								<FieldError v-if="errors.length" :errors="errors" />
+							</Field>
+						</VeeField>
+					</div>
+
+					<div class="flex items-start gap-2">
 						<VeeField v-slot="{ componentField, value, errors }" name="date">
 							<Field :data-invalid="!!errors.length">
 								<FieldLabel for="date">Date</FieldLabel>
@@ -234,31 +277,29 @@ defineExpose<TransactionDetailsFormExposed>({
 								<FieldError v-if="errors.length" :errors="errors" />
 							</Field>
 						</VeeField>
-					</div>
 
-					<VeeField v-slot="{ componentField, errors }" name="category">
-						<!-- todo could this be a horizontal radio group of icons? Could look nicer -->
-						<Field :data-invalid="!!errors.length">
-							<FieldLabel for="category">Category</FieldLabel>
-							<Select v-if="!initialLoading" v-bind="componentField" :disabled="updating">
-								<SelectTrigger id="category">
-									<SelectValue placeholder="Expense" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem v-for="(category, categoryId) in CategorySettings" :value="categoryId">
-										<div class="flex items-center gap-2">
-											<div class="bg-secondary rounded-lg size-6 flex justify-center items-center">
-												<component :is="category.icon" class="size-4" />
-											</div>
-											<span>{{ category.name }}</span>
-										</div>
-									</SelectItem>
-								</SelectContent>
-							</Select>
-							<Skeleton v-else class="w-full h-9" />
-							<FieldError v-if="errors.length" :errors="errors" />
-						</Field>
-					</VeeField>
+						<VeeField v-slot="{ componentField, errors }" name="time">
+							<Field :data-invalid="!!errors.length">
+								<FieldLabel for="time">Time</FieldLabel>
+								<InputGroup v-if="!initialLoading">
+									<InputGroupInput
+										id="time"
+										type="time"
+										placeholder="10:30"
+										:step="60"
+										:disabled="updating"
+										v-bind="componentField"
+										class="[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+									/>
+									<InputGroupAddon align="inline-end">
+										<Clock />
+									</InputGroupAddon>
+								</InputGroup>
+								<Skeleton v-else class="w-full h-9" />
+								<FieldError v-if="errors.length" :errors="errors" />
+							</Field>
+						</VeeField>
+					</div>
 
 					<VeeField v-slot="{ componentField, errors }" name="from">
 						<Field :data-invalid="!!errors.length">

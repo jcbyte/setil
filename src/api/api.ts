@@ -38,7 +38,5 @@ export async function fetchApiJson<T = {}>(input: RequestInfo | URL, init?: Requ
 		throw new ApiError(message, res.status);
 	}
 
-	console.log(body);
-
 	return body as T;
 }

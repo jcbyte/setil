@@ -149,7 +149,7 @@ async function handleDeleteTransaction() {
 
 								<div class="flex items-center gap-2">
 									<div class="flex flex-col items-end">
-										<span>
+										<span class="text-nowrap">
 											{{
 												props.group.data
 													? formatCurrency(sumRecordValues(transaction.to), props.group.data.currency)
@@ -157,7 +157,7 @@ async function handleDeleteTransaction() {
 											}}
 										</span>
 										<span class="text-sm text-muted-foreground text-nowrap">
-											{{ transaction.date.toDate().toLocaleDateString(undefined, { day: "numeric", month: "short" }) }}
+											{{ transaction.date.toDate().toLocaleString(undefined, { day: "numeric", month: "short" }) }}
 										</span>
 									</div>
 									<DropdownMenu>
