@@ -33,15 +33,12 @@ import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";
 import { EllipsisVertical, FilePen, FileText, Trash } from "@lucide/vue";
 import { computed } from "vue";
-import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 
 const props = defineProps<{
 	groupId: string;
 	group: GroupWithUserPublic;
 }>();
-
-const router = useRouter();
 
 const {
 	open: deleteConfirmDialogOpen,
@@ -169,14 +166,14 @@ async function handleDeleteTransaction() {
 									</div>
 									<DropdownMenu>
 										<DropdownMenuTrigger as-child>
-											<EllipsisVertical class="!size-5" />
+											<EllipsisVertical class="size-5" />
 										</DropdownMenuTrigger>
 										<DropdownMenuContent>
 											<RouterLink :to="`/group/${groupId}/transaction/${transactionId}`">
 												<DropdownMenuItem>
 													<div class="w-full flex justify-between items-center">
 														<span>Edit</span>
-														<FilePen class="!size-5" />
+														<FilePen class="size-5" />
 													</div>
 												</DropdownMenuItem>
 											</RouterLink>
@@ -184,7 +181,7 @@ async function handleDeleteTransaction() {
 											<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
 												<div class="w-full flex justify-between items-center">
 													<span class="text-red-400">Delete</span>
-													<Trash class="text-red-400 !size-5" />
+													<Trash class="text-red-400 size-5" />
 												</div>
 											</DropdownMenuItem>
 										</DropdownMenuContent>

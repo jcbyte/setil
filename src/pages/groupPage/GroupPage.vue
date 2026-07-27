@@ -158,7 +158,7 @@ watch(currentTab, (newTab, oldTab) => {
 						<Button type="button" variant="outline" class="h-full flex-1 p-4">
 							<div class="flex flex-col items-center gap-2">
 								<div class="bg-muted p-3 rounded-lg aspect-square flex justify-center items-center">
-									<component :is="groupButton.icon" class="!size-6" />
+									<component :is="groupButton.icon" class="size-6" />
 								</div>
 								<div class="flex flex-col items-center">
 									<span class="text-md font-semibold">{{ groupButton.title }}</span>

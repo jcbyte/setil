@@ -6,10 +6,7 @@ import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupListWithUserPublic from "@/composables/useLiveGroupListWithUserPublic";
 import { Plus, UsersRound } from "@lucide/vue";
 import { computed } from "vue";
-import { useRouter } from "vue-router";
 import GroupListItem from "./GroupListItem.vue";
-
-const router = useRouter();
 
 const { groupList, loaded: groupListLoaded } = useLiveGroupListWithUserPublic();
 

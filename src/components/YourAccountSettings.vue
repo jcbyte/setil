@@ -30,14 +30,14 @@ const currentUserData = useLiveCurrentUserData();
 				<DropdownMenuItem>
 					<div class="w-full flex justify-between items-center">
 						<span>Settings</span>
-						<Settings class="!size-5" />
+						<Settings class="size-5" />
 					</div>
 				</DropdownMenuItem>
 			</RouterLink>
 			<DropdownMenuItem @click="signOut">
 				<div class="w-full flex justify-between items-center">
 					<span class="text-red-400">Sign Out</span>
-					<LogOut class="text-red-400 !size-5" />
+					<LogOut class="text-red-400 size-5" />
 				</div>
 			</DropdownMenuItem>
 		</DropdownMenuContent>

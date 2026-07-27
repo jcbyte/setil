@@ -47,7 +47,7 @@ onMounted(async () => {
 	<div class="flex min-h-[calc(100dvh-2rem)] items-center justify-center">
 		<Card class="-translate-y-8 min-w-none sm:min-w-sm">
 			<CardContent class="flex flex-col items-center gap-4 p-8">
-				<Loader class="animate-spin !size-14" />
+				<Loader class="animate-spin size-14" />
 				<span class="text-lg text-muted-foreground font-semibold">Validating Invite Link</span>
 			</CardContent>
 		</Card>

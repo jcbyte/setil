@@ -19,11 +19,9 @@ import { ArrowLeft, CircleX, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm, Field as VeeField } from "vee-validate";
 import { onMounted, ref } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
-
-const router = useRouter();
 
 const hasDataLoaded = ref<boolean>(false);
 const hasDetailsSaved = ref<boolean | null>(null);

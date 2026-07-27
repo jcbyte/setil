@@ -15,11 +15,11 @@ import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
 import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
 import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -31,32 +31,32 @@ import { useControlledDialog } from "@/composables/useControlledDialog.ts";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic.ts";
 import {
-  changeUserNickname,
-  clearUserNickname,
-  deleteGroup as firestoreDeleteGroup,
-  leaveGroup as firestoreLeaveGroup,
-  updateGroup as firestoreUpdateGroup,
-  promoteUser,
-  removeUser,
+	changeUserNickname,
+	clearUserNickname,
+	deleteGroup as firestoreDeleteGroup,
+	leaveGroup as firestoreLeaveGroup,
+	updateGroup as firestoreUpdateGroup,
+	promoteUser,
+	removeUser,
 } from "@/firebase/firestore/group.ts";
 import type { Currency } from "@/firebase/types.ts";
 import { inviteUser, noGroup } from "@/util/app.ts";
 import { getRouteParam, getStatusUsers } from "@/util/util";
 import {
-  ArrowBigUpDash,
-  ArrowLeft,
-  Check,
-  ChevronDown,
-  CircleX,
-  Dot,
-  LoaderCircle,
-  LogOut,
-  Pencil,
-  Trash,
-  UserMinus,
-  UserRound,
-  UserRoundPlus,
-  X,
+	ArrowBigUpDash,
+	ArrowLeft,
+	Check,
+	ChevronDown,
+	CircleX,
+	Dot,
+	LoaderCircle,
+	LogOut,
+	Pencil,
+	Trash,
+	UserMinus,
+	UserRound,
+	UserRoundPlus,
+	X,
 } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useField } from "vee-validate";
@@ -548,7 +548,7 @@ async function deleteGroup() {
 											"
 										>
 											<div class="flex items-center gap-2">
-												<Pencil class="!size-4" />
+												<Pencil class="size-4" />
 												<span>Rename</span>
 											</div>
 										</DropdownMenuItem>
@@ -557,7 +557,7 @@ async function deleteGroup() {
 											:disabled="!user.nickname || memberNicknamesClearing.has(userId)"
 										>
 											<div class="flex items-center gap-2">
-												<CircleX class="!size-4" />
+												<CircleX class="size-4" />
 												<span>Clear Nickname</span>
 											</div>
 										</DropdownMenuItem>
@@ -566,14 +566,14 @@ async function deleteGroup() {
 											:disabled="user.status !== 'active'"
 										>
 											<div class="flex items-center gap-2">
-												<ArrowBigUpDash class="!size-4" />
+												<ArrowBigUpDash class="size-4" />
 												<span>Promote</span>
 											</div>
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem @click="removeDialog.openDialog({ userId })" :disabled="user.status !== 'active'">
 											<div class="flex items-center gap-2">
-												<UserMinus class="text-destructive !size-4" />
+												<UserMinus class="text-destructive size-4" />
 												<span class="text-destructive">Remove</span>
 											</div>
 										</DropdownMenuItem>
