@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
-import type { BalanceStr } from "@/components/BalanceStrBadge.vue";
-import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
+import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
 import BankDetailsCardView from "@/components/BankDetailsCardView.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import Card from "@/components/ui/card/Card.vue";
-import CardContent from "@/components/ui/card/CardContent.vue";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardHeader from "@/components/ui/card/CardHeader.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogClose,
@@ -20,11 +14,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import Empty from "@/components/ui/empty/Empty.vue";
-import EmptyDescription from "@/components/ui/empty/EmptyDescription.vue";
-import EmptyHeader from "@/components/ui/empty/EmptyHeader.vue";
-import EmptyMedia from "@/components/ui/empty/EmptyMedia.vue";
-import EmptyTitle from "@/components/ui/empty/EmptyTitle.vue";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import Card from "@/components/ui/card/Card.vue";
-import CardContent from "@/components/ui/card/CardContent.vue";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Wrench } from "@lucide/vue";
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Badge } from "@/components/ui/badge";
-import Skeleton from "./ui/skeleton/Skeleton.vue";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface BalanceStr {
 	str: string;

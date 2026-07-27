@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
-import { Field, FieldLabel } from "@/components/ui/field";
-import FieldError from "@/components/ui/field/FieldError.vue";
-import FieldGroup from "@/components/ui/field/FieldGroup.vue";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";

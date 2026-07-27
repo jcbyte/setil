@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import Card from "@/components/ui/card/Card.vue";
-import CardContent from "@/components/ui/card/CardContent.vue";
+import { Card, CardContent } from "@/components/ui/card";
 import { joinGroup } from "@/firebase/firestore/group";
 import { sendNotification } from "@/firebase/messaging";
 import { getRouteParam } from "@/util/util";

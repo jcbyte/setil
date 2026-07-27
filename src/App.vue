@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Toaster } from "@/components/ui/sonner";
-import { useCurrentUser } from "@/composables/useCurrentUser.ts";
+import { useCurrentUser } from "@/composables/useCurrentUser";
 import { LoaderCircle } from "@lucide/vue";
 import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { ref } from "vue";
 import { app } from "./firebase/firebase";
-import { requestNotifications } from "./firebase/messaging.ts";
+import { requestNotifications } from "./firebase/messaging";
 import SignInPage from "./pages/SignInPage.vue";
 
 const firebaseLoaded = ref(false);

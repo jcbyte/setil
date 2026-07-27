@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import Card from "@/components/ui/card/Card.vue";
-import CardContent from "@/components/ui/card/CardContent.vue";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardHeader from "@/components/ui/card/CardHeader.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencySettings } from "@/util/currency";
 import { Plus, Save } from "@lucide/vue";

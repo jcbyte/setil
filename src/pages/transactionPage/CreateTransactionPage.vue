@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic.ts";
-import { createTransaction as firebaseCreateTransaction } from "@/firebase/firestore/transaction.ts";
-import { sendNotification } from "@/firebase/messaging.ts";
-import type { Transaction } from "@/firebase/types.ts";
-import { noGroup } from "@/util/app.ts";
-import { formatCurrency, fromFirestoreAmount } from "@/util/currency.ts";
+import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
+import { createTransaction as firebaseCreateTransaction } from "@/firebase/firestore/transaction";
+import { sendNotification } from "@/firebase/messaging";
+import type { Transaction } from "@/firebase/types";
+import { noGroup } from "@/util/app";
+import { formatCurrency, fromFirestoreAmount } from "@/util/currency";
 import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";
 import { ArrowLeft } from "@lucide/vue";
 import { computed, ref } from "vue";

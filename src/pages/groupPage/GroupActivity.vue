@@ -18,12 +18,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Empty from "@/components/ui/empty/Empty.vue";
-import EmptyDescription from "@/components/ui/empty/EmptyDescription.vue";
-import EmptyHeader from "@/components/ui/empty/EmptyHeader.vue";
-import EmptyMedia from "@/components/ui/empty/EmptyMedia.vue";
-import EmptyTitle from "@/components/ui/empty/EmptyTitle.vue";
-import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import { deleteTransaction } from "@/firebase/firestore/transaction";

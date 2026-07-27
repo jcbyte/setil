@@ -2,18 +2,15 @@
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
-import Card from "@/components/ui/card/Card.vue";
-import CardContent from "@/components/ui/card/CardContent.vue";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardFooter from "@/components/ui/card/CardFooter.vue";
-import CardHeader from "@/components/ui/card/CardHeader.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
-import Dialog from "@/components/ui/dialog/Dialog.vue";
-import DialogContent from "@/components/ui/dialog/DialogContent.vue";
-import DialogDescription from "@/components/ui/dialog/DialogDescription.vue";
-import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
-import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
-import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -22,14 +19,14 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import Input from "@/components/ui/input/Input.vue";
-import Separator from "@/components/ui/separator/Separator.vue";
-import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { useControlledDialog } from "@/composables/useControlledDialog.ts";
-import { useCurrentUser } from "@/composables/useCurrentUser.ts";
-import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic.ts";
+import { useControlledDialog } from "@/composables/useControlledDialog";
+import { useCurrentUser } from "@/composables/useCurrentUser";
+import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic";
 import {
 	changeUserNickname,
 	clearUserNickname,
@@ -38,9 +35,9 @@ import {
 	updateGroup as firestoreUpdateGroup,
 	promoteUser,
 	removeUser,
-} from "@/firebase/firestore/group.ts";
-import type { Currency } from "@/firebase/types.ts";
-import { inviteUser, noGroup } from "@/util/app.ts";
+} from "@/firebase/firestore/group";
+import type { Currency } from "@/firebase/types";
+import { inviteUser, noGroup } from "@/util/app";
 import { getRouteParam, getStatusUsers } from "@/util/util";
 import {
 	ArrowBigUpDash,

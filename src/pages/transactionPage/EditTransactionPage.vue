@@ -5,8 +5,8 @@ import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic
 import { updateTransaction as firestoreUpdateTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/firebase/types";
 import { noGroup } from "@/util/app";
-import { fromFirestoreAmount } from "@/util/currency.ts";
-import { gcdN } from "@/util/math.ts";
+import { fromFirestoreAmount } from "@/util/currency";
+import { gcdN } from "@/util/math";
 import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";
 import { fromDate, getLocalTimeZone } from "@internationalized/date";
 import { ArrowLeft } from "@lucide/vue";

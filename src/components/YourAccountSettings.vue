@@ -6,7 +6,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCurrentUser } from "@/composables/useCurrentUser.ts";
+import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useLiveCurrentUserData } from "@/composables/useLiveCurrentUserData";
 import { signOut } from "@/util/app";
 import { LogOut, Settings } from "@lucide/vue";

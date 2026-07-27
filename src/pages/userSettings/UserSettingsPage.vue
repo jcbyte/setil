@@ -3,23 +3,21 @@ import { removeAvatar, uploadAvatar } from "@/cloudinary/avatar";
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import NavCard from "@/components/NavCard.vue";
-import Button from "@/components/ui/button/Button.vue";
-import { Card, CardHeader } from "@/components/ui/card";
-import CardContent from "@/components/ui/card/CardContent.vue";
-import CardDescription from "@/components/ui/card/CardDescription.vue";
-import CardTitle from "@/components/ui/card/CardTitle.vue";
-import { Dialog } from "@/components/ui/dialog";
-import DialogClose from "@/components/ui/dialog/DialogClose.vue";
-import DialogContent from "@/components/ui/dialog/DialogContent.vue";
-import DialogDescription from "@/components/ui/dialog/DialogDescription.vue";
-import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
-import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
-import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
-import { Field, FieldDescription, FieldError, FieldGroup } from "@/components/ui/field";
-import FieldLabel from "@/components/ui/field/FieldLabel.vue";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
-import Skeleton from "@/components/ui/skeleton/Skeleton.vue";
+import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserData, setName } from "@/firebase/firestore/user";
 import {

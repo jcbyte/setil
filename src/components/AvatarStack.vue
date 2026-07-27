@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { AvatarProp } from "./Avatar.vue";
-import CustomAvatar from "./Avatar.vue";
+import CustomAvatar, { type AvatarProp } from "./Avatar.vue";
 
 defineProps<{
 	avatars: AvatarProp[];
