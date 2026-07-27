@@ -207,7 +207,7 @@ async function openBankDetailsDialog() {
 		<div class="mx-auto w-full max-w-2xl flex flex-col gap-4">
 			<div class="flex justify-between items-center">
 				<div class="flex items-center gap-1">
-					<RouterLink :to="`/groups/${groupId}`">
+					<RouterLink :to="`/group/${groupId}`">
 						<Button type="button" variant="ghost" size="icon">
 							<ArrowLeft class="size-5.5" />
 						</Button>
@@ -332,7 +332,7 @@ async function openBankDetailsDialog() {
 						</FieldGroup>
 					</form>
 				</CardContent>
-				<CardFooter class="justify-between">
+				<CardFooter class="justify-between gap-2">
 					<Button type="submit" form="payment-form" :disabled="isMakingPayment || !meta.valid">
 						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
 						<span>Record Payment</span>

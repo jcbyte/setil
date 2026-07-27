@@ -317,7 +317,7 @@ defineExpose<TransactionDetailsFormExposed>({
 
 								<div v-if="!initialLoading" class="flex flex-col gap-2 bg-muted p-2 rounded-lg">
 									<div
-										class="grid grid-cols-[max-content_minmax(0,1fr)_minmax(0,1fr)_max-content] items-center gap-2 gap-x-3"
+										class="grid grid-cols-[max-content_minmax(0,1fr)_max-content_max-content] items-center gap-2 gap-x-3"
 									>
 										<template v-if="group?.users" v-for="(user, userId) in activeUsers">
 											<Checkbox
@@ -333,7 +333,7 @@ defineExpose<TransactionDetailsFormExposed>({
 												:disabled="updating"
 											/>
 
-											<label :for="`user-${userId}`" class="flex items-center gap-1.5 min-h-9">
+											<label :for="`user-${userId}`" class="flex min-w-0 items-center gap-1.5 min-h-9">
 												<Avatar
 													v-if="user.computed.name"
 													:src="user.public?.photoUrl ?? null"
@@ -343,7 +343,7 @@ defineExpose<TransactionDetailsFormExposed>({
 												<Skeleton v-else class="size-6 rounded-full" />
 												<span
 													v-if="user.computed.name"
-													:class="`text-sm text-nowrap ${user.status !== 'active' && 'text-muted-foreground'}`"
+													:class="`text-sm ${user.status !== 'active' && 'text-muted-foreground'} truncate`"
 												>
 													{{ user.computed.name }}
 												</span>

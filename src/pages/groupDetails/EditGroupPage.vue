@@ -15,11 +15,11 @@ import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
 import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
 import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -31,32 +31,32 @@ import { useControlledDialog } from "@/composables/useControlledDialog.ts";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic.ts";
 import {
-	changeUserNickname,
-	clearUserNickname,
-	deleteGroup as firestoreDeleteGroup,
-	leaveGroup as firestoreLeaveGroup,
-	updateGroup as firestoreUpdateGroup,
-	promoteUser,
-	removeUser,
+  changeUserNickname,
+  clearUserNickname,
+  deleteGroup as firestoreDeleteGroup,
+  leaveGroup as firestoreLeaveGroup,
+  updateGroup as firestoreUpdateGroup,
+  promoteUser,
+  removeUser,
 } from "@/firebase/firestore/group.ts";
 import type { Currency } from "@/firebase/types.ts";
 import { inviteUser, noGroup } from "@/util/app.ts";
 import { getRouteParam, getStatusUsers } from "@/util/util";
 import {
-	ArrowBigUpDash,
-	ArrowLeft,
-	Check,
-	ChevronDown,
-	CircleX,
-	Dot,
-	LoaderCircle,
-	LogOut,
-	Pencil,
-	Trash,
-	UserMinus,
-	UserRound,
-	UserRoundPlus,
-	X,
+  ArrowBigUpDash,
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  CircleX,
+  Dot,
+  LoaderCircle,
+  LogOut,
+  Pencil,
+  Trash,
+  UserMinus,
+  UserRound,
+  UserRoundPlus,
+  X,
 } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useField } from "vee-validate";
@@ -394,7 +394,7 @@ async function deleteGroup() {
 					<CardDescription>How others see you in this group</CardDescription>
 				</CardHeader>
 				<CardContent class="flex flex-col gap-3">
-					<div v-if="currentGroupUser" class="flex items-center gap-2 bg-muted w-fit min-w-1/3 rounded-lg py-2 px-4">
+					<div v-if="currentGroupUser" class="flex items-center gap-2 bg-muted w-fit sm:min-w-52 rounded-lg py-2 px-4">
 						<Avatar
 							v-if="currentGroupUser.computed.name"
 							:src="currentGroupUser.public?.photoUrl ?? null"
@@ -412,7 +412,7 @@ async function deleteGroup() {
 							<Skeleton v-else class="w-16 h-4 mt-1" />
 						</div>
 					</div>
-					<Skeleton v-else class="w-46 h-10" />
+					<Skeleton v-else class="w-46 sm:w-52 h-10" />
 
 					<Field :data-invalid="!!myNicknameErrorMessage">
 						<div class="flex items-center gap-1">
@@ -469,7 +469,7 @@ async function deleteGroup() {
 				<CardContent class="flex flex-col gap-2">
 					<template v-if="group?.users">
 						<div v-for="(user, userId) in nonHistoricalUsers" class="flex flex-col gap-2">
-							<div class="flex justify-between items-center gap-2">
+							<div class="flex justify-between items-center gap-4">
 								<div class="flex flex-1 items-center gap-2">
 									<Avatar
 										v-if="user.computed.name"
@@ -602,7 +602,7 @@ async function deleteGroup() {
 				</CardHeader>
 				<CardContent>
 					<div class="flex flex-col gap-4">
-						<div class="flex justify-between items-center gap-2">
+						<div class="flex justify-between items-center gap-4">
 							<div class="flex flex-col gap-1">
 								<span>Leave Group</span>
 								<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
@@ -615,7 +615,7 @@ async function deleteGroup() {
 
 						<template v-if="group?.data && currentUser?.uid === group.data.owner">
 							<Separator />
-							<div v-if="currentUser?.uid === group.data.owner" class="flex justify-between items-center gap-2">
+							<div v-if="currentUser?.uid === group.data.owner" class="flex justify-between items-center gap-4">
 								<div class="flex flex-col gap-1">
 									<span>Delete Group</span>
 									<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>

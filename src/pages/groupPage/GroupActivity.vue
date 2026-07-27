@@ -126,7 +126,7 @@ async function handleDeleteTransaction() {
 								v-for="[transactionId, transaction] in groupedTransactions.transactions"
 								class="bg-muted rounded-lg px-4 py-2 flex justify-between items-center gap-4"
 							>
-								<div class="flex items-center gap-2">
+								<div class="flex items-center gap-2 min-w-0">
 									<div class="relative flex justify-center items-center">
 										<Avatar
 											v-if="props.group.users && props.group.users[transaction.from].computed.name"
@@ -140,12 +140,12 @@ async function handleDeleteTransaction() {
 											<component :is="CategorySettings[transaction.category].icon" class="size-3!" />
 										</div>
 									</div>
-									<div class="flex flex-col">
-										<span>{{ transaction.title }}</span>
-										<div class="flex items-center gap-1">
+									<div class="flex flex-col min-w-0">
+										<span class="truncate">{{ transaction.title }}</span>
+										<div class="flex items-center gap-1 min-w-0">
 											<span
 												v-if="props.group.users && props.group.users[transaction.from].computed.name"
-												class="text-sm text-muted-foreground text-nowrap"
+												class="text-sm text-muted-foreground min-w-0 truncate"
 											>
 												by {{ props.group.users[transaction.from].computed.name }}
 											</span>

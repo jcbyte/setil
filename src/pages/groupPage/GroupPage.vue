@@ -100,13 +100,13 @@ watch(currentTab, (newTab, oldTab) => {
 <template>
 	<div class="mx-auto w-full max-w-4xl flex flex-col gap-4">
 		<div class="flex justify-between items-center">
-			<div class="flex items-center gap-1">
+			<div class="flex items-center gap-1 min-w-0">
 				<RouterLink to="/">
 					<Button type="button" variant="ghost" size="icon">
 						<ArrowLeft class="size-5.5" />
 					</Button>
 				</RouterLink>
-				<span v-if="group?.data" class="text-lg font-semibold">{{ group.data.name }}</span>
+				<span v-if="group?.data" class="text-lg font-semibold truncate">{{ group.data.name }}</span>
 				<Skeleton v-else class="w-28 h-7" />
 			</div>
 			<div class="flex items-center gap-2">
@@ -153,6 +153,7 @@ watch(currentTab, (newTab, oldTab) => {
 							},
 						]"
 						:to="groupButton.link"
+						class="contents"
 					>
 						<Button type="button" variant="outline" class="h-full flex-1 p-4">
 							<div class="flex flex-col items-center gap-2">
@@ -169,7 +170,7 @@ watch(currentTab, (newTab, oldTab) => {
 				</div>
 			</div>
 
-			<Card v-if="group?.data" class="relative h-fit min-w-68 max-w-none md:max-w-96">
+			<Card v-if="group?.data" class="h-fit min-w-68 md:max-w-92">
 				<CardHeader>
 					<CardTitle>Group Info</CardTitle>
 					<CardDescription v-if="group.data.description">{{ group.data.description }}</CardDescription>
