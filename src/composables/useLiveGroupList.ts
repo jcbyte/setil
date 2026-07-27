@@ -79,7 +79,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 
 				const groupListData = computed(() => {
 					if (!groupData.value) return null;
-					if (!groupActiveUsersLoaded) return null;
+					if (!groupActiveUsersLoaded.value) return null;
 
 					// Compute user count
 					const userCount = Object.keys(groupActiveUsers).length;
