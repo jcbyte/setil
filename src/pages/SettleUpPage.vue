@@ -20,6 +20,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import Empty from "@/components/ui/empty/Empty.vue";
+import EmptyDescription from "@/components/ui/empty/EmptyDescription.vue";
+import EmptyHeader from "@/components/ui/empty/EmptyHeader.vue";
+import EmptyMedia from "@/components/ui/empty/EmptyMedia.vue";
+import EmptyTitle from "@/components/ui/empty/EmptyTitle.vue";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,7 +49,7 @@ import {
 import { type PaymentDetails } from "@/util/paymentDetails";
 import { resolveGroupDebts, type SimpleTransaction } from "@/util/split";
 import { getLeftUsersInTransaction, getRouteParam, getStatusUsers } from "@/util/util";
-import { ArrowDown, ArrowLeft, ArrowRight, Landmark, Wallet } from "@lucide/vue";
+import { ArrowDown, ArrowLeft, ArrowRight, Landmark, PartyPopper, Wallet } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { useForm, Field as VeeField } from "vee-validate";
@@ -224,48 +229,60 @@ async function openBankDetailsDialog() {
 				</CardHeader>
 				<CardContent>
 					<div class="flex flex-col gap-2">
-						<div
-							v-if="group?.users && requiredPayments"
-							v-for="payment in requiredPayments"
-							class="bg-muted rounded-lg p-4 flex flex-col gap-4"
-						>
-							<div class="flex flex-col sm:flex-row justify-between items-center gap-2.5">
-								<div class="flex items-center gap-2">
-									<Avatar
-										v-if="group.users[payment.from].computed.name"
-										:src="group.users[payment.from].public?.photoUrl ?? null"
-										:name="group.users[payment.from].computed.name!"
-										class="size-10"
-									/>
-									<Skeleton v-else class="size-10 rounded-full" />
-									<div class="flex flex-col gap-1">
-										<span v-if="group.users[payment.from].computed.name" class="text-sm">
-											{{ group.users[payment.from].computed.name }}
-										</span>
-										<Skeleton v-else class="w-18 h-5" />
-										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-payment.amount)" />
+						<template v-if="group?.users && requiredPayments">
+							<div
+								v-if="requiredPayments.length > 0"
+								v-for="payment in requiredPayments"
+								class="bg-muted rounded-lg p-4 flex flex-col gap-4"
+							>
+								<div class="flex flex-col sm:flex-row justify-between items-center gap-2.5">
+									<div class="flex items-center gap-2">
+										<Avatar
+											v-if="group.users[payment.from].computed.name"
+											:src="group.users[payment.from].public?.photoUrl ?? null"
+											:name="group.users[payment.from].computed.name!"
+											class="size-10"
+										/>
+										<Skeleton v-else class="size-10 rounded-full" />
+										<div class="flex flex-col gap-1">
+											<span v-if="group.users[payment.from].computed.name" class="text-sm">
+												{{ group.users[payment.from].computed.name }}
+											</span>
+											<Skeleton v-else class="w-18 h-5" />
+											<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-payment.amount)" />
+										</div>
+									</div>
+									<component :is="breakpointSplit(ArrowDown, ArrowRight, 'sm')" class="text-muted-foreground" />
+									<div class="flex items-center gap-2">
+										<div class="flex flex-col gap-1 text-right">
+											<span v-if="group.users[payment.to].computed.name" class="text-sm">
+												{{ group.users[payment.to].computed.name }}
+											</span>
+											<Skeleton v-else class="w-18 h-5" />
+											<BalanceStrBadge :balanceStr="getPaymentBalanceStr(payment.amount)" />
+										</div>
+										<Avatar
+											v-if="group.users[payment.to].computed.name"
+											:src="group.users[payment.to].public?.photoUrl ?? null"
+											:name="group.users[payment.to].computed.name!"
+											class="size-10"
+										/>
+										<Skeleton v-else class="size-10 rounded-full" />
 									</div>
 								</div>
-								<component :is="breakpointSplit(ArrowDown, ArrowRight, 'sm')" class="text-muted-foreground" />
-								<div class="flex items-center gap-2">
-									<div class="flex flex-col gap-1 text-right">
-										<span v-if="group.users[payment.to].computed.name" class="text-sm">
-											{{ group.users[payment.to].computed.name }}
-										</span>
-										<Skeleton v-else class="w-18 h-5" />
-										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(payment.amount)" />
-									</div>
-									<Avatar
-										v-if="group.users[payment.to].computed.name"
-										:src="group.users[payment.to].public?.photoUrl ?? null"
-										:name="group.users[payment.to].computed.name!"
-										class="size-10"
-									/>
-									<Skeleton v-else class="size-10 rounded-full" />
-								</div>
+								<Button type="button" variant="outline" @click="fillForm(payment)">Record this payment</Button>
 							</div>
-							<Button type="button" variant="outline" @click="fillForm(payment)">Record this payment</Button>
-						</div>
+
+							<Empty v-else>
+								<EmptyHeader>
+									<EmptyMedia variant="icon">
+										<PartyPopper />
+									</EmptyMedia>
+									<EmptyTitle>All Setil'd up!</EmptyTitle>
+									<EmptyDescription>No payments needed right now</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						</template>
 						<Skeleton v-else v-for="_ in 3" class="w-full h-55 sm:h-32" />
 					</div>
 				</CardContent>

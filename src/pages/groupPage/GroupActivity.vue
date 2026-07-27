@@ -193,17 +193,15 @@ async function handleDeleteTransaction() {
 							</div>
 						</div>
 
-						<div v-else>
-							<Empty>
-								<EmptyHeader>
-									<EmptyMedia variant="icon">
-										<FileText />
-									</EmptyMedia>
-									<EmptyTitle>No activity</EmptyTitle>
-									<EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
-								</EmptyHeader>
-							</Empty>
-						</div>
+						<Empty v-else>
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<FileText />
+								</EmptyMedia>
+								<EmptyTitle>No activity</EmptyTitle>
+								<EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					</template>
 					<div v-else v-for="i in 3" class="flex flex-col gap-1">
 						<Skeleton class="w-34 h-5" />
