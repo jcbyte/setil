@@ -46,7 +46,7 @@ export async function removeGroupFromUser(groupId: string) {
 	const user = getUser();
 	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
 
-	updateDoc(userRef, { groups: arrayRemove(groupId) });
+	await updateDoc(userRef, { groups: arrayRemove(groupId) });
 }
 
 /**
