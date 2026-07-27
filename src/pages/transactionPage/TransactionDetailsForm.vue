@@ -413,7 +413,7 @@ defineExpose<TransactionDetailsFormExposed>({
 				</FieldGroup>
 			</form>
 		</CardContent>
-		<CardFooter>
+		<CardFooter class="justify-end">
 			<Button
 				type="submit"
 				form="transaction-details-form"

@@ -262,7 +262,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 									<Button
 										v-if="avatarSrc || isAvatarClearing"
 										type="button"
-										variant="outline"
+										variant="secondary"
 										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
 										@click="handleClearAvatar"
 									>

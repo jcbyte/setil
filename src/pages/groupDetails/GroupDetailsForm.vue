@@ -114,7 +114,7 @@ defineExpose<GroupDetailsFormExposed>({
 			</form>
 		</CardContent>
 
-		<CardFooter>
+		<CardFooter class="justify-end">
 			<Button
 				type="submit"
 				form="group-details-form"

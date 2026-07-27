@@ -350,11 +350,6 @@ async function openBankDetailsDialog() {
 					</form>
 				</CardContent>
 				<CardFooter class="justify-between gap-2">
-					<Button type="submit" form="payment-form" :disabled="isMakingPayment || !meta.valid">
-						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
-						<span>Record Payment</span>
-					</Button>
-
 					<Button
 						v-if="values.to && group?.users?.[values.to].public?.hasBankDetails"
 						type="button"
@@ -363,6 +358,11 @@ async function openBankDetailsDialog() {
 					>
 						<Landmark />
 						<span>View Bank Details</span>
+					</Button>
+
+					<Button type="submit" form="payment-form" class="ms-auto" :disabled="isMakingPayment || !meta.valid">
+						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
+						<span>Record Payment</span>
 					</Button>
 				</CardFooter>
 				<div ref="recordPaymentPulser" class="absolute inset-0 bg-accent rounded-lg pointer-events-none opacity-0" />

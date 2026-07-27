@@ -445,26 +445,24 @@ async function clearDetails() {
 				<Skeleton v-else class="rounded-lg h-88 w-full" />
 			</CardContent>
 
-			<CardFooter>
-				<Field orientation="horizontal">
-					<Button
-						type="button"
-						:disabled="isDetailsUpdating || isDetailsClearing || !hasDetailsSaved || !hasDataLoaded"
-						variant="outline"
-						@click="clearDetails()"
-					>
-						<LoaderIcon :icon="CircleX" :loading="isDetailsClearing" />
-						<span>Remove</span>
-					</Button>
-					<Button
-						type="submit"
-						form="bank-details-form"
-						:disabled="isDetailsUpdating || isDetailsClearing || !meta.valid || !meta.dirty || !hasDataLoaded"
-					>
-						<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
-						<span>Save</span>
-					</Button>
-				</Field>
+			<CardFooter class="justify-between gap-2">
+				<Button
+					type="button"
+					:disabled="isDetailsUpdating || isDetailsClearing || !hasDetailsSaved || !hasDataLoaded"
+					variant="secondary"
+					@click="clearDetails()"
+				>
+					<LoaderIcon :icon="CircleX" :loading="isDetailsClearing" />
+					<span>Remove</span>
+				</Button>
+				<Button
+					type="submit"
+					form="bank-details-form"
+					:disabled="isDetailsUpdating || isDetailsClearing || !meta.valid || !meta.dirty || !hasDataLoaded"
+				>
+					<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
+					<span>Save</span>
+				</Button>
 			</CardFooter>
 		</Card>
 	</div>
