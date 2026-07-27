@@ -56,13 +56,16 @@ const { breakpointSplit } = useScreenSize();
 const groupId = computed(() => getRouteParam(route.params.groupId));
 const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 
-const requiredPayments = computed<SimpleTransaction[] | null>(() =>
-	group.value?.users
-		? resolveGroupDebts(
-				Object.fromEntries(Object.entries(group.value.users).map(([userId, userData]) => [userId, userData.balance])),
-			)
-		: null,
-);
+const requiredPayments = computed<SimpleTransaction[] | null>(() => {
+	if (!group.value?.users) return null;
+	try {
+		return resolveGroupDebts(
+			Object.fromEntries(Object.entries(group.value.users).map(([userId, userData]) => [userId, userData.balance])),
+		);
+	} catch {
+		return null;
+	}
+});
 
 function getPaymentBalanceStr(bal: number): BalanceStr | null {
 	if (!group.value?.data) return null;

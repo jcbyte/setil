@@ -5,6 +5,11 @@ export interface SimpleTransaction {
 }
 
 export function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
+	const values = Object.values(debts);
+	if (values.some((v) => !Number.isSafeInteger(v))) throw new Error("Group balances contain invalid amounts");
+	const total = values.reduce((sum, balance) => sum + balance, 0);
+	if (total !== 0) throw new Error(`Group debts are inconsistent: total balance is ${total}`);
+
 	const balances = { ...debts };
 
 	// Separate users globally in credit/debt
