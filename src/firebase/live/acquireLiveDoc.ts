@@ -1,11 +1,14 @@
 import { onSnapshot, type DocumentReference, type Unsubscribe } from "firebase/firestore";
 import { ref, shallowRef, type Ref } from "vue";
 
+type ErrorHandler = (network: boolean) => void;
+
 interface CachedLiveDoc {
 	ref: Ref<any>;
 	loaded: Ref<boolean>;
 	unsubscribe: Unsubscribe;
 	refCount: number;
+	errorHandlers: Set<ErrorHandler>;
 }
 /** Cache for active live document subscriptions across the application. */
 const liveDocs = new Map<string, CachedLiveDoc>();
@@ -28,16 +31,22 @@ const liveDocs = new Map<string, CachedLiveDoc>();
  */
 export function acquireLiveDoc<T>(
 	docRef: DocumentReference<T>,
-	onError?: (network: boolean) => void,
+	onError?: ErrorHandler,
 ): { data: Ref<T | null>; loaded: Ref<boolean>; release: () => void } {
 	const docKey = docRef.path;
 
+	let released = false;
 	function release() {
 		const liveDocRef = liveDocs.get(docKey);
 		if (!liveDocRef) return;
 
+		if (released) return;
+		released = true;
+
 		liveDocRef.refCount--;
-		// IF there is no more references, then cleanup
+		if (onError) liveDocRef.errorHandlers.delete(onError);
+
+		// If there is no more references, then cleanup
 		if (liveDocRef.refCount <= 0) {
 			liveDocRef.unsubscribe();
 			liveDocs.delete(docKey);
@@ -48,11 +57,15 @@ export function acquireLiveDoc<T>(
 	const cachedLiveDoc = liveDocs.get(docKey);
 	if (cachedLiveDoc) {
 		cachedLiveDoc.refCount++;
+		if (onError) cachedLiveDoc.errorHandlers.add(onError);
 		return { data: cachedLiveDoc.ref, loaded: cachedLiveDoc.loaded, release };
 	}
 
 	const dataRef = shallowRef<T | null>(null);
 	const loaded = ref<boolean>(false);
+
+	const errorHandlers = new Set<ErrorHandler>();
+	if (onError) errorHandlers.add(onError);
 
 	// Create a live document with snapshot callback
 	const unsubscribe = onSnapshot(
@@ -60,7 +73,7 @@ export function acquireLiveDoc<T>(
 		(snapshot) => {
 			if (!snapshot.exists()) {
 				dataRef.value = null;
-				onError?.(false);
+				errorHandlers.forEach((handler) => handler(false));
 				return;
 			}
 
@@ -71,12 +84,18 @@ export function acquireLiveDoc<T>(
 		},
 		(error) => {
 			// If the firebase error is not related to network provide `network: false`
-			if (error.code === "not-found" || error.code === "permission-denied") onError?.(false);
-			else onError?.(true);
+			const nw = error.code === "not-found" || error.code === "permission-denied";
+			errorHandlers.forEach((handler) => handler(nw));
 		},
 	);
 
-	liveDocs.set(docKey, { ref: dataRef, loaded, unsubscribe, refCount: 1 });
+	liveDocs.set(docKey, {
+		ref: dataRef,
+		loaded,
+		unsubscribe,
+		refCount: 1,
+		errorHandlers,
+	});
 
 	return { data: dataRef, loaded, release };
 }
