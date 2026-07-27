@@ -27,8 +27,8 @@ const formSchema = z.object({
 	description: z.string().optional(),
 	currency: z.string().refine((val) => Object.keys(CurrencySettings).includes(val), "Must select a valid currency"),
 });
-export type GroupDetailsValues = z.infer<typeof formSchema>;
 const typedFormSchema = toTypedSchema(formSchema);
+export type GroupDetailsValues = z.infer<typeof formSchema>;
 
 const { handleSubmit, resetForm, meta } = useForm({
 	validationSchema: typedFormSchema,
@@ -39,7 +39,7 @@ const onSubmit = handleSubmit((values) => {
 });
 
 export type GroupDetailsFormExposed = {
-	reset: (values: Partial<GroupDetailsValues>) => void;
+	reset: (values: Partial<z.input<typeof formSchema>>) => void;
 };
 defineExpose<GroupDetailsFormExposed>({
 	reset: (values) => resetForm({ values }),
