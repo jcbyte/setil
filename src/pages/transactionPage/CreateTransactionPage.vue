@@ -7,7 +7,7 @@ import { sendNotification } from "@/firebase/messaging.ts";
 import type { Transaction } from "@/firebase/types.ts";
 import { noGroup } from "@/util/app.ts";
 import { formatCurrency, fromFirestoreAmount } from "@/util/currency.ts";
-import { getLeftUsersInTransaction, getRouteParam, sumRecordValues } from "@/util/util";
+import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";
 import { ArrowLeft } from "@lucide/vue";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -19,6 +19,8 @@ const route = useRoute();
 
 const groupId = computed(() => getRouteParam(route.params.groupId));
 const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
+
+const shownUsers = computed(() => getStatusUsers(group.value?.users ?? {}, new Set(["active"])));
 
 const isTransactionCreating = ref<boolean>(false);
 
@@ -71,6 +73,7 @@ async function createTransaction(transaction: Transaction) {
 			<TransactionDetailsForm
 				:new-transaction="true"
 				:group="group"
+				:shown-users="shownUsers"
 				:updating="isTransactionCreating"
 				@submit="createTransaction"
 			/>

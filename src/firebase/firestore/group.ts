@@ -1,4 +1,3 @@
-import type { User } from "firebase/auth";
 import {
 	addDoc,
 	arrayUnion,
@@ -22,8 +21,7 @@ import type { GroupData, GroupUserData, Invite, PublicUserData, UserData } from 
 import { getLeftUserStatus, removeGroupFromUser } from "./user";
 import { getUser } from "./util";
 
-const templateNewUser = (user: User): GroupUserData => ({
-	nickname: user.displayName ?? "Unknown User",
+const templateNewUser = (): GroupUserData => ({
 	status: "active",
 	balance: 0,
 	lastUpdate: Timestamp.now(),
@@ -58,7 +56,7 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 
 	// Add the user to the group
 	const groupUsersRef = doc(groupRef, "users", user.uid) as DocumentReference<GroupUserData>;
-	await setDoc(groupUsersRef, templateNewUser(user));
+	await setDoc(groupUsersRef, templateNewUser());
 
 	// Add the group to the user
 	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
@@ -196,7 +194,7 @@ export async function joinGroup(
 	}
 
 	// Join the group as new
-	const newUserData = templateNewUser(user);
+	const newUserData = templateNewUser();
 	try {
 		await setDoc(groupUserRef, { ...newUserData, customData: { inviteCode } });
 		await updateDoc(groupUserRef, { customData: deleteField() }); // Remove the required custom data

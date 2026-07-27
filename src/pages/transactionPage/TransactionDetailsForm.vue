@@ -30,12 +30,11 @@ import TabsList from "@/components/ui/tabs/TabsList.vue";
 import TabsTrigger from "@/components/ui/tabs/TabsTrigger.vue";
 import UserSelect from "@/components/UserSelect.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
+import type { GroupUserDataWithPublic, GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
 import { splitAmountEven, splitAmountRatio } from "@/util/split";
-import { getStatusUsers } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, today, type DateValue } from "@internationalized/date";
 import { CalendarIcon, Plus, Save } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -48,12 +47,15 @@ import * as z from "zod";
 const props = defineProps<{
 	newTransaction: boolean;
 	group: GroupWithUserPublic | null;
+	shownUsers: Record<string, GroupUserDataWithPublic>;
 	updating?: boolean;
 	initialLoading?: boolean;
 }>();
 const emit = defineEmits<{
 	submit: [details: Transaction];
 }>();
+
+console.log(props.shownUsers);
 
 const formSchema = z.object({
 	title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
@@ -108,8 +110,6 @@ const currencySetting = computed(() =>
 	props.group?.data?.currency ? CurrencySettings[props.group.data.currency] : null,
 );
 
-const activeUsers = computed(() => getStatusUsers(props.group?.users ?? {}, new Set(["active"])));
-
 const df = new DateFormatter(navigator.language, { dateStyle: "long" });
 
 function resolveBalances(): Record<string, number> | null {
@@ -147,7 +147,7 @@ function resolveBalances(): Record<string, number> | null {
 const splitValue = computed(resolveBalances);
 
 const allSelected = computed<boolean>(
-	() => !Object.keys(activeUsers.value).some((userId) => !values.to?.people?.[userId]?.selected),
+	() => !Object.keys(props.shownUsers).some((userId) => !values.to?.people?.[userId]?.selected),
 );
 
 const onSubmit = handleSubmit((values) => {
@@ -284,7 +284,7 @@ defineExpose<TransactionDetailsFormExposed>({
 								v-if="!initialLoading"
 								v-bind="componentField"
 								id="from"
-								:users="activeUsers"
+								:users="shownUsers"
 								:selected-user="values.from"
 								:disabled="updating"
 							/>
@@ -315,11 +315,11 @@ defineExpose<TransactionDetailsFormExposed>({
 								</Tabs>
 								<Skeleton v-else class="w-full h-9" />
 
-								<div v-if="!initialLoading" class="flex flex-col gap-2 bg-muted p-2 rounded-lg">
+								<div v-if="!initialLoading" class="flex flex-col gap-2 bg-muted p-2 sm:p-4 rounded-lg">
 									<div
 										class="grid grid-cols-[max-content_minmax(0,1fr)_max-content_max-content] items-center gap-2 gap-x-3"
 									>
-										<template v-if="group?.users" v-for="(user, userId) in activeUsers">
+										<template v-if="group?.users" v-for="(user, userId) in shownUsers">
 											<Checkbox
 												class="col-start-1 size-5"
 												:id="`user-${userId}`"
@@ -394,7 +394,7 @@ defineExpose<TransactionDetailsFormExposed>({
 										@click="
 											() => {
 												const targetValue = !allSelected;
-												Object.keys(activeUsers).forEach((userId) => {
+												Object.keys(shownUsers).forEach((userId) => {
 													setFieldValue(`to.people.${userId}.selected`, targetValue, false);
 												});
 												validateField('to');
