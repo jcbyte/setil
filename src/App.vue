@@ -4,7 +4,8 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import { LoaderCircle } from "@lucide/vue";
 import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
-import { ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { app } from "./firebase/firebase";
 import { requestNotifications } from "./firebase/messaging";
 import SignInPage from "./pages/SignInPage.vue";
@@ -20,6 +21,28 @@ auth.onAuthStateChanged((user) => {
 	if (user) requestNotifications();
 });
 
+// Skip custom page animations when the browser displays one, i.e. iOS swipe back
+const route = useRoute();
+const skipPageTransition = ref(false);
+
+function handleNavigate(event: NavigateEvent) {
+	skipPageTransition.value = event.hasUAVisualTransition;
+}
+onMounted(() => {
+	window.navigation?.addEventListener("navigate", handleNavigate);
+});
+onBeforeUnmount(() => {
+	window.navigation?.removeEventListener("navigate", handleNavigate);
+});
+
+watch(
+	() => route.path,
+	async () => {
+		await nextTick();
+		skipPageTransition.value = false;
+	},
+);
+
 const resolvedTheme = useColorMode().state;
 </script>
 
@@ -31,7 +54,8 @@ const resolvedTheme = useColorMode().state;
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-else class="w-full overflow-hidden">
 					<router-view v-slot="{ Component }">
-						<Transition name="fade-slide" mode="out-in">
+						<!-- Ensure mode is not 'out-in' when disabling css, as we do not want a transition lifecycle -->
+						<Transition name="fade-slide" :mode="!skipPageTransition ? 'out-in' : 'default'" :css="!skipPageTransition">
 							<component :is="Component" class="overflow-visible" />
 						</Transition>
 					</router-view>
