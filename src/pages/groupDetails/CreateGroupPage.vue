@@ -28,7 +28,7 @@ async function createGroup(details: GroupDetailsValues) {
 		toast("Group Created", { description: "A fellowship of finances has been forged." });
 		router.push(`/group/${newGroupId}`);
 	} catch (e) {
-		toast.error("Error Saving Group", { description: String(e) });
+		toast.error("Error Creating Group", { description: String(e) });
 	}
 
 	isGroupCreating.value = false;

@@ -83,21 +83,23 @@ const currencySetting = computed(() =>
 );
 
 const formSchema = toTypedSchema(
-	z.object({
-		from: z
-			.string()
-			.refine(
-				(val) => group.value?.users && Object.keys(group.value.users).includes(val),
-				"Must select a valid member",
-			),
-		to: z
-			.string()
-			.refine(
-				(val) => group.value?.users && Object.keys(group.value.users).includes(val),
-				"Must select a valid member",
-			),
-		amount: z.coerce.number().refine((val) => val > 0, "An amount is required"),
-	}),
+	z
+		.object({
+			from: z
+				.string()
+				.refine(
+					(val) => group.value?.users && Object.keys(group.value.users).includes(val),
+					"Must select a valid member",
+				),
+			to: z
+				.string()
+				.refine(
+					(val) => group.value?.users && Object.keys(group.value.users).includes(val),
+					"Must select a valid member",
+				),
+			amount: z.coerce.number().refine((val) => val > 0, "An amount is required"),
+		})
+		.refine(({ from, to }) => from !== to, { message: "Sender and recipient must be different", path: ["to"] }),
 );
 
 const { handleSubmit, setValues, values, meta } = useForm({
@@ -286,7 +288,7 @@ async function openBankDetailsDialog() {
 				<CardContent>
 					<form id="payment-form" @submit="onSubmit">
 						<FieldGroup>
-							<div class="flex items-center gap-2">
+							<div class="flex items-start gap-2">
 								<VeeField v-slot="{ componentField, errors }" name="from">
 									<Field :data-invalid="!!errors.length">
 										<FieldLabel for="from">Send from</FieldLabel>
