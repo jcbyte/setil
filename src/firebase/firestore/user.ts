@@ -1,5 +1,6 @@
 import { fetchApiJson } from "@/api/api";
-import type { PaymentDetails } from "@/util/paymentDetails";
+import type { GroupUserData, PublicUserData, UserData } from "@/types/firestore";
+import type { PaymentDetails } from "@/types/paymentDetails";
 import {
 	arrayRemove,
 	arrayUnion,
@@ -12,7 +13,6 @@ import {
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { GroupUserData, PublicUserData, UserData } from "../types";
 import { getUser } from "./util";
 
 /**

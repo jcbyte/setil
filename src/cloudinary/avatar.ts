@@ -1,7 +1,7 @@
 import { fetchApiJson } from "@/api/api";
 import { db } from "@/firebase/firebase";
 import { getUser } from "@/firebase/firestore/util";
-import type { PublicUserData } from "@/firebase/types";
+import type { PublicUserData } from "@/types/firestore";
 import { doc, DocumentReference, updateDoc } from "firebase/firestore";
 import type { CloudinaryDetails } from "./types";
 

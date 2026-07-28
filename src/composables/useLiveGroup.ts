@@ -1,5 +1,5 @@
 import { db } from "@/firebase/firebase";
-import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
+import type { GroupData, GroupUserData, Transaction } from "@/types/firestore";
 import { collection, CollectionReference, doc, DocumentReference } from "firebase/firestore";
 import { ref, watch, watchEffect, type Ref } from "vue";
 import { acquireLiveCollection } from "../firebase/live/acquireLiveCollection";

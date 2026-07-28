@@ -1,5 +1,5 @@
 import type { BalanceStr } from "@/components/BalanceStrBadge.vue";
-import type { Currency } from "@/firebase/types";
+import type { Currency } from "@/types/firestore";
 
 export interface CurrencyData {
 	name: string;

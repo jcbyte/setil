@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSelect from "@/components/UserSelect.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import type { GroupUserDataWithPublic, GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
-import type { Transaction, TransactionCategory } from "@/firebase/types";
+import type { Transaction, TransactionCategory } from "@/types/firestore";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
 import { splitAmountEven, splitAmountRatio } from "@/util/split";

@@ -1,6 +1,6 @@
 import { db } from "@/firebase/firebase";
 import { getUser } from "@/firebase/firestore/util";
-import type { PublicUserData, UserData } from "@/firebase/types";
+import type { PublicUserData, UserData } from "@/types/firestore";
 import { doc, DocumentReference } from "firebase/firestore";
 import { computed, onScopeDispose, type Ref } from "vue";
 import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";

@@ -3,7 +3,7 @@ import Button from "@/components/ui/button/Button.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { updateTransaction as firestoreUpdateTransaction } from "@/firebase/firestore/transaction";
-import type { Transaction } from "@/firebase/types";
+import type { Transaction } from "@/types/firestore";
 import { noGroup } from "@/util/app";
 import { fromFirestoreAmount } from "@/util/currency";
 import { gcdN } from "@/util/math";

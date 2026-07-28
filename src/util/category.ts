@@ -1,4 +1,4 @@
-import type { TransactionCategory } from "@/firebase/types";
+import type { TransactionCategory } from "@/types/firestore";
 import { FileText, Fuel, ReceiptText, Ticket, TramFront, Utensils, Wallet, type LucideProps } from "@lucide/vue";
 import type { FunctionalComponent } from "vue";
 

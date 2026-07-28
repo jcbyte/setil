@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import { deleteTransaction } from "@/firebase/firestore/transaction";
-import type { Transaction } from "@/firebase/types";
+import type { Transaction } from "@/types/firestore";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";

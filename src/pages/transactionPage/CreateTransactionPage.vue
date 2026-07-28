@@ -4,7 +4,7 @@ import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { createTransaction as firebaseCreateTransaction } from "@/firebase/firestore/transaction";
 import { sendNotification } from "@/firebase/messaging";
-import type { Transaction } from "@/firebase/types";
+import type { Transaction } from "@/types/firestore";
 import { noGroup } from "@/util/app";
 import { formatCurrency, fromFirestoreAmount } from "@/util/currency";
 import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";

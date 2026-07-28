@@ -1,5 +1,5 @@
 import { db } from "@/firebase/firebase";
-import type { PublicUserData } from "@/firebase/types";
+import type { PublicUserData } from "@/types/firestore";
 import { doc, DocumentReference } from "firebase/firestore";
 import { onScopeDispose, reactive, watch, type Ref } from "vue";
 import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";

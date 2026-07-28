@@ -1,4 +1,4 @@
-import type { GroupUserData, GroupUserStatus, Transaction } from "@/firebase/types";
+import type { GroupUserData, GroupUserStatus, Transaction } from "@/types/firestore";
 
 export function getRouteParam(qp: string | string[]): string | null {
 	return Array.isArray(qp) ? qp[0] : qp || null;

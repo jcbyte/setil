@@ -1,4 +1,5 @@
 import { fetchApiJson } from "@/api/api";
+import type { GroupData, GroupUserData, Invite, PublicUserData, UserData } from "@/types/firestore";
 import {
 	addDoc,
 	arrayUnion,
@@ -18,7 +19,6 @@ import {
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import type { GroupData, GroupUserData, Invite, PublicUserData, UserData } from "../types";
 import { getLeftUserStatus, removeGroupFromUser } from "./user";
 import { getUser } from "./util";
 

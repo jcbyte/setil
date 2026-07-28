@@ -1,6 +1,6 @@
 import { db } from "@/firebase/firebase";
 import { removeGroupFromUser } from "@/firebase/firestore/user";
-import type { GroupData, GroupUserData } from "@/firebase/types";
+import type { GroupData, GroupUserData } from "@/types/firestore";
 import { collection, CollectionReference, doc, DocumentReference, query, where } from "firebase/firestore";
 import { computed, onScopeDispose, reactive, ref, watch, type Ref } from "vue";
 import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";

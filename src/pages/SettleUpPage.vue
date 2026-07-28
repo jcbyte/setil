@@ -27,7 +27,8 @@ import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore/transaction";
 import { getPaymentDetails } from "@/firebase/firestore/user";
 import { sendNotification } from "@/firebase/messaging";
-import type { Transaction } from "@/firebase/types";
+import type { Transaction } from "@/types/firestore";
+import { type PaymentDetails } from "@/types/paymentDetails";
 import { noGroup } from "@/util/app";
 import {
 	CurrencySettings,
@@ -36,7 +37,6 @@ import {
 	getBalanceStr,
 	toFirestoreAmount,
 } from "@/util/currency";
-import { type PaymentDetails } from "@/util/paymentDetails";
 import { resolveGroupDebts, type SimpleTransaction } from "@/util/split";
 import { getLeftUsersInTransaction, getRouteParam, getStatusUsers } from "@/util/util";
 import { ArrowDown, ArrowLeft, ArrowRight, Landmark, PartyPopper, Wallet } from "@lucide/vue";

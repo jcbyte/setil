@@ -1,10 +1,11 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { v2 as cloudinary, SignApiOptions } from "cloudinary";
-import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { DocumentReference, FieldValue, getFirestore } from "firebase-admin/firestore";
+import { authenticateUser } from "./_utils/auth.js";
 
 import "./_init/cloudinary.js";
 import "./_init/firebaseAdmin.js";
-import { authenticateUser } from "./_utils/auth.js";
+import { PublicUserData } from "./_types/firestore.js";
 
 const db = getFirestore();
 
@@ -50,7 +51,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 		} catch {}
 
 		// Remove photoUrl field
-		const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`); // as DocumentReference<PublicUserData>;
+		const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`) as DocumentReference<PublicUserData>;
 		await userPublicDataRef.update({ photoUrl: FieldValue.delete() });
 
 		return res.status(200).json({ success: true });
