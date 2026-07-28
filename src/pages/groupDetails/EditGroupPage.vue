@@ -466,7 +466,7 @@ async function deleteGroup() {
 				</CardHeader>
 				<CardContent class="flex flex-col gap-2">
 					<template v-if="group?.users">
-						<div v-for="(user, userId) in nonHistoricalUsers" class="flex flex-col gap-2">
+						<div v-for="(user, userId) in nonHistoricalUsers" :key="userId" class="flex flex-col gap-2">
 							<div class="flex justify-between items-center gap-4">
 								<div class="flex flex-1 items-center gap-2">
 									<Avatar

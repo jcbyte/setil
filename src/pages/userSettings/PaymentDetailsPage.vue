@@ -265,6 +265,7 @@ async function clearDetails() {
 									<SelectContent>
 										<SelectItem
 											v-for="(bankingSystem, bankingSystemId) in BankingSystemSettings"
+											:key="bankingSystemId"
 											:value="bankingSystemId"
 										>
 											{{ bankingSystem.name }}
