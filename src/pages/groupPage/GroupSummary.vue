@@ -4,7 +4,7 @@ import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.v
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
-import { getBalanceStr } from "@/util/currency";
+import { getBalanceStr } from "@/util/util";
 import { computed } from "vue";
 
 const props = defineProps<{

@@ -6,8 +6,7 @@ import { createTransaction as firebaseCreateTransaction } from "@/firebase/fires
 import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/types/firestore";
 import { noGroup } from "@/util/app";
-import { formatCurrency, fromFirestoreAmount } from "@/util/currency";
-import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";
+import { getLeftUsersInTransaction, getRouteParam, getStatusUsers } from "@/util/util";
 import { ArrowLeft } from "@lucide/vue";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -32,19 +31,10 @@ async function createTransaction(transaction: Transaction) {
 	const leftUsers = getLeftUsersInTransaction(transaction, group.value.users);
 
 	try {
-		await firebaseCreateTransaction(groupId.value, transaction, leftUsers);
+		const transactionId = await firebaseCreateTransaction(groupId.value, transaction, leftUsers);
 
 		toast("Expense Created", { description: "It's on the group's tab." });
-		sendNotification(
-			groupId.value,
-			group.value.data.name,
-			`${group.value.users[transaction.from].computed.name} added expense ${transaction.title} for ${formatCurrency(
-				fromFirestoreAmount(sumRecordValues(transaction.to), group.value.data.currency),
-				group.value!.data.currency,
-				false,
-			)}.`,
-			`/group/${groupId.value}?tab=activity`,
-		);
+		sendNotification(groupId.value, { type: "new-transaction", transactionId });
 
 		router.push({ path: `/group/${groupId.value}`, query: { tab: "activity" } });
 	} catch (e) {

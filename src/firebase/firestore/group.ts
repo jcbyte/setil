@@ -1,5 +1,5 @@
 import { fetchApiJson } from "@/api/api";
-import type { GroupData, GroupUserData, Invite, PublicUserData, UserData } from "@/types/firestore";
+import type { GroupData, GroupUserData, Invite, UserData } from "@/types/firestore";
 import {
 	addDoc,
 	arrayUnion,
@@ -150,10 +150,7 @@ export async function cleanupInvites(groupId: string): Promise<void> {
  * @param getData also retries the group and this user in the groups data.
  * @returns true if the user has newly joined the group.
  */
-export async function joinGroup(
-	groupId: string,
-	inviteCode: string,
-): Promise<{ new: false } | { new: true; groupName: string; userName: string }> {
+export async function joinGroup(groupId: string, inviteCode: string): Promise<boolean> {
 	const user = getUser();
 	const groupRef = doc(db, "groups", groupId) as DocumentReference<GroupData>;
 
@@ -173,7 +170,7 @@ export async function joinGroup(
 		await getDoc(groupUserRef);
 
 		await addGroupToUser();
-		return { new: false };
+		return false;
 	} catch {
 		// If the user does not have permissions to view the group they are not in it
 	}
@@ -184,12 +181,7 @@ export async function joinGroup(
 		await updateDoc(groupUserRef, { customData: deleteField() }); // Remove the required custom data
 
 		await addGroupToUser();
-
-		const groupName = (await getDoc(groupRef)).data()!.name;
-		const userPublicRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
-		const userName = (await getDoc(groupUserRef)).data()!.nickname ?? (await getDoc(userPublicRef)).data()!.name;
-
-		return { new: true, groupName, userName };
+		return true;
 	} catch {
 		// Updating a non-existent doc will fail, hence the user has never been in the group before
 	}
@@ -202,11 +194,7 @@ export async function joinGroup(
 
 		await addGroupToUser();
 
-		const groupName = (await getDoc(groupRef)).data()!.name;
-		const userPublicRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
-		const userName = (await getDoc(userPublicRef)).data()!.name;
-
-		return { new: true, groupName, userName };
+		return true;
 	} catch {
 		// If joined failed then throw
 		throw Error("Invalid code");

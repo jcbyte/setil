@@ -5,11 +5,11 @@ import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic
 import { updateTransaction as firestoreUpdateTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/types/firestore";
 import { noGroup } from "@/util/app";
-import { fromFirestoreAmount } from "@/util/currency";
 import { gcdN } from "@/util/math";
 import { getLeftUsersInTransaction, getRouteParam, getStatusUsers, sumRecordValues } from "@/util/util";
 import { fromDate, getLocalTimeZone, Time, toCalendarDate } from "@internationalized/date";
 import { ArrowLeft } from "@lucide/vue";
+import { fromFirestoreAmount } from "@shared/currency.js";
 import { computed, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";

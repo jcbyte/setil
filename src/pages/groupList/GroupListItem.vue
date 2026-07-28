@@ -4,8 +4,8 @@ import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
 import NavCard from "@/components/NavCard.vue";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { GroupListDataWithUserPublic } from "@/composables/useLiveGroupListWithUserPublic";
-import { getBalanceStr } from "@/util/currency";
 import { getLastUpdatedStr } from "@/util/time";
+import { getBalanceStr } from "@/util/util";
 import { computed } from "vue";
 
 const props = defineProps<{

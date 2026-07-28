@@ -25,9 +25,9 @@ import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPubl
 import { deleteTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/types/firestore";
 import { CategorySettings } from "@/util/category";
-import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";
 import { EllipsisVertical, FilePen, FileText, Trash } from "@lucide/vue";
+import { formatCurrency } from "@shared/currency";
 import { computed } from "vue";
 import { toast } from "vue-sonner";
 
