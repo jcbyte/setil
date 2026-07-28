@@ -1,3 +1,4 @@
+import { PaymentDetailsPostBody } from "@shared/types/api.js";
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { DocumentReference, getFirestore } from "firebase-admin/firestore";
 import { PublicUserData } from "./_types/firestore.js";
@@ -69,7 +70,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 	const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`) as DocumentReference<PublicUserData>;
 
 	if (req.method === "POST") {
-		const { paymentDetails } = req.body;
+		const { paymentDetails } = req.body as PaymentDetailsPostBody<any>;
 		if (!paymentDetails) {
 			return res.status(400).json({ success: false, error: "Missing parameter `paymentDetails`" });
 		}

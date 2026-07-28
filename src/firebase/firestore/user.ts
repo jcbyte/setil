@@ -1,6 +1,7 @@
 import { fetchApiJson } from "@/api/api";
 import type { GroupUserData, PublicUserData, UserData } from "@/types/firestore";
 import type { PaymentDetails } from "@/types/paymentDetails";
+import type { PaymentDetailsPostBody } from "@shared/types/api";
 import {
 	arrayRemove,
 	arrayUnion,
@@ -144,16 +145,17 @@ export async function getPaymentDetails(userId?: string, groupId?: string): Prom
  * @param details the payment details to set.
  * @returns true if it was successful.
  */
-export async function setPaymentDetails(details: PaymentDetails | null) {
+export async function setPaymentDetails(details: PaymentDetails) {
 	const user = getUser();
 
+	const body: PaymentDetailsPostBody<PaymentDetails> = { paymentDetails: details };
 	await fetchApiJson("/api/payment-details", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-		body: JSON.stringify({ paymentDetails: details }),
+		body: JSON.stringify(body),
 	});
 }
 
