@@ -36,7 +36,7 @@ import { CategorySettings } from "@/util/category";
 import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";
 import { EllipsisVertical, FilePen, FileText, Trash } from "@lucide/vue";
 import { formatCurrency } from "@shared/currency";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 
 const ITEMS_PER_PAGE = 10;
@@ -65,6 +65,12 @@ const sortedTransactions = computed(() => {
 });
 
 const currentPage = ref(1);
+const pageTransition = ref<"fade-slide" | "fade-slide-right">("fade-slide-right");
+
+watch(currentPage, (newPage, oldPage) => {
+	pageTransition.value = newPage > oldPage ? "fade-slide-right" : "fade-slide";
+});
+
 const pagedTransactions = computed(() => {
 	const transactionIdx = (currentPage.value - 1) * ITEMS_PER_PAGE;
 	return sortedTransactions.value.slice(transactionIdx, transactionIdx + ITEMS_PER_PAGE);
@@ -121,83 +127,97 @@ async function handleDeleteTransaction() {
 				<CardDescription>Transactions in this group</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<div class="flex flex-col gap-4">
-					<template v-if="group.transactions">
-						<template v-if="groupedPagedTransactions.length > 0">
-							<div v-for="groupedTransactions in groupedPagedTransactions" class="flex flex-col gap-1">
-								<span class="text-sm text-muted-foreground font-semibold uppercase">
-									{{ groupedTransactions.monthGroup }}
-								</span>
-								<div
-									v-for="[transactionId, transaction] in groupedTransactions.transactions"
-									class="bg-muted rounded-lg px-4 py-2 flex justify-between items-center gap-4"
-								>
-									<div class="flex items-center gap-2 min-w-0">
-										<div class="relative flex justify-center items-center">
-											<Avatar
-												v-if="props.group.users && props.group.users[transaction.from].computed.name"
-												:src="props.group.users[transaction.from].public?.photoUrl ?? null"
-												:name="props.group.users[transaction.from].computed.name!"
-											/>
-											<Skeleton v-else class="size-10 rounded-full" />
-											<div
-												class="absolute -bottom-1 -right-1 rounded-full bg-card size-5.5 flex justify-center items-center"
-											>
-												<component :is="CategorySettings[transaction.category].icon" class="size-3!" />
-											</div>
-										</div>
-										<div class="flex flex-col min-w-0">
-											<span class="truncate">{{ transaction.title }}</span>
-											<div class="flex items-center gap-1 min-w-0">
-												<span
-													v-if="props.group.users && props.group.users[transaction.from].computed.name"
-													class="text-sm text-muted-foreground min-w-0 truncate"
-												>
-													by {{ props.group.users[transaction.from].computed.name }}
-												</span>
-												<Skeleton v-else class="w-18 h-5" />
-											</div>
-										</div>
-									</div>
-
-									<div class="flex items-center gap-2">
-										<div class="flex flex-col items-end">
-											<span class="text-nowrap">
-												{{
-													props.group.data
-														? formatCurrency(sumRecordValues(transaction.to), props.group.data.currency)
-														: sumRecordValues(transaction.to)
-												}}
-											</span>
-											<span class="text-sm text-muted-foreground text-nowrap">
-												{{ transaction.date.toDate().toLocaleString(undefined, { day: "numeric", month: "short" }) }}
-											</span>
-										</div>
-										<DropdownMenu>
-											<DropdownMenuTrigger as-child>
-												<EllipsisVertical class="size-5" />
-											</DropdownMenuTrigger>
-											<DropdownMenuContent>
-												<RouterLink :to="`/group/${groupId}/transaction/${transactionId}`">
-													<DropdownMenuItem>
-														<div class="w-full flex justify-between items-center">
-															<span>Edit</span>
-															<FilePen class="size-5" />
-														</div>
-													</DropdownMenuItem>
-												</RouterLink>
-												<DropdownMenuSeparator />
-												<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
-													<div class="w-full flex justify-between items-center">
-														<span class="text-red-400">Delete</span>
-														<Trash class="text-red-400 size-5" />
+				<template v-if="group.transactions">
+					<template v-if="groupedPagedTransactions.length > 0">
+						<div class="flex flex-col gap-4">
+							<Transition :name="pageTransition" mode="out-in">
+								<div :key="currentPage" class="flex flex-col gap-4">
+									<div
+										v-for="groupedTransactions in groupedPagedTransactions"
+										:key="groupedTransactions.monthGroup"
+										class="flex flex-col gap-1"
+									>
+										<span class="text-sm text-muted-foreground font-semibold uppercase">
+											{{ groupedTransactions.monthGroup }}
+										</span>
+										<div
+											v-for="[transactionId, transaction] in groupedTransactions.transactions"
+											:key="transactionId"
+											class="bg-muted rounded-lg px-4 py-2 flex justify-between items-center gap-4"
+										>
+											<div class="flex items-center gap-2 min-w-0">
+												<div class="relative flex justify-center items-center">
+													<Avatar
+														v-if="props.group.users && props.group.users[transaction.from].computed.name"
+														:src="props.group.users[transaction.from].public?.photoUrl ?? null"
+														:name="props.group.users[transaction.from].computed.name!"
+													/>
+													<Skeleton v-else class="size-10 rounded-full" />
+													<div
+														class="absolute -bottom-1 -right-1 rounded-full bg-card size-5.5 flex justify-center items-center"
+													>
+														<component :is="CategorySettings[transaction.category].icon" class="size-3!" />
 													</div>
-												</DropdownMenuItem>
-											</DropdownMenuContent>
-										</DropdownMenu>
+												</div>
+												<div class="flex flex-col min-w-0">
+													<span class="truncate">{{ transaction.title }}</span>
+													<div class="flex items-center gap-1 min-w-0">
+														<span
+															v-if="props.group.users && props.group.users[transaction.from].computed.name"
+															class="text-sm text-muted-foreground min-w-0 truncate"
+														>
+															by {{ props.group.users[transaction.from].computed.name }}
+														</span>
+														<Skeleton v-else class="w-18 h-5" />
+													</div>
+												</div>
+											</div>
+
+											<div class="flex items-center gap-2">
+												<div class="flex flex-col items-end">
+													<span class="text-nowrap">
+														{{
+															props.group.data
+																? formatCurrency(sumRecordValues(transaction.to), props.group.data.currency)
+																: sumRecordValues(transaction.to)
+														}}
+													</span>
+													<span class="text-sm text-muted-foreground text-nowrap">
+														{{
+															transaction.date.toDate().toLocaleString(undefined, {
+																day: "numeric",
+																month: "short",
+															})
+														}}
+													</span>
+												</div>
+												<DropdownMenu>
+													<DropdownMenuTrigger as-child>
+														<EllipsisVertical class="size-5" />
+													</DropdownMenuTrigger>
+													<DropdownMenuContent>
+														<RouterLink :to="`/group/${groupId}/transaction/${transactionId}`">
+															<DropdownMenuItem>
+																<div class="w-full flex justify-between items-center">
+																	<span>Edit</span>
+																	<FilePen class="size-5" />
+																</div>
+															</DropdownMenuItem>
+														</RouterLink>
+														<DropdownMenuSeparator />
+														<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
+															<div class="w-full flex justify-between items-center">
+																<span class="text-red-400">Delete</span>
+																<Trash class="text-red-400 size-5" />
+															</div>
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</div>
+										</div>
 									</div>
 								</div>
-							</div>
+							</Transition>
 							<Pagination
 								v-model:page="currentPage"
 								:items-per-page="ITEMS_PER_PAGE"
@@ -221,21 +241,23 @@ async function handleDeleteTransaction() {
 									<PaginationNext />
 								</PaginationContent>
 							</Pagination>
-						</template>
-
-						<Empty v-else>
-							<EmptyHeader>
-								<EmptyMedia variant="icon">
-									<FileText />
-								</EmptyMedia>
-								<EmptyTitle>No activity</EmptyTitle>
-								<EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
-							</EmptyHeader>
-						</Empty>
+						</div>
 					</template>
-					<div v-else v-for="i in 3" class="flex flex-col gap-1">
+
+					<Empty v-else>
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<FileText />
+							</EmptyMedia>
+							<EmptyTitle>No activity</EmptyTitle>
+							<EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
+				</template>
+				<div v-else class="flex flex-col gap-4">
+					<div v-for="i in 3" class="flex flex-col gap-1">
 						<Skeleton class="w-34 h-5" />
-						<Skeleton v-for="_ in i * 2" class="w-full h-15" />
+						<Skeleton v-for="_ in Math.trunc(i * 1.5)" class="w-full h-15" />
 					</div>
 				</div>
 			</CardContent>
