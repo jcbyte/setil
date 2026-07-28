@@ -40,7 +40,7 @@ const currentTab = ref<Tab>(
 		: tabOrder[0],
 );
 
-watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
+watch(currentTab, (newTab) => router.push({ query: { tab: newTab }, replace: true }));
 
 const isAddingMember = ref<boolean>(false);
 
