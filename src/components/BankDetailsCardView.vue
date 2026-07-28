@@ -67,10 +67,9 @@ const presentation = computed<{ title: string; rows: { label: string; value: str
 		</div>
 
 		<div class="border-t px-4">
-			<template v-for="row in presentation.rows">
+			<template v-for="row in presentation.rows" :key="`${details.type}-${row.label}`">
 				<div
 					v-if="row.value"
-					:key="row.label"
 					class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2 border-b py-1 last:border-b-0"
 				>
 					<span class="pl-2 text-sm text-muted-foreground">

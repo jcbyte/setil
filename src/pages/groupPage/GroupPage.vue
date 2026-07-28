@@ -9,7 +9,7 @@ import Tabs from "@/components/ui/tabs/Tabs.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { inviteUser, noGroup } from "@/util/app";
-import { getRouteParam } from "@/util/util";
+import { getRouteParam, getStatusUsers } from "@/util/util";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
@@ -24,8 +24,8 @@ const groupId = computed(() => getRouteParam(route.params.groupId));
 const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 
 const activeUsers = computed(() => {
-	if (!group.value?.users) return [];
-	return Object.values(group.value.users).filter((user) => user.status === "active");
+	if (!group.value?.users) return {};
+	return getStatusUsers(group.value.users, new Set(["active"]));
 });
 
 type Tab = "summary" | "activity";
@@ -40,7 +40,7 @@ const currentTab = ref<Tab>(
 		: tabOrder[0],
 );
 
-watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
+watch(currentTab, (newTab) => router.push({ query: { tab: newTab }, replace: true }));
 
 const isAddingMember = ref<boolean>(false);
 
@@ -119,7 +119,7 @@ watch(currentTab, (newTab, oldTab) => {
 			<div class="flex-1 flex flex-col gap-2">
 				<Tabs v-model:model-value="currentTab">
 					<TabsList class="grid grid-cols-2">
-						<TabsTrigger v-for="tab in tabOrder" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
+						<TabsTrigger v-for="tab in tabOrder" :key="tab" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
 					</TabsList>
 				</Tabs>
 
@@ -147,6 +147,7 @@ watch(currentTab, (newTab, oldTab) => {
 								link: `/group/${groupId}/settle`,
 							},
 						]"
+						:key="groupButton.title"
 						:to="groupButton.link"
 						class="contents"
 					>
@@ -176,7 +177,7 @@ watch(currentTab, (newTab, oldTab) => {
 						<Skeleton v-else class="inline w-22 h-5" />
 
 						<div v-if="group.users" class="flex flex-col gap-1">
-							<div v-for="user in activeUsers" class="flex gap-1 items-center">
+							<div v-for="(user, userId) in activeUsers" :key="userId" class="flex gap-1 items-center">
 								<Avatar
 									v-if="user.computed.name"
 									:src="user.public?.photoUrl ?? null"

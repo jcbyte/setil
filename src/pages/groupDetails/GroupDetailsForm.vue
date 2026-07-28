@@ -96,7 +96,7 @@ defineExpose<GroupDetailsFormExposed>({
 									<SelectValue placeholder="Euro (€)" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem v-for="(currency, currencyId) in CurrencySettings" :value="currencyId">
+									<SelectItem v-for="(currency, currencyId) in CurrencySettings" :key="currencyId" :value="currencyId">
 										{{ currency.name }} ({{ currency.symbol.trim() }})
 									</SelectItem>
 								</SelectContent>

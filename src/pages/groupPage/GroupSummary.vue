@@ -43,6 +43,7 @@ const usersBalanceStr = computed<Record<string, BalanceStr> | null>(() => {
 					v-for="(user, userId) in Object.fromEntries(
 						Object.entries(group.users).filter(([, user]) => user.status !== 'history'),
 					)"
+					:key="userId"
 					class="flex justify-between items-center gap-2"
 				>
 					<div class="flex justify-center items-center gap-2 min-w-0">

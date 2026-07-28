@@ -213,6 +213,7 @@ async function openBankDetailsDialog() {
 							<div
 								v-if="requiredPayments.length > 0"
 								v-for="payment in requiredPayments"
+								:key="`${payment.from}-${payment.to}-${payment.amount}`"
 								class="bg-muted rounded-lg p-4 flex flex-col gap-4"
 							>
 								<div class="flex flex-col sm:flex-row justify-between items-center gap-2.5">

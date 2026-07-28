@@ -31,7 +31,7 @@ const props = defineProps<{
 			</SelectValue>
 		</SelectTrigger>
 		<SelectContent>
-			<SelectItem v-for="(user, userId) in users" :value="userId">
+			<SelectItem v-for="(user, userId) in users" :key="userId" :value="userId">
 				<div class="flex items-center gap-2">
 					<Avatar
 						v-if="user.computed.name"

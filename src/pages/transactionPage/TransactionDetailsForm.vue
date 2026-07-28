@@ -232,7 +232,11 @@ defineExpose<TransactionDetailsFormExposed>({
 										<SelectValue placeholder="Expense" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem v-for="(category, categoryId) in CategorySettings" :value="categoryId">
+										<SelectItem
+											v-for="(category, categoryId) in CategorySettings"
+											:key="categoryId"
+											:value="categoryId"
+										>
 											<div class="flex items-center gap-2">
 												<div class="bg-secondary rounded-lg size-6 flex justify-center items-center">
 													<component :is="category.icon" class="size-4" />
@@ -343,7 +347,7 @@ defineExpose<TransactionDetailsFormExposed>({
 									<div
 										class="grid grid-cols-[max-content_minmax(0,1fr)_max-content_max-content] items-center gap-2 gap-x-3"
 									>
-										<template v-if="group?.users" v-for="(user, userId) in shownUsers">
+										<template v-if="group?.users" v-for="(user, userId) in shownUsers" :key="userId">
 											<Checkbox
 												class="col-start-1 size-5"
 												:id="`user-${userId}`"

@@ -40,7 +40,7 @@ const sortedGroups = computed(() =>
 		<div class="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
 			<Skeleton v-if="!groupListLoaded" v-for="_n in 4" class="rounded-lg h-42 w-full" />
 
-			<template v-else-if="Object.keys(groupList).length > 0" v-for="[groupId, group] in sortedGroups">
+			<template v-else-if="Object.keys(groupList).length > 0" v-for="[groupId, group] in sortedGroups" :key="groupId">
 				<GroupListItem v-if="group" :group-id="groupId" :group="group" />
 				<Skeleton v-else class="rounded-lg h-42 w-full" />
 			</template>

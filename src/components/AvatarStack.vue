@@ -11,7 +11,13 @@ defineProps<{
 
 <template>
 	<div class="flex -space-x-4">
-		<CustomAvatar :class="avatarClass" v-for="avatar in avatars" :src="avatar.src" :name="avatar.name" />
+		<CustomAvatar
+			:class="avatarClass"
+			v-for="(avatar, avatarIdx) in avatars"
+			:key="avatarIdx"
+			:src="avatar.src"
+			:name="avatar.name"
+		/>
 		<Avatar :class="avatarClass" v-if="totalCount && totalCount > avatars.length">
 			<AvatarFallback>+{{ totalCount - avatars.length }}</AvatarFallback>
 		</Avatar>
