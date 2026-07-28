@@ -27,19 +27,13 @@ import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore/transaction";
 import { getPaymentDetails } from "@/firebase/firestore/user";
 import { sendNotification } from "@/firebase/messaging";
-import type { Transaction } from "@/firebase/types";
+import type { Transaction } from "@/types/firestore";
+import { type PaymentDetails } from "@/types/paymentDetails";
 import { noGroup } from "@/util/app";
-import {
-	CurrencySettings,
-	formatCurrency,
-	fromFirestoreAmount,
-	getBalanceStr,
-	toFirestoreAmount,
-} from "@/util/currency";
-import { type PaymentDetails } from "@/util/paymentDetails";
 import { resolveGroupDebts, type SimpleTransaction } from "@/util/split";
-import { getLeftUsersInTransaction, getRouteParam, getStatusUsers } from "@/util/util";
+import { getBalanceStr, getLeftUsersInTransaction, getRouteParam, getStatusUsers } from "@/util/util";
 import { ArrowDown, ArrowLeft, ArrowRight, Landmark, PartyPopper, Wallet } from "@lucide/vue";
+import { CurrencySettings, fromFirestoreAmount, toFirestoreAmount } from "@shared/currency";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { useForm, Field as VeeField } from "vee-validate";
@@ -168,19 +162,10 @@ const onSubmit = handleSubmit(async (values) => {
 	const leftUsers = getLeftUsersInTransaction(transaction, group.value.users);
 
 	try {
-		await createTransaction(groupId.value, transaction, leftUsers);
+		const transactionId = await createTransaction(groupId.value, transaction, leftUsers);
 
 		toast("Payment Recorded", { description: "Someone's about to be rich!" });
-		sendNotification(
-			groupId.value,
-			group.value.data.name,
-			`${group.value.users[values.from].computed.name} paid ${group.value.users[values.to].computed.name} ${formatCurrency(
-				values.amount,
-				group.value.data.currency,
-				false,
-			)}.`,
-			`/group/${groupId.value}?tab=summary`,
-		);
+		sendNotification(groupId.value, { type: "new-payment", transactionId });
 
 		router.push({ path: `/group/${groupId.value}`, query: { tab: "activity" } });
 	} catch (e) {

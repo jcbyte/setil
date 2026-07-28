@@ -1,5 +1,3 @@
-import type { Timestamp } from "firebase/firestore";
-
 export type Currency = "gbp" | "usd" | "eur" | "pln";
 
 export type TransactionCategory = "expense" | "food" | "transport" | "fuel" | "event" | "bill" | "payment";
@@ -15,31 +13,31 @@ export interface PublicUserData {
 	hasBankDetails: boolean;
 }
 
-export interface GroupData {
+export interface GroupData<TTimestamp> {
 	name: string;
 	description: string | null;
 	currency: Currency;
 	owner: string;
-	lastUpdate: Timestamp;
+	lastUpdate: TTimestamp;
 }
 
 export type GroupUserStatus = "active" | "left" | "history";
 
-export interface GroupUserData {
+export interface GroupUserData<TTimestamp> {
 	nickname?: string;
 	status: GroupUserStatus;
 	balance: number;
-	lastUpdate: Timestamp;
+	lastUpdate: TTimestamp;
 }
 
-export interface Transaction {
+export interface Transaction<TTimestamp> {
 	title: string;
 	from: string;
 	to: Record<string, number>;
-	date: Timestamp;
+	date: TTimestamp;
 	category: TransactionCategory;
 }
 
-export interface Invite {
-	expiry: Timestamp;
+export interface Invite<TTimestamp> {
+	expiry: TTimestamp;
 }

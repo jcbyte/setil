@@ -1,5 +1,4 @@
-import type { BalanceStr } from "@/components/BalanceStrBadge.vue";
-import type { Currency } from "@/firebase/types";
+import type { Currency } from "./types/firestore.js";
 
 export interface CurrencyData {
 	name: string;
@@ -40,30 +39,4 @@ export function formatCurrency(amount: number, currency: Currency, firebaseAmoun
 		formattedAmount +
 		(currencySetting.symbolAfter ? currencySetting.symbol : "")
 	);
-}
-
-export function getBalanceStr(
-	balance: number,
-	positiveGenerator: (formattedBal: string) => string,
-	negativeGenerator: (formattedBal: string) => string,
-	neutralGenerator: () => string,
-	currency: Currency,
-): BalanceStr {
-	const formattedBal = formatCurrency(Math.abs(balance), currency);
-
-	let status: "positive" | "negative" | "neutral";
-	let str: string;
-
-	if (balance === 0) {
-		status = "neutral";
-		str = neutralGenerator();
-	} else if (balance > 0) {
-		status = "positive";
-		str = positiveGenerator(formattedBal);
-	} else {
-		status = "negative";
-		str = negativeGenerator(formattedBal);
-	}
-
-	return { str, status };
 }

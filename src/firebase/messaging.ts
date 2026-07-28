@@ -1,4 +1,6 @@
 import { fetchApiJson } from "@/api/api";
+import type { SendGroupNotificationPostBody } from "@shared/types/api";
+import type { NotificationDetail } from "@shared/types/notification";
 import { getMessaging, isSupported, onRegistered, register } from "firebase/messaging";
 import { toast } from "vue-sonner";
 import { addFid } from "./firestore/user";
@@ -37,19 +39,18 @@ export async function requestNotifications() {
 /**
  * Send a notification to all suers within a specified group.
  * @param groupId id of the group to send users messages to.
- * @param title title of the notification.
- * @param body body of the notification.
- * @returns true if it was successful.
+ * @param notification details of the notification to send.
  */
-export async function sendNotification(groupId: string, title: string, body: string, route?: string) {
+export async function sendNotification(groupId: string, notification: NotificationDetail) {
 	const user = getUser();
 
+	const body: SendGroupNotificationPostBody = { groupId, notification };
 	await fetchApiJson("/api/send-group-notification", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-		body: JSON.stringify({ groupId: groupId, title, body, ...(route && { route }) }),
+		body: JSON.stringify(body),
 	});
 }

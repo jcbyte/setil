@@ -1,4 +1,6 @@
-import type { GroupUserData, GroupUserStatus, Transaction } from "@/firebase/types";
+import type { BalanceStr } from "@/components/BalanceStrBadge.vue";
+import type { Currency, GroupUserData, GroupUserStatus, Transaction } from "@/types/firestore";
+import { formatCurrency } from "@shared/currency";
 
 export function getRouteParam(qp: string | string[]): string | null {
 	return Array.isArray(qp) ? qp[0] : qp || null;
@@ -19,4 +21,30 @@ export function getLeftUsersInTransaction(transaction: Transaction, users: Recor
 	return [...new Set([...Object.keys(transaction.to), transaction.from])].filter(
 		(userId) => users[userId].status !== "active",
 	);
+}
+
+export function getBalanceStr(
+	balance: number,
+	positiveGenerator: (formattedBal: string) => string,
+	negativeGenerator: (formattedBal: string) => string,
+	neutralGenerator: () => string,
+	currency: Currency,
+): BalanceStr {
+	const formattedBal = formatCurrency(Math.abs(balance), currency);
+
+	let status: "positive" | "negative" | "neutral";
+	let str: string;
+
+	if (balance === 0) {
+		status = "neutral";
+		str = neutralGenerator();
+	} else if (balance > 0) {
+		status = "positive";
+		str = positiveGenerator(formattedBal);
+	} else {
+		status = "negative";
+		str = negativeGenerator(formattedBal);
+	}
+
+	return { str, status };
 }

@@ -15,9 +15,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSelect from "@/components/UserSelect.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import type { GroupUserDataWithPublic, GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
-import type { Transaction, TransactionCategory } from "@/firebase/types";
+import type { Transaction, TransactionCategory } from "@/types/firestore";
 import { CategorySettings } from "@/util/category";
-import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
 import { splitAmountEven, splitAmountRatio } from "@/util/split";
 import {
 	CalendarDate,
@@ -32,6 +31,7 @@ import {
 	type DateValue,
 } from "@internationalized/date";
 import { CalendarIcon, Clock, Plus, Save } from "@lucide/vue";
+import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@shared/currency";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { toDate } from "reka-ui/date";

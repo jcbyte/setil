@@ -1,7 +1,7 @@
+import type { GroupData, GroupUserData, Transaction } from "@/types/firestore";
 import { sumRecordValues } from "@/util/util";
 import { collection, doc, DocumentReference, getDoc, increment, WriteBatch, writeBatch } from "firebase/firestore";
 import { db } from "../firebase";
-import type { GroupData, GroupUserData, Transaction } from "../types";
 import { updateGroupUpdateTime } from "./group";
 import { updateLeftUsersStatus } from "./user";
 

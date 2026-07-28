@@ -36,7 +36,7 @@ import {
 	promoteUser,
 	removeUser,
 } from "@/firebase/firestore/group";
-import type { Currency } from "@/firebase/types";
+import type { Currency } from "@/types/firestore";
 import { inviteUser, noGroup } from "@/util/app";
 import { getRouteParam, getStatusUsers } from "@/util/util";
 import {

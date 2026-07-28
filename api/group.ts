@@ -1,8 +1,9 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { getFirestore } from "firebase-admin/firestore";
+import { DocumentReference, getFirestore } from "firebase-admin/firestore";
+import { GroupData } from "./_types/firestore.js";
+import { authenticateUser } from "./_utils/auth.js";
 
 import "./_init/firebaseAdmin.js";
-import { authenticateUser } from "./_utils/auth.js";
 
 const db = getFirestore();
 
@@ -20,7 +21,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 			return res.status(400).json({ success: false, error: "Missing parameter `groupId`" });
 		}
 
-		const groupRef = db.doc(`groups/${groupId}`); // as DocumentReference<GroupData>;
+		const groupRef = db.doc(`groups/${groupId}`) as DocumentReference<GroupData>;
 		const groupSnap = await groupRef.get();
 		const groupData = groupSnap.data();
 		if (!groupData) {

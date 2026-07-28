@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Card, CardContent } from "@/components/ui/card";
+import { useCurrentUser } from "@/composables/useCurrentUser";
 import { joinGroup } from "@/firebase/firestore/group";
 import { sendNotification } from "@/firebase/messaging";
 import { getRouteParam } from "@/util/util";
@@ -10,6 +11,7 @@ import { toast } from "vue-sonner";
 
 const route = useRoute();
 const router = useRouter();
+const currentUser = useCurrentUser();
 
 const groupId = getRouteParam(route.params.groupId);
 const inviteCode = getRouteParam(route.params.inviteCode);
@@ -24,11 +26,11 @@ onMounted(async () => {
 	}
 
 	try {
-		const joinRes = await joinGroup(groupId, inviteCode);
+		const joinedNew = await joinGroup(groupId, inviteCode);
 
-		if (joinRes.new) {
+		if (joinedNew) {
 			toast("Joined Group", { description: "Time to make cents of things." });
-			sendNotification(groupId, joinRes.groupName, `${joinRes.userName} just joined the group!`, `/group/${groupId}`);
+			sendNotification(groupId, { type: "joined-group", userId: currentUser.value!.uid });
 		}
 		router.push(`/group/${groupId}`);
 	} catch {

@@ -1,4 +1,4 @@
-import type { GroupUserData, PublicUserData } from "@/firebase/types";
+import type { GroupUserData, PublicUserData } from "@/types/firestore";
 import { computed, unref, type Ref } from "vue";
 import { useLiveGroup, type Group } from "./useLiveGroup";
 import useLiveUserCollection from "./useLiveUserCollection";

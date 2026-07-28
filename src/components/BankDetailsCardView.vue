@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PaymentDetails } from "@/util/paymentDetails";
+import type { PaymentDetails } from "@/types/paymentDetails";
 import { computed } from "vue";
 import CopyButton from "./CopyButton.vue";
 
