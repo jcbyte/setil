@@ -153,42 +153,43 @@ onMounted(async () => {
 });
 
 const onSubmit = handleSubmit(async (values) => {
+	let paymentDetails: PaymentDetails | null = null;
+	if (values.system === "UK") {
+		paymentDetails = {
+			type: "UK",
+			name: values.name,
+			sortCode: values.UK_sortCode!,
+			accountNumber: values.UK_accountNumber!,
+		};
+	} else if (values.system === "US") {
+		paymentDetails = {
+			type: "US",
+			name: values.name,
+			routingNumber: values.US_routingNumber!,
+			accountNumber: values.US_accountNumber!,
+		};
+	} else if (values.system === "SEPA") {
+		paymentDetails = {
+			type: "SEPA",
+			name: values.name,
+			IBAN: values.SEPA_IBAN!,
+			BIC: values.SEPA_BIC ?? null,
+		};
+	} else if (values.system === "SWIFT") {
+		paymentDetails = {
+			type: "SWIFT",
+			name: values.name,
+			SWIFT: values.SWIFT_SWIFT!,
+			IBAN: values.SWIFT_IBAN!,
+			bankName: values.SWIFT_bankName ?? null,
+			bankAddress: values.SWIFT_bankAddress ?? null,
+		};
+	}
+	if (!paymentDetails) return;
+
 	isDetailsUpdating.value = true;
 
 	try {
-		let paymentDetails: PaymentDetails | null = null;
-		if (values.system === "UK") {
-			paymentDetails = {
-				type: "UK",
-				name: values.name,
-				sortCode: values.UK_sortCode!,
-				accountNumber: values.UK_accountNumber!,
-			};
-		} else if (values.system === "US") {
-			paymentDetails = {
-				type: "US",
-				name: values.name,
-				routingNumber: values.US_routingNumber!,
-				accountNumber: values.US_accountNumber!,
-			};
-		} else if (values.system === "SEPA") {
-			paymentDetails = {
-				type: "SEPA",
-				name: values.name,
-				IBAN: values.SEPA_IBAN!,
-				BIC: values.SEPA_BIC ?? null,
-			};
-		} else if (values.system === "SWIFT") {
-			paymentDetails = {
-				type: "SWIFT",
-				name: values.name,
-				SWIFT: values.SWIFT_SWIFT!,
-				IBAN: values.SWIFT_IBAN!,
-				bankName: values.SWIFT_bankName ?? null,
-				bankAddress: values.SWIFT_bankAddress ?? null,
-			};
-		}
-
 		await setPaymentDetails(paymentDetails);
 		resetForm({ values });
 		hasDetailsSaved.value = true;
