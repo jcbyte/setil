@@ -3,9 +3,10 @@ import { DocumentReference, getFirestore } from "firebase-admin/firestore";
 import { FidMulticastMessage, getMessaging } from "firebase-admin/messaging";
 import { formatCurrency } from "../shared/currency.js";
 import type { SendGroupNotificationPostBody } from "../shared/types/api.js";
-import "./_init/firebaseAdmin.js";
 import type { GroupData, GroupUserData, PublicUserData, Transaction } from "./_types/firestore.js";
 import { authenticateUser } from "./_utils/auth.js";
+
+import "./_init/firebaseAdmin.js";
 
 const db = getFirestore();
 const messaging = getMessaging();

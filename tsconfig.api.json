@@ -18,6 +18,7 @@
   },
   "include": [
     "api/**/*.ts",
+    // `@shared` must be enforced by the stricter API tsconfig
     "shared/**/*.ts"
   ],
 }
