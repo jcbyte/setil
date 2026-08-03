@@ -12,14 +12,4 @@
       "path": "./tsconfig.api.json"
     }
   ],
-  "compilerOptions": {
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@shared/*": [
-        "./shared/*"
-      ]
-    }
-  }
 }

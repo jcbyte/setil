@@ -15,14 +15,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "paths": {
-      "@shared/*": [
-        "./shared/*"
-      ]
-    },
   },
   "include": [
-    "api/**/*",
+    "api/**/*.ts",
+    // `@shared` must be enforced by the stricter API tsconfig
     "shared/**/*.ts"
   ],
 }
