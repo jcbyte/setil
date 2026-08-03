@@ -338,7 +338,7 @@ async function openBankDetailsDialog() {
 						@click="openBankDetailsDialog"
 					>
 						<Landmark />
-						<span>View Bank Details</span>
+						<span> {{ breakpointSplit("Bank Details", "View Bank Details", "sm") }} </span>
 					</Button>
 
 					<Button type="submit" form="payment-form" class="ms-auto" :disabled="isMakingPayment || !meta.valid">
@@ -354,12 +354,12 @@ async function openBankDetailsDialog() {
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Bank Details</DialogTitle>
-					<DialogDescription class="flex items-center gap-1">
+					<DialogDescription>
 						<span>Where</span>
-						<span v-if="group?.users?.[bankDetailsDialog.data.value!.userId].computed.name">
+						<span v-if="group?.users?.[bankDetailsDialog.data.value!.userId].computed.name" class="mx-0.5">
 							{{ group.users[bankDetailsDialog.data.value!.userId].computed.name }}
 						</span>
-						<Skeleton v-else class="inline-block w-14 h-4.25" />
+						<Skeleton v-else class="inline-block align-middle w-14 h-4.25 mx-0.5" />
 						<span>would like payment.</span>
 					</DialogDescription>
 				</DialogHeader>
@@ -369,11 +369,11 @@ async function openBankDetailsDialog() {
 					v-else-if="bankDetailsDialog.data.value!.details"
 					:details="bankDetailsDialog.data.value!.details"
 				/>
-				<div v-else class="p-4 bg-muted rounded-lg flex justify-center items-center gap-1">
-					<span v-if="group?.users?.[bankDetailsDialog.data.value!.userId].computed.name">
+				<div v-else class="p-4 bg-muted rounded-lg text-center">
+					<span v-if="group?.users?.[bankDetailsDialog.data.value!.userId].computed.name" class="mx-0.5">
 						{{ group.users[bankDetailsDialog.data.value!.userId].computed.name }}
 					</span>
-					<Skeleton v-else class="inline-block w-20 h-6" />
+					<Skeleton v-else class="inline-block align-middle w-20 h-6 mx-0.5" />
 					<span>has not added their bank info yet</span>
 				</div>
 
