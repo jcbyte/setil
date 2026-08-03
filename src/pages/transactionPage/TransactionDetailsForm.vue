@@ -60,10 +60,7 @@ const formSchema = z.object({
 			return val && typeof val === "number" && val > 0;
 		}, "An amount is required"),
 	date: z.custom<DateValue>().refine((v) => v, "A date is required"),
-	time: z
-		.string()
-		.regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Please enter a valid time (HH:mm)")
-		.transform(parseTime),
+	time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Must select a valid time"),
 	category: z.string().refine((val) => Object.keys(CategorySettings).includes(val), "Must select a valid category"),
 	from: z
 		.string()
@@ -155,10 +152,11 @@ const onSubmit = handleSubmit((values) => {
 	let resolvedBalances = resolveBalances();
 	if (!resolvedBalances) return;
 
+	const date = toCalendarDateTime(values.date, parseTime(values.time)).toDate(getLocalTimeZone());
 	const transaction: Transaction = {
 		title: values.title,
 		from: values.from,
-		date: Timestamp.fromDate(toCalendarDateTime(values.date, values.time).toDate(getLocalTimeZone())),
+		date: Timestamp.fromDate(date),
 		to: resolvedBalances,
 		category: values.category as TransactionCategory,
 	};
