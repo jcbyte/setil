@@ -15,14 +15,9 @@
     "isolatedModules": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "paths": {
-      "@shared/*": [
-        "./shared/*"
-      ]
-    },
   },
   "include": [
-    "api/**/*",
+    "api/**/*.ts",
     "shared/**/*.ts"
   ],
 }
