@@ -15,7 +15,7 @@ const props = defineProps<{
 	<Select v-bind="$attrs">
 		<SelectTrigger :id="id">
 			<SelectValue placeholder="Select a member">
-				<div v-if="selectedUser" class="flex items-center gap-2">
+				<div v-if="selectedUser" class="flex items-center gap-2 pr-1">
 					<Avatar
 						v-if="users[selectedUser]?.computed.name"
 						:src="users[selectedUser]?.public?.photoUrl ?? null"

@@ -338,7 +338,7 @@ async function openBankDetailsDialog() {
 						@click="openBankDetailsDialog"
 					>
 						<Landmark />
-						<span>View Bank Details</span>
+						<span> {{ breakpointSplit("Bank Details", "View Bank Details", "sm") }} </span>
 					</Button>
 
 					<Button type="submit" form="payment-form" class="ms-auto" :disabled="isMakingPayment || !meta.valid">
