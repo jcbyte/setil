@@ -632,12 +632,12 @@ async function deleteGroup() {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Are you absolutely sure?</DialogTitle>
-						<DialogDescription class="flex items-center gap-1">
+						<DialogDescription>
 							<span>Promoting</span>
-							<span v-if="group?.users" class="font-semibold">
+							<span v-if="group?.users" class="font-semibold mx-0.5">
 								{{ group.users[promoteDialog.data.value!.userId].computed.name }}
 							</span>
-							<Skeleton v-else class="inline-block w-14 h-4.25" />
+							<Skeleton v-else class="inline-block align-middle w-14 h-4.25 mx-0.5" />
 							<span>will change your role to member.</span>
 						</DialogDescription>
 					</DialogHeader>
@@ -662,11 +662,11 @@ async function deleteGroup() {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Are you absolutely sure?</DialogTitle>
-						<DialogDescription class="flex items-center gap-1">
-							<span v-if="group?.users" class="font-semibold">
+						<DialogDescription>
+							<span v-if="group?.users" class="font-semibold mx-0.5">
 								{{ group.users[removeDialog.data.value!.userId].computed.name }}
 							</span>
-							<Skeleton v-else class="inline-block w-14 h-4.25" />
+							<Skeleton v-else class="inline-block align-middle w-14 h-4.25 mx-0.5" />
 							<span>will require an invite to return.</span>
 						</DialogDescription>
 					</DialogHeader>

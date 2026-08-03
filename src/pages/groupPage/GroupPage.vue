@@ -173,8 +173,8 @@ watch(currentTab, (newTab, oldTab) => {
 				</CardHeader>
 				<CardContent>
 					<div class="flex flex-col gap-1.5">
-						<span v-if="group.users" class="text-sm font-semibold"> {{ activeUsers.length }} Members </span>
-						<Skeleton v-else class="inline w-22 h-5" />
+						<span v-if="group.users" class="text-sm font-semibold mx-0.5"> {{ activeUsers.length }} Members </span>
+						<Skeleton v-else class="inline-block align-middle w-22 h-5 mx-0.5" />
 
 						<div v-if="group.users" class="flex flex-col gap-1">
 							<div v-for="(user, userId) in activeUsers" :key="userId" class="flex gap-1 items-center">
