@@ -84,6 +84,7 @@ const isAvatarUpdating = ref<boolean>(false);
 const isAvatarClearing = ref<boolean>(false);
 const isCropperOpen = ref(false);
 const newAvatarSrc = ref<string | undefined>();
+const isCropperReady = ref(false);
 const avatarCropper = ref<InstanceType<typeof Cropper> | undefined>();
 
 onMounted(async () => {
@@ -127,6 +128,7 @@ async function handleAvatarFileChange(event: Event) {
 	newAvatarSrc.value = URL.createObjectURL(file);
 	if (avatarFileInput.value) avatarFileInput.value.value = "";
 
+	isCropperReady.value = false;
 	isCropperOpen.value = true;
 }
 
@@ -342,17 +344,19 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 				<div class="flex items-center justify-center w-full max-h-[60vh] overflow-hidden rounded-md">
 					<Cropper
 						ref="avatarCropper"
+						@ready="() => (isCropperReady = true)"
 						:src="newAvatarSrc"
 						:stencil-component="CircleStencil"
 						:stencil-props="{ aspectRatio: 1 }"
 					/>
+					<Skeleton class="w-full h-92" v-if="!isCropperReady" />
 				</div>
 
 				<DialogFooter>
 					<DialogClose as-child>
 						<Button type="button" variant="outline" :disabled="isAvatarUpdating">Cancel</Button>
 					</DialogClose>
-					<Button type="button" :disabled="isAvatarUpdating" @click="handleAvatarSave">
+					<Button type="button" :disabled="!isCropperReady || isAvatarUpdating" @click="handleAvatarSave">
 						<LoaderIcon :icon="Crop" :loading="isAvatarUpdating" />
 						<span>Done</span>
 					</Button>
