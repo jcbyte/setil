@@ -22,9 +22,9 @@ const sortedGroups = computed(() =>
 </script>
 
 <template>
-	<div class="mx-auto w-full max-w-4xl flex flex-col gap-4">
-		<div class="flex justify-between items-center">
-			<span class="text-lg font-semibold">My Groups</span>
+	<div class="mx-auto w-full max-w-5xl flex flex-col gap-6">
+		<div class="flex justify-between items-end gap-4">
+			<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">My Groups</h1>
 			<div class="flex gap-2 justify-center items-center">
 				<YourAccountSettings />
 
