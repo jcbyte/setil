@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
+import NavCard from "@/components/NavCard.vue";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,8 +116,8 @@ watch(currentTab, (newTab, oldTab) => {
 			</div>
 		</div>
 
-		<div class="flex flex-col md:flex-row gap-2">
-			<div class="flex-1 flex flex-col gap-2">
+		<div class="flex flex-col md:flex-row gap-3">
+			<div class="flex-1 flex flex-col gap-3">
 				<Tabs v-model:model-value="currentTab">
 					<TabsList class="grid grid-cols-2">
 						<TabsTrigger v-for="tab in tabOrder" :key="tab" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
@@ -131,8 +132,8 @@ watch(currentTab, (newTab, oldTab) => {
 				</div>
 				<Skeleton v-else class="w-full h-56" />
 
-				<div class="flex gap-2">
-					<RouterLink
+				<div class="grid grid-cols-2 gap-3">
+					<NavCard
 						v-for="groupButton in [
 							{
 								icon: ReceiptText,
@@ -149,20 +150,21 @@ watch(currentTab, (newTab, oldTab) => {
 						]"
 						:key="groupButton.title"
 						:to="groupButton.link"
-						class="contents"
+						hide-chevron
+						class="p-3.5 flex flex-row items-center gap-3"
 					>
-						<Button type="button" variant="outline" class="h-full flex-1 p-4">
-							<div class="flex flex-col items-center gap-2">
-								<div class="bg-muted p-3 rounded-lg aspect-square flex justify-center items-center">
-									<component :is="groupButton.icon" class="size-6" />
-								</div>
-								<div class="flex flex-col items-center">
-									<span class="text-md font-semibold">{{ groupButton.title }}</span>
-									<span class="text-sm text-muted-foreground">{{ groupButton.description }}</span>
-								</div>
-							</div>
-						</Button>
-					</RouterLink>
+						<div
+							class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
+						>
+							<component :is="groupButton.icon" class="size-5" />
+						</div>
+						<div class="flex min-w-0 flex-col items-start">
+							<span class="w-full truncate font-semibold">{{ groupButton.title }}</span>
+							<span class="w-full truncate text-xs text-muted-foreground">
+								{{ groupButton.description }}
+							</span>
+						</div>
+					</NavCard>
 				</div>
 			</div>
 
