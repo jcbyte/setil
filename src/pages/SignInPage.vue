@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import GoogleGLogo from "@/assets/GoogleGLogo.svg";
-import { Button } from "@/components/ui/button";
+import ThemedContinueButton from "@/components/google/ThemedContinueButton.vue";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { signIn } from "@/util/app";
@@ -8,13 +7,14 @@ import { signIn } from "@/util/app";
 const version = __APP_VERSION__;
 </script>
 
-<!-- 100dvh - 2rem; accounting for `p-4` on all pages from `App.vue` -->
+<!-- todo this is not centered properly -->
 <template>
-	<div class="flex min-h-[calc(100dvh-2rem)] w-full items-center justify-center">
-		<Card class="-translate-y-8 min-w-none sm:min-w-sm">
-			<CardContent class="flex flex-col items-center gap-4 p-8">
-				<div class="flex flex-col">
-					<span class="text-2xl font-bold text-center">Welcome to Setil</span>
+	<div class="flex h-full w-full items-center justify-center">
+		<Card class="-translate-y-8 w-full max-w-md">
+			<CardContent class="flex flex-col items-center gap-6 p-8 sm:p-10">
+				<img src="/icon/icon-192.png" alt="Setil" class="size-16 rounded-2xl shadow-2xl shadow-primary/25" />
+				<div class="flex flex-col items-center gap-2">
+					<h1 class="font-heading text-3xl font-extrabold tracking-tight">Welcome to Setil</h1>
 					<span class="text-sm text-muted-foreground text-center">
 						Sign in to start splitting expenses with friends
 					</span>
@@ -22,10 +22,7 @@ const version = __APP_VERSION__;
 
 				<Separator />
 
-				<Button type="button" @click="signIn()" class="px-8">
-					<img :src="GoogleGLogo" class="size-5" />
-					<span class="font-semibold">Continue with Google</span>
-				</Button>
+				<ThemedContinueButton @click="signIn()" />
 
 				<span class="text-sm text-muted-foreground text-center">Setil v{{ version }} by Joel Cutler</span>
 			</CardContent>
