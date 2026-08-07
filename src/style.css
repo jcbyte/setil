@@ -143,3 +143,11 @@ body {
 		@apply bg-background text-foreground;
 	}
 }
+
+@layer utilities {
+	.surface-glass {
+		background: color-mix(in oklch, var(--card) 88%, transparent);
+		backdrop-filter: blur(18px) saturate(140%);
+	}
+}
+

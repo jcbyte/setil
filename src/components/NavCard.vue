@@ -19,7 +19,7 @@ const props = defineProps<{
 					'group relative flex flex-col cursor-pointer overflow-hidden transition-all duration-200',
 					'hover:-translate-y-1',
 					'hover:border-primary/30 hover:[box-shadow:0_18px_48px_color-mix(in_oklch,var(--primary)_13%,transparent)]',
-					'dark:hover:border-primary/25 dark:hover:[box-shadow:0_20px_52px_rgba(0,0,0,.3),0_0_28px_color-mix(in_oklch,var(--primary)_8%,transparent)]',
+					'dark:hover:border-primary/25 dark:hover:[box-shadow:0_20px_52px_rgb(0_0_0/30%),0_0_28px_color-mix(in_oklch,var(--primary)_8%,transparent)]',
 					'focus-visible:ring-3 focus-visible:ring-primary/25',
 					// ! Target `CardHeader`; it is required
 					'[&>*:first-child]:pr-12',
