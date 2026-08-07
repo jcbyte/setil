@@ -2,30 +2,35 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Ghost } from "@lucide/vue";
+import { Ghost, House } from "@lucide/vue";
 </script>
 
-<!-- 100dvh - 2rem; accounting for `p-4` on all pages from `App.vue` -->
 <template>
-	<div class="flex min-h-[calc(100dvh-2rem)] items-center justify-center">
-		<Card class="-translate-y-8 min-w-none sm:min-w-sm">
-			<CardContent class="flex flex-col items-center gap-4 p-8">
-				<div class="flex size-12 items-center justify-center rounded-full bg-muted">
-					<Ghost class="size-6 text-muted-foreground" />
+	<div class="flex h-full w-full items-center justify-center">
+		<Card class="-translate-y-8">
+			<CardContent class="flex flex-col items-center gap-6 p-8 sm:p-10 text-center">
+				<div
+					class="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-2xl shadow-primary/25"
+				>
+					<Ghost class="size-8" />
 				</div>
 
-				<div class="flex flex-col">
-					<span class="text-2xl font-bold text-center">Error 404</span>
-					<span class="text-sm text-muted-foreground text-center">This page cannot be found</span>
+				<div class="flex flex-col items-center gap-2">
+					<span class="text-xs font-bold uppercase tracking-widest text-primary">Error 404</span>
+					<h1 class="font-heading text-3xl font-extrabold tracking-tight">Page not found</h1>
+					<p class="max-w-sm text-sm text-muted-foreground">
+						The page may have moved, or the address might be incorrect
+					</p>
 				</div>
 
 				<Separator />
 
-				<RouterLink to="/">
-					<Button type="button" variant="outline" class="min-w-36">
-						<span class="font-semibold">Return Home</span>
-					</Button>
-				</RouterLink>
+				<Button type="button" as-child class="min-w-40">
+					<RouterLink to="/">
+						<House />
+						<span>Return home</span>
+					</RouterLink>
+				</Button>
 			</CardContent>
 		</Card>
 	</div>

@@ -4,7 +4,7 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import { joinGroup } from "@/firebase/firestore/group";
 import { sendNotification } from "@/firebase/messaging";
 import { getRouteParam } from "@/util/util";
-import { Loader } from "@lucide/vue";
+import { LoaderCircle } from "@lucide/vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
@@ -43,13 +43,19 @@ onMounted(async () => {
 });
 </script>
 
-<!-- 100dvh - 2rem; accounting for `p-4` on all pages from `App.vue` -->
 <template>
-	<div class="flex min-h-[calc(100dvh-2rem)] items-center justify-center">
-		<Card class="-translate-y-8 min-w-none sm:min-w-sm">
-			<CardContent class="flex flex-col items-center gap-4 p-8">
-				<Loader class="animate-spin size-14" />
-				<span class="text-lg text-muted-foreground font-semibold">Validating Invite Link</span>
+	<div class="flex h-full w-full items-center justify-center">
+		<Card class="-translate-y-8 w-full max-w-sm">
+			<CardContent class="flex flex-col items-center gap-6 p-8 sm:p-10 text-center">
+				<div class="relative flex size-14 items-center justify-center text-primary">
+					<div class="absolute inset-0 blur-xl bg-primary/20" />
+					<LoaderCircle class="size-10 animate-spin" />
+				</div>
+
+				<div class="flex flex-col items-center gap-2">
+					<h1 class="font-heading text-2xl font-extrabold tracking-tight">Joining group</h1>
+					<p class="text-sm text-muted-foreground">Validating your invite link...</p>
+				</div>
 			</CardContent>
 		</Card>
 	</div>

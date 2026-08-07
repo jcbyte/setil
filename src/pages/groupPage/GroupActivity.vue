@@ -131,19 +131,19 @@ async function handleDeleteTransaction() {
 					<template v-if="groupedPagedTransactions.length > 0">
 						<div class="flex flex-col gap-4">
 							<Transition :name="pageTransition" mode="out-in">
-								<div :key="currentPage" class="flex flex-col gap-4">
+								<div :key="currentPage" class="flex flex-col gap-3.5">
 									<div
 										v-for="groupedTransactions in groupedPagedTransactions"
 										:key="groupedTransactions.monthGroup"
-										class="flex flex-col gap-1"
+										class="flex flex-col gap-0.5"
 									>
-										<span class="text-sm text-muted-foreground font-semibold uppercase">
+										<span class="px-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
 											{{ groupedTransactions.monthGroup }}
 										</span>
 										<div
 											v-for="[transactionId, transaction] in groupedTransactions.transactions"
 											:key="transactionId"
-											class="bg-muted rounded-lg px-4 py-2 flex justify-between items-center gap-4"
+											class="flex items-center justify-between gap-4 border-b last:border-b-0 border-border/60 px-1 sm:px-2 py-2 transition-colors hover:bg-muted/35"
 										>
 											<div class="flex items-center gap-2 min-w-0">
 												<div class="relative flex justify-center items-center">
@@ -193,7 +193,13 @@ async function handleDeleteTransaction() {
 												</div>
 												<DropdownMenu>
 													<DropdownMenuTrigger as-child>
-														<EllipsisVertical class="size-5" />
+														<div
+															class="group flex justify-center items-center rounded-md hover:bg-muted size-7 p-1 transition-colors"
+														>
+															<EllipsisVertical
+																class="text-muted-foreground transition-colors group-hover:text-foreground"
+															/>
+														</div>
 													</DropdownMenuTrigger>
 													<DropdownMenuContent>
 														<RouterLink :to="`/group/${groupId}/transaction/${transactionId}`">

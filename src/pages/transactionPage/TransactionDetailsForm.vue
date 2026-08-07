@@ -341,7 +341,7 @@ defineExpose<TransactionDetailsFormExposed>({
 								</Tabs>
 								<Skeleton v-else class="w-full h-9" />
 
-								<div v-if="!initialLoading" class="flex flex-col gap-2 bg-muted p-2 sm:p-4 rounded-lg">
+								<div v-if="!initialLoading" class="flex flex-col gap-2 px-2">
 									<div
 										class="grid grid-cols-[max-content_minmax(0,1fr)_max-content_max-content] items-center gap-2 gap-x-3"
 									>

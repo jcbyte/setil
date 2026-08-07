@@ -6,6 +6,7 @@ import { RouterLink, type RouteLocationRaw } from "vue-router";
 
 const props = defineProps<{
 	to: RouteLocationRaw;
+	hideChevron?: boolean;
 	class?: string;
 }>();
 </script>
@@ -16,9 +17,13 @@ const props = defineProps<{
 			role="link"
 			:class="
 				cn(
-					'group relative flex flex-col cursor-pointer transition hover:border-primary/40 hover:shadow-md',
+					'group relative flex flex-col cursor-pointer overflow-hidden transition-all duration-200',
+					'hover:-translate-y-1',
+					'hover:border-primary/30 hover:[box-shadow:0_18px_48px_color-mix(in_oklch,var(--primary)_13%,transparent)]',
+					'dark:hover:border-primary/25 dark:hover:[box-shadow:0_20px_52px_rgb(0_0_0/30%),0_0_28px_color-mix(in_oklch,var(--primary)_8%,transparent)]',
+					'focus-visible:ring-3 focus-visible:ring-primary/25',
 					// ! Target `CardHeader`; it is required
-					'[&>*:first-child]:pr-12',
+					!hideChevron && '[&>*:first-child]:pr-12',
 					props.class,
 				)
 			"
@@ -26,7 +31,8 @@ const props = defineProps<{
 			<slot />
 
 			<ChevronRight
-				class="absolute right-5 top-5 size-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground"
+				v-if="!hideChevron"
+				class="absolute right-5 top-5 size-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary"
 			/>
 		</Card>
 	</RouterLink>

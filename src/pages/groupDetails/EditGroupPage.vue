@@ -391,8 +391,8 @@ async function deleteGroup() {
 					<CardTitle>Your Group Profile</CardTitle>
 					<CardDescription>How others see you in this group</CardDescription>
 				</CardHeader>
-				<CardContent class="flex flex-col gap-3">
-					<div v-if="currentGroupUser" class="flex items-center gap-2 bg-muted w-fit sm:min-w-52 rounded-lg py-2 px-4">
+				<CardContent class="flex flex-col gap-4">
+					<div v-if="currentGroupUser" class="flex items-center gap-3">
 						<Avatar
 							v-if="currentGroupUser.computed.name"
 							:src="currentGroupUser.public?.photoUrl ?? null"
