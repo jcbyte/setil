@@ -48,11 +48,11 @@ const resolvedTheme = useColorMode().state;
 
 <template>
 	<Transition name="loader-anim">
-		<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
+		<div v-if="firebaseLoaded" class="min-h-dvh flex justify-center p-4 pb-10 sm:p-6 sm:pb-12 lg:p-8 lg:pb-14">
 			<Transition name="fade-slide" mode="out-in">
 				<SignInPage v-if="!currentUser" />
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
-				<div v-else class="w-full overflow-hidden">
+				<div v-else class="w-full">
 					<router-view v-slot="{ Component }">
 						<!-- Ensure mode is not 'out-in' when disabling css, as we do not want a transition lifecycle -->
 						<Transition name="fade-slide" :mode="!skipPageTransition ? 'out-in' : 'default'" :css="!skipPageTransition">
@@ -63,8 +63,8 @@ const resolvedTheme = useColorMode().state;
 			</Transition>
 		</div>
 
-		<div v-else class="fixed top-12 flex flex-col justify-center items-center gap-4 w-full p-4">
-			<img src="/icon/icon-192.png" alt="App Logo" class="size-24" />
+		<div v-else class="fixed inset-0 -translate-y-8 flex flex-col justify-center items-center gap-4">
+			<img src="/icon/icon-192.png" alt="App Logo" class="size-20 rounded-3xl shadow-2xl shadow-primary/25" />
 			<div class="flex gap-2 items-center">
 				<LoaderCircle :stroke-width="3" class="animate-spin text-muted-foreground" />
 				<p class="text-lg font-bold text-muted-foreground">Initialising Setil</p>
@@ -93,7 +93,7 @@ const resolvedTheme = useColorMode().state;
 }
 
 .loader-anim-leave-to {
-	transform: translateY(calc(-100% - 3rem));
+	transform: translateY(-100%);
 }
 </style>
 
@@ -101,7 +101,7 @@ const resolvedTheme = useColorMode().state;
 /* Slide left (default) */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-	transition: 0.1s ease;
+	transition: 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .fade-slide-enter-from {
@@ -116,7 +116,7 @@ const resolvedTheme = useColorMode().state;
 /* Slide right */
 .fade-slide-right-enter-active,
 .fade-slide-right-leave-active {
-	transition: 0.1s ease;
+	transition: 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .fade-slide-right-enter-from {
