@@ -214,7 +214,7 @@ async function openBankDetailsDialog() {
 								v-if="requiredPayments.length > 0"
 								v-for="payment in requiredPayments"
 								:key="`${payment.from}-${payment.to}-${payment.amount}`"
-								class="bg-muted rounded-lg p-4 flex flex-col gap-4"
+								class="flex flex-col gap-3 border-b last:border-b-0 border-border/60 py-4 first:pt-0 last:pb-0"
 							>
 								<div class="flex flex-col sm:flex-row justify-between items-center gap-2.5">
 									<div class="flex items-center gap-2">
@@ -251,7 +251,9 @@ async function openBankDetailsDialog() {
 										<Skeleton v-else class="size-10 rounded-full" />
 									</div>
 								</div>
-								<Button type="button" variant="outline" @click="fillForm(payment)">Record this payment</Button>
+								<Button type="button" variant="secondary" class="h-8" @click="fillForm(payment)"
+									>Record this payment</Button
+								>
 							</div>
 
 							<Empty v-else>
