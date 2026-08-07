@@ -8,7 +8,7 @@ import { Ghost, House } from "@lucide/vue";
 <template>
 	<div class="flex h-full w-full items-center justify-center">
 		<Card class="-translate-y-8">
-			<CardContent class="flex flex-col items-center gap-6 p-8 sm:p-10">
+			<CardContent class="flex flex-col items-center gap-6 p-8 sm:p-10 text-center">
 				<div
 					class="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-2xl shadow-primary/25"
 				>
@@ -18,7 +18,7 @@ import { Ghost, House } from "@lucide/vue";
 				<div class="flex flex-col items-center gap-2">
 					<span class="text-xs font-bold uppercase tracking-widest text-primary">Error 404</span>
 					<h1 class="font-heading text-3xl font-extrabold tracking-tight">Page not found</h1>
-					<p class="max-w-sm text-sm text-muted-foreground text-center">
+					<p class="max-w-sm text-sm text-muted-foreground">
 						The page may have moved, or the address might be incorrect
 					</p>
 				</div>

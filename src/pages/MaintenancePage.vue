@@ -7,17 +7,21 @@ const version = __APP_VERSION__;
 </script>
 
 <template>
-	<div class="flex min-h-dvh items-center justify-center">
-		<Card class="-translate-y-8 min-w-none sm:min-w-sm">
-			<CardContent class="flex flex-col items-center gap-4 p-8">
-				<div class="flex size-12 items-center justify-center rounded-full bg-muted">
-					<Wrench class="size-6 text-muted-foreground" />
+	<main class="flex min-h-dvh w-full items-center justify-center p-4 sm:p-6">
+		<Card class="-translate-y-8">
+			<CardContent class="flex flex-col items-center gap-6 p-8 sm:p-10 text-center">
+				<div
+					class="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-2xl shadow-primary/25"
+				>
+					<Wrench class="size-8" />
 				</div>
 
-				<div class="flex flex-col">
-					<span class="text-2xl font-bold text-center">Setil will be back soon</span>
-					<span class="text-sm text-muted-foreground text-center">Currently undergoing maintenance</span>
-					<span class="text-sm text-muted-foreground text-center">Please check back shortly</span>
+				<div class="flex flex-col items-center gap-2">
+					<span class="text-xs font-bold uppercase tracking-widest text-primary">Maintenance</span>
+					<h1 class="font-heading text-3xl font-extrabold tracking-tight">Setil will be back</h1>
+					<span class="max-w-sm text-sm text-muted-foreground">
+						We're currently making improvements, please check back shortly
+					</span>
 				</div>
 
 				<Separator />
@@ -25,5 +29,5 @@ const version = __APP_VERSION__;
 				<span class="text-sm text-muted-foreground">Setil v{{ version }} by Joel Cutler</span>
 			</CardContent>
 		</Card>
-	</div>
+	</main>
 </template>
