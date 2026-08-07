@@ -7,7 +7,6 @@ import { signIn } from "@/util/app";
 const version = __APP_VERSION__;
 </script>
 
-<!-- todo this is not centered properly -->
 <template>
 	<div class="flex h-full w-full items-center justify-center">
 		<Card class="-translate-y-8 w-full max-w-md">

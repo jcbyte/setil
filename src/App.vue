@@ -50,7 +50,9 @@ const resolvedTheme = useColorMode().state;
 	<Transition name="loader-anim">
 		<div v-if="firebaseLoaded" class="min-h-dvh flex justify-center p-4 pb-10 sm:p-6 sm:pb-12 lg:p-8 lg:pb-14">
 			<Transition name="fade-slide" mode="out-in">
-				<SignInPage v-if="!currentUser" />
+				<div v-if="!currentUser" class="w-full">
+					<SignInPage />
+				</div>
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-else class="w-full">
 					<router-view v-slot="{ Component }">
