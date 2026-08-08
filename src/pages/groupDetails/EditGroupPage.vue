@@ -25,7 +25,6 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
-import { useCurrentUser } from "@/composables/useCurrentUser";
 import useLiveGroupWithUserPublic, { type GroupUserDataWithPublic } from "@/composables/useLiveGroupWithUserPublic";
 import {
 	changeUserNickname,
@@ -38,6 +37,7 @@ import {
 } from "@/firebase/firestore/group";
 import type { Currency } from "@/types/firestore";
 import { inviteUser, noGroup } from "@/util/app";
+import authService from "@/util/authService.js";
 import { getRouteParam, getStatusUsers } from "@/util/util";
 import {
 	ArrowBigUpDash,
@@ -131,7 +131,7 @@ async function updateGroup(details: GroupDetailsValues) {
 	isGroupDetailsUpdating.value = false;
 }
 
-const currentUser = useCurrentUser();
+const { user: currentUser } = authService;
 const currentGroupUser = computed<GroupUserDataWithPublic | null>(
 	() => (currentUser.value && group.value?.users?.[currentUser.value.uid]) ?? null,
 );

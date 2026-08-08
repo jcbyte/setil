@@ -1,25 +1,13 @@
 <script setup lang="ts">
 import { Toaster } from "@/components/ui/sonner";
-import { useCurrentUser } from "@/composables/useCurrentUser";
+import authService from "@/util/authService.js";
 import { LoaderCircle } from "@lucide/vue";
 import { useColorMode } from "@vueuse/core";
-import { getAuth } from "firebase/auth";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { app } from "./firebase/firebase";
-import { requestNotifications } from "./firebase/messaging";
 import SignInPage from "./pages/SignInPage.vue";
 
-const firebaseLoaded = ref(false);
-const currentUser = useCurrentUser();
-
-const auth = getAuth(app);
-auth.onAuthStateChanged((user) => {
-	firebaseLoaded.value = true;
-
-	// Only request notifications once we are signed in, as it writes to user space
-	if (user) requestNotifications();
-});
+const { user: currentUser, isAuthReady } = authService;
 
 // Skip custom page animations when the browser displays one, i.e. iOS swipe back
 const route = useRoute();
@@ -48,7 +36,7 @@ const resolvedTheme = useColorMode().state;
 
 <template>
 	<Transition name="loader-anim">
-		<div v-if="firebaseLoaded" class="min-h-dvh flex justify-center p-4 pb-10 sm:p-6 sm:pb-12 lg:p-8 lg:pb-14">
+		<div v-if="isAuthReady" class="min-h-dvh flex justify-center p-4 pb-10 sm:p-6 sm:pb-12 lg:p-8 lg:pb-14">
 			<Transition name="fade-slide" mode="out-in">
 				<div v-if="!currentUser" class="w-full">
 					<SignInPage />

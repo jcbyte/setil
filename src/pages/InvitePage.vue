@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Card, CardContent } from "@/components/ui/card";
-import { useCurrentUser } from "@/composables/useCurrentUser";
 import { joinGroup } from "@/firebase/firestore/group";
 import { sendNotification } from "@/firebase/messaging";
+import authService from "@/util/authService";
 import { getRouteParam } from "@/util/util";
 import { LoaderCircle } from "@lucide/vue";
 import { onMounted } from "vue";
@@ -11,7 +11,7 @@ import { toast } from "vue-sonner";
 
 const route = useRoute();
 const router = useRouter();
-const currentUser = useCurrentUser();
+const { user: currentUser } = authService;
 
 const groupId = getRouteParam(route.params.groupId);
 const inviteCode = getRouteParam(route.params.inviteCode);

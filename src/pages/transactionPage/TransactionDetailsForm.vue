@@ -13,9 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSelect from "@/components/UserSelect.vue";
-import { useCurrentUser } from "@/composables/useCurrentUser";
 import type { GroupUserDataWithPublic, GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
 import type { Transaction, TransactionCategory } from "@/types/firestore";
+import authService from "@/util/authService";
 import { CategorySettings } from "@/util/category";
 import { splitAmountEven, splitAmountRatio } from "@/util/split";
 import {
@@ -88,7 +88,7 @@ const formSchema = z.object({
 const typedFormSchema = toTypedSchema(formSchema);
 export type TransactionDetailsValues = z.infer<typeof formSchema>;
 
-const currentUser = useCurrentUser();
+const { user: currentUser } = authService;
 const timeNow = now(getLocalTimeZone());
 
 const { handleSubmit, resetForm, setFieldValue, values, meta, validateField } = useForm({

@@ -28,6 +28,7 @@
 		"vue-advanced-cropper": "^2.8.9",
 		"vue-router": "^5.2.0",
 		"vue-sonner": "^2.0.9",
+		"vue3-google-signin": "^2.1.1",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {

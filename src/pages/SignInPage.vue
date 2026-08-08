@@ -2,9 +2,17 @@
 import ThemedContinueButton from "@/components/google/ThemedContinueButton.vue";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { signIn } from "@/util/app";
+import authService from "@/util/authService";
+import { useOneTap } from "vue3-google-signin";
 
 const version = __APP_VERSION__;
+const { signInWithGooglePopup, signInWithGoogleCredential } = authService;
+
+useOneTap({
+	onSuccess: (response) => {
+		if (response.credential) signInWithGoogleCredential(response.credential);
+	},
+});
 </script>
 
 <template>
@@ -19,7 +27,7 @@ const version = __APP_VERSION__;
 
 				<Separator />
 
-				<ThemedContinueButton @click="signIn()" />
+				<ThemedContinueButton @click="signInWithGooglePopup" />
 
 				<span class="text-sm text-muted-foreground">Setil v{{ version }} by Joel Cutler</span>
 			</CardContent>

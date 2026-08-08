@@ -1,31 +1,6 @@
-import { firebaseSignOut, signInWithGoogle } from "@/firebase/auth";
 import { cleanupInvites, invite } from "@/firebase/firestore/group";
 import { type Router } from "vue-router";
 import { toast } from "vue-sonner";
-
-export async function signIn() {
-	const persistentToast = toast.loading("Signing In", {
-		description: "Please continue in the popup window.",
-	});
-
-	try {
-		const newUser = await signInWithGoogle();
-
-		toast("Signed In", { description: newUser ? "Welcome to Setil!" : "Welcome back!", id: persistentToast });
-	} catch (error: any) {
-		toast.error("Error Signing In", { description: error.code, id: persistentToast });
-	}
-}
-
-export function signOut() {
-	firebaseSignOut()
-		.then(() => {
-			toast("Signed Out", { description: "See you again soon!" });
-		})
-		.catch((error) => {
-			toast.error("Error Signing Out", { description: error.code });
-		});
-}
 
 export async function inviteUser(groupId: string, groupName: string) {
 	// Cleanup old invites

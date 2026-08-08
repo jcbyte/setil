@@ -1,11 +1,11 @@
 import { db } from "@/firebase/firebase";
 import { removeGroupFromUser } from "@/firebase/firestore/user";
 import type { GroupData, GroupUserData } from "@/types/firestore";
+import authService from "@/util/authService";
 import { collection, CollectionReference, doc, DocumentReference, query, where } from "firebase/firestore";
 import { computed, onScopeDispose, reactive, ref, watch, type Ref } from "vue";
 import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";
 import { acquireLiveQuery } from "../firebase/live/acquireLiveQuery";
-import { useCurrentUser } from "./useCurrentUser";
 import { useLiveCurrentUserData } from "./useLiveCurrentUserData";
 
 export type GroupListData = {
@@ -34,7 +34,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 	groupList: Record<string, Ref<GroupListData | null>>;
 	loaded: Ref<boolean>;
 } {
-	const currentUser = useCurrentUser();
+	const { user: currentUser } = authService;
 	const currentUserData = useLiveCurrentUserData((nw) => onError?.(nw));
 
 	const groupList = reactive<Record<string, Ref<GroupListData | null>>>({});

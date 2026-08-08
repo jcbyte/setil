@@ -6,12 +6,11 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useLiveCurrentUserData } from "@/composables/useLiveCurrentUserData";
-import { signOut } from "@/util/app";
+import authService from "@/util/authService";
 import { LogOut, Settings } from "@lucide/vue";
 
-const currentUser = useCurrentUser();
+const { user: currentUser, signOut } = authService;
 const currentUserData = useLiveCurrentUserData();
 </script>
 
@@ -43,3 +42,4 @@ const currentUserData = useLiveCurrentUserData();
 		</DropdownMenuContent>
 	</DropdownMenu>
 </template>
+import { useAuth } from "@/auth/useAuth";
