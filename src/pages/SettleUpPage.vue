@@ -21,7 +21,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UserSelect from "@/components/UserSelect.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
-import { useCurrentUser } from "@/composables/useCurrentUser";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore/transaction";
@@ -30,6 +29,7 @@ import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/types/firestore";
 import { type PaymentDetails } from "@/types/paymentDetails";
 import { noGroup } from "@/util/app";
+import authService from "@/util/authService";
 import { resolveGroupDebts, type SimpleTransaction } from "@/util/split";
 import { getBalanceStr, getLeftUsersInTransaction, getRouteParam, getStatusUsers } from "@/util/util";
 import { ArrowDown, ArrowLeft, ArrowRight, Landmark, PartyPopper, Wallet } from "@lucide/vue";
@@ -44,7 +44,7 @@ import * as z from "zod";
 
 const router = useRouter();
 const route = useRoute();
-const currentUser = useCurrentUser();
+const { user: currentUser } = authService;
 const { breakpointSplit } = useScreenSize();
 
 const groupId = computed(() => getRouteParam(route.params.groupId));
