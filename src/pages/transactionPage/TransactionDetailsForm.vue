@@ -154,6 +154,7 @@ const onSubmit = handleSubmit((values) => {
 
 	const date = toCalendarDateTime(values.date, parseTime(values.time)).toDate(getLocalTimeZone());
 	const transaction: Transaction = {
+		type: "expense",
 		title: values.title,
 		from: values.from,
 		date: Timestamp.fromDate(date),
