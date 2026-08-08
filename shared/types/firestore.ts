@@ -42,7 +42,8 @@ export interface ExpenseTransaction<TTimestamp> extends BaseTransaction<TTimesta
 }
 
 export interface PaymentTransaction<TTimestamp> extends BaseTransaction<TTimestamp> {
-	to: string;
+	to_removethisaftertesting: string;
+	amount: number;
 }
 
 export type Transaction<TTimestamp> =
