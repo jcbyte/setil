@@ -87,6 +87,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 					body = `${fromName} paid ${toName} ${formatCurrency(transaction.amount, group.currency, true)}.`;
 					route = `/group/${groupId}?tab=summary`;
 				}
+
+				break;
 			}
 			default:
 				return res.status(400).json({ success: false, error: "Unknown notification type" });
