@@ -2,9 +2,31 @@
 import ThemedContinueButton from "@/components/google/ThemedContinueButton.vue";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { app } from "@/firebase/firebase";
+import { initialiseUserData } from "@/firebase/firestore/user";
 import { signIn } from "@/util/app";
+import { getAuth, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { toast } from "vue-sonner";
+import { useOneTap } from "vue3-google-signin";
 
 const version = __APP_VERSION__;
+
+useOneTap({
+	onSuccess: async (res) => {
+		const persistentToast = toast.loading("Signing In", {
+			description: "Retrieving credentials from Google One Tap.",
+		});
+
+		const cred = GoogleAuthProvider.credential(res.credential);
+
+		try {
+			const newUser = await signInWithCredential(getAuth(app), cred).then(initialiseUserData);
+			toast("Signed In", { description: newUser ? "Welcome to Setil!" : "Welcome back!", id: persistentToast });
+		} catch (error: any) {
+			toast.error("Error Signing In", { description: error.code, id: persistentToast });
+		}
+	},
+});
 </script>
 
 <template>

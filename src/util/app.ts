@@ -17,14 +17,13 @@ export async function signIn() {
 	}
 }
 
-export function signOut() {
-	firebaseSignOut()
-		.then(() => {
-			toast("Signed Out", { description: "See you again soon!" });
-		})
-		.catch((error) => {
-			toast.error("Error Signing Out", { description: error.code });
-		});
+export async function signOut() {
+	try {
+		await firebaseSignOut();
+		toast("Signed Out", { description: "See you again soon!" });
+	} catch (error: any) {
+		toast.error("Error Signing Out", { description: error.code });
+	}
 }
 
 export async function inviteUser(groupId: string, groupName: string) {

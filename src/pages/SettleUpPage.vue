@@ -362,7 +362,7 @@ async function openBankDetailsDialog() {
 							{{ group.users[bankDetailsDialog.data.value!.userId].computed.name }}
 						</span>
 						<Skeleton v-else class="inline-block align-middle w-14 h-4.25 mx-0.5" />
-						<span>would like payment.</span>
+						<span>would like payment</span>
 					</DialogDescription>
 				</DialogHeader>
 
