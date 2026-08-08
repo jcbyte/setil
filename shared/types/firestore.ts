@@ -31,12 +31,12 @@ export interface GroupUserData<TTimestamp> {
 }
 
 interface BaseTransaction<TTimestamp> {
-	title: string;
 	from: string;
 	date: TTimestamp;
 }
 
 export interface ExpenseTransaction<TTimestamp> extends BaseTransaction<TTimestamp> {
+	title: string;
 	to: Record<string, number>;
 	category: TransactionCategory;
 }
