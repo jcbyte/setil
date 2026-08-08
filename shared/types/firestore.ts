@@ -1,6 +1,6 @@
 export type Currency = "gbp" | "usd" | "eur" | "pln";
 
-export type TransactionCategory = "expense" | "food" | "transport" | "fuel" | "event" | "bill" | "payment";
+export type TransactionCategory = "expense" | "food" | "transport" | "fuel" | "event" | "bill";
 
 export interface UserData {
 	groups: string[];
@@ -30,13 +30,24 @@ export interface GroupUserData<TTimestamp> {
 	lastUpdate: TTimestamp;
 }
 
-export interface Transaction<TTimestamp> {
-	title: string;
+interface BaseTransaction<TTimestamp> {
 	from: string;
-	to: Record<string, number>;
 	date: TTimestamp;
+}
+
+export interface ExpenseTransaction<TTimestamp> extends BaseTransaction<TTimestamp> {
+	title: string;
+	to: Record<string, number>;
 	category: TransactionCategory;
 }
+
+export interface PaymentTransaction<TTimestamp> extends BaseTransaction<TTimestamp> {
+	to: string;
+	amount: number;
+}
+
+export type Transaction<TTimestamp> =
+	({ type: "expense" } & ExpenseTransaction<TTimestamp>) | ({ type: "payment" } & PaymentTransaction<TTimestamp>);
 
 export interface Invite<TTimestamp> {
 	expiry: TTimestamp;

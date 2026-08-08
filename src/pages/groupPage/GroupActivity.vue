@@ -2,30 +2,30 @@
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import {
-	AlertDialog,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import {
-	Pagination,
-	PaginationContent,
-	PaginationEllipsis,
-	PaginationItem,
-	PaginationNext,
-	PaginationPrevious,
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useControlledDialog } from "@/composables/useControlledDialog";
@@ -34,7 +34,7 @@ import { deleteTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/types/firestore";
 import { CategorySettings } from "@/util/category";
 import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";
-import { EllipsisVertical, FilePen, FileText, Trash } from "@lucide/vue";
+import { ArrowRight, EllipsisVertical, FilePen, FileText, Trash } from "@lucide/vue";
 import { formatCurrency } from "@shared/currency";
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
@@ -145,7 +145,7 @@ async function handleDeleteTransaction() {
 											:key="transactionId"
 											class="flex items-center justify-between gap-4 border-b last:border-b-0 border-border/60 px-1 sm:px-2 py-2 transition-colors hover:bg-muted/35"
 										>
-											<div class="flex items-center gap-2 min-w-0">
+											<div v-if="transaction.type === 'expense'" class="flex items-center gap-2 min-w-0" >
 												<div class="relative flex justify-center items-center">
 													<Avatar
 														v-if="props.group.users && props.group.users[transaction.from].computed.name"
@@ -156,12 +156,11 @@ async function handleDeleteTransaction() {
 													<div
 														class="absolute -bottom-1 -right-1 rounded-full bg-card size-5.5 flex justify-center items-center"
 													>
-														<component :is="CategorySettings[transaction.category].icon" class="size-3!" />
+														<component :is="CategorySettings[transaction.category].icon" class="size-3" />
 													</div>
 												</div>
 												<div class="flex flex-col min-w-0">
 													<span class="truncate">{{ transaction.title }}</span>
-													<div class="flex items-center gap-1 min-w-0">
 														<span
 															v-if="props.group.users && props.group.users[transaction.from].computed.name"
 															class="text-sm text-muted-foreground min-w-0 truncate"
@@ -169,8 +168,50 @@ async function handleDeleteTransaction() {
 															by {{ props.group.users[transaction.from].computed.name }}
 														</span>
 														<Skeleton v-else class="w-18 h-5" />
-													</div>
 												</div>
+											</div>
+                      <div v-else class="flex items-center gap-2 min-w-0">
+                        <div class="relative flex justify-center items-center bg-muted rounded-full">
+                          <Avatar
+													v-if="props.group.users && props.group.users[transaction.from].computed.name"
+													:src="props.group.users[transaction.from].public?.photoUrl ?? null"
+													:name="props.group.users[transaction.from].computed.name!"
+													class="-mr-0.5"
+												/>
+												<Skeleton v-else class="size-10 rounded-full -mr-0.5" />
+												<div
+													class="absolute left-1/2 -translate-x-1/2 bg-primary rounded-full flex justify-center items-center size-4"
+                          >
+													<ArrowRight class="text-primary-foreground size-3" />
+												</div>
+												<Avatar
+													v-if="props.group.users && props.group.users[transaction.to].computed.name"
+													:src="props.group.users[transaction.to].public?.photoUrl ?? null"
+													:name="props.group.users[transaction.to].computed.name!"
+													class="-ml-0.5"
+                          />
+												<Skeleton v-else class="size-10 rounded-full -ml-0.5" />
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="truncate">Setil Up</span>
+                        <div class="flex items-center gap-1 min-w-0">
+                          <span
+                          v-if="props.group.users && props.group.users[transaction.from].computed.name"
+                          class="text-sm text-muted-foreground min-w-0 truncate"
+                          >
+                            {{ props.group.users[transaction.from].computed.name }}
+                          </span>
+                          <Skeleton v-else class="w-18 h-5" />
+                          <ArrowRight class="text-muted-foreground size-3 shrink-0" />
+                                                    <span
+                          v-if="props.group.users && props.group.users[transaction.to].computed.name"
+                          class="text-sm text-muted-foreground min-w-0 truncate flex-1"
+                          >
+                            {{ props.group.users[transaction.to].computed.name }}
+                          </span>
+                          <Skeleton v-else class="w-18 h-5" />
+                        </div>
+                      </div>
 											</div>
 
 											<div class="flex items-center gap-2">
@@ -178,8 +219,8 @@ async function handleDeleteTransaction() {
 													<span class="text-nowrap">
 														{{
 															props.group.data
-																? formatCurrency(sumRecordValues(transaction.to), props.group.data.currency)
-																: sumRecordValues(transaction.to)
+																? formatCurrency(transaction.type === "expense" ? sumRecordValues(transaction.to) : transaction.amount, props.group.data.currency)
+																: (transaction.type === "expense" ? sumRecordValues(transaction.to) : transaction.amount)
 														}}
 													</span>
 													<span class="text-sm text-muted-foreground text-nowrap">
@@ -202,7 +243,7 @@ async function handleDeleteTransaction() {
 														</div>
 													</DropdownMenuTrigger>
 													<DropdownMenuContent>
-														<RouterLink :to="`/group/${groupId}/transaction/${transactionId}`">
+														<RouterLink v-if="transaction.type === 'expense'"" :to="`/group/${groupId}/transaction/${transactionId}`">
 															<DropdownMenuItem>
 																<div class="w-full flex justify-between items-center">
 																	<span>Edit</span>
@@ -210,7 +251,7 @@ async function handleDeleteTransaction() {
 																</div>
 															</DropdownMenuItem>
 														</RouterLink>
-														<DropdownMenuSeparator />
+														<DropdownMenuSeparator v-if="transaction.type === 'expense'""  />
 														<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
 															<div class="w-full flex justify-between items-center">
 																<span class="text-red-400">Delete</span>

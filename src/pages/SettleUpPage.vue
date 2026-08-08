@@ -153,11 +153,11 @@ const onSubmit = handleSubmit(async (values) => {
 	isMakingPayment.value = true;
 
 	const transaction: Transaction = {
-		title: "Setil Up",
+		type: "payment",
 		from: values.from,
 		date: Timestamp.now(),
-		to: { [values.to]: toFirestoreAmount(values.amount, group.value.data.currency) },
-		category: "payment",
+		to: values.to,
+		amount: toFirestoreAmount(values.amount, group.value.data.currency),
 	};
 	const leftUsers = getLeftUsersInTransaction(transaction, group.value.users);
 

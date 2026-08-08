@@ -28,6 +28,11 @@ function updateGroupBalances(groupRef: DocumentReference, batch: WriteBatch, fro
 	});
 }
 
+function getToRecord(transaction: Transaction): Record<string, number> {
+	if (transaction.type === "expense") return transaction.to;
+	return { [transaction.to]: transaction.amount };
+}
+
 /**
  * Create a transaction in a group and update relevant users balances.
  * @param groupId id of the group.
@@ -49,7 +54,7 @@ export async function createTransaction(
 	batch.set(transactionRef, transaction);
 
 	// Update users balances
-	updateGroupBalances(groupRef, batch, transaction.from, transaction.to);
+	updateGroupBalances(groupRef, batch, transaction.from, getToRecord(transaction));
 
 	// Update lastUpdate time
 	updateGroupUpdateTime(groupRef, batch);
@@ -97,9 +102,9 @@ export async function updateTransaction(
 		groupRef,
 		batch,
 		oldTransaction.from,
-		Object.fromEntries(Object.entries(oldTransaction.to).map(([userId, amount]) => [userId, -amount])),
+		Object.fromEntries(Object.entries(getToRecord(oldTransaction)).map(([userId, amount]) => [userId, -amount])),
 	);
-	updateGroupBalances(groupRef, batch, transaction.from, transaction.to);
+	updateGroupBalances(groupRef, batch, transaction.from, getToRecord(transaction));
 
 	// Update lastUpdate time
 	updateGroupUpdateTime(groupRef, batch);
@@ -139,7 +144,7 @@ export async function deleteTransaction(groupId: string, transactionId: string, 
 		groupRef,
 		batch,
 		transaction.from,
-		Object.fromEntries(Object.entries(transaction.to).map(([userId, amount]) => [userId, -amount])),
+		Object.fromEntries(Object.entries(getToRecord(transaction)).map(([userId, amount]) => [userId, -amount])),
 	);
 
 	// Update lastUpdate time

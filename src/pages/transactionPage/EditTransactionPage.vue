@@ -37,6 +37,14 @@ watch(
 
 		if (!hasThisTransactionLoaded.value && groupValue.data && groupValue.transactions && transactionId.value) {
 			const transaction = groupValue.transactions[transactionId.value];
+			if (!transaction || transaction.type !== "expense") {
+				toast.error("Expense Not Found", {
+					description: "Ensure this expense exists.",
+				});
+
+				router.replace(`/group/${groupId.value}`);
+				return;
+			}
 
 			const transactionGcd = gcdN(Object.values(transaction.to).filter((v) => v));
 			const transactionPeople = Object.fromEntries(
@@ -70,7 +78,7 @@ const shownUsers = computed(() => {
 	if (!transactionId.value || !group.value?.users) return {};
 
 	const transaction = group.value?.transactions?.[transactionId.value];
-	if (!transaction) return {};
+	if (!transaction || transaction.type !== "expense") return {};
 
 	const activeUsers = getStatusUsers(group.value.users, new Set(["active"]));
 	const shownUserIds = new Set([...Object.keys(activeUsers), transaction.from, ...Object.keys(transaction.to)]);

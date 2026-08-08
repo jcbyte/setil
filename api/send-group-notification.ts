@@ -69,25 +69,25 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 				const transaction = transactionSnap.data();
 				if (!transaction) return res.status(404).json({ success: false, error: "Group transaction not found" });
 
-				const total = Object.values(transaction.to).reduce((sum, amount) => sum + amount, 0);
-
 				const fromName = await getGroupUserName(groupId, transaction.from);
 				if (!fromName) return res.status(404).json({ success: false, error: "Transaction user not found" });
 
 				if (notification.type === "new-transaction") {
+					if (transaction.type !== "expense")
+						return res.status(422).json({ success: false, error: "Transaction is not an expense" });
+
+					const total = Object.values(transaction.to).reduce((sum, amount) => sum + amount, 0);
 					body = `${fromName} added expense ${transaction.title} for ${formatCurrency(total, group.currency, true)}.`;
 					route = `/group/${groupId}?tab=activity`;
-					break;
+				} else {
+					if (transaction.type !== "payment")
+						return res.status(422).json({ success: false, error: "Transaction is not a payment" });
+
+					const toName = await getGroupUserName(groupId, transaction.to);
+					body = `${fromName} paid ${toName} ${formatCurrency(transaction.amount, group.currency, true)}.`;
+					route = `/group/${groupId}?tab=summary`;
 				}
 
-				const toUsers = Object.keys(transaction.to);
-				if (toUsers.length !== 1)
-					return res.status(400).json({ success: false, error: "Transaction is not a payment" });
-				const toName = await getGroupUserName(groupId, toUsers[0]!);
-				if (!toName) return res.status(404).json({ success: false, error: "Payment user not found" });
-
-				body = `${fromName} paid ${toName} ${formatCurrency(total, group.currency, true)}.`;
-				route = `/group/${groupId}?tab=summary`;
 				break;
 			}
 			default:
