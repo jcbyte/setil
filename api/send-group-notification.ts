@@ -83,7 +83,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 					if (transaction.type !== "payment")
 						return res.status(422).json({ success: false, error: "Transaction is not a payment" });
 
-					const toName = await getGroupUserName(groupId, transaction.to_removethisaftertesting);
+					const toName = await getGroupUserName(groupId, transaction.to);
 					body = `${fromName} paid ${toName} ${formatCurrency(transaction.amount, group.currency, true)}.`;
 					route = `/group/${groupId}?tab=summary`;
 				}
