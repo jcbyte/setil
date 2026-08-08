@@ -206,7 +206,7 @@ watch(currentTab, (newTab, oldTab) => {
 					</Button>
 				</CardFooter>
 			</Card>
-			<Skeleton v-else class="h-82 w-68" />
+			<Skeleton v-else class="h-82 w-full min-w-68 md:max-w-92" />
 		</div>
 	</div>
 </template>
