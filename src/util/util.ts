@@ -18,9 +18,12 @@ export function getStatusUsers<T extends { status: GroupUserStatus }>(
 }
 
 export function getLeftUsersInTransaction(transaction: Transaction, users: Record<string, GroupUserData>) {
-	return [...new Set([...Object.keys(transaction.to), transaction.from])].filter(
-		(userId) => users[userId].status !== "active",
-	);
+	return [
+		...new Set([
+			...(transaction.type === "expense" ? Object.keys(transaction.to) : [transaction.to]),
+			transaction.from,
+		]),
+	].filter((userId) => users[userId].status !== "active");
 }
 
 export function getBalanceStr(
