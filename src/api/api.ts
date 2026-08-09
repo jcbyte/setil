@@ -13,10 +13,14 @@ export class ApiError extends Error {
 	}
 }
 
-export async function fetchApiJson<T = {}>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
+const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, "") ?? "";
+
+export async function fetchApiJson<T = {}>(url: string, init?: RequestInit): Promise<T> {
+	const resolvedUrl = url.startsWith("/") ? `${API_BASE_URL}${url}` : url;
+
 	let res: Response;
 	try {
-		res = await fetch(input, init);
+		res = await fetch(resolvedUrl, init);
 	} catch (error) {
 		throw new ApiError(error instanceof Error ? error.message : "Network request failed");
 	}
