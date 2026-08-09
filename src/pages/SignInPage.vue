@@ -3,16 +3,20 @@ import ThemedContinueButton from "@/components/google/ThemedContinueButton.vue";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import authService from "@/util/authService";
+import { Capacitor } from "@capacitor/core";
 import { useOneTap } from "vue3-google-signin";
 
 const version = __APP_VERSION__;
 const { signInWithGooglePopup, signInWithGoogleCredential } = authService;
 
-useOneTap({
-	onSuccess: (response) => {
-		if (response.credential) signInWithGoogleCredential(response.credential);
-	},
-});
+if (!Capacitor.isNativePlatform()) {
+	// Do not run Google One Tap if in a native app
+	useOneTap({
+		onSuccess: (response) => {
+			if (response.credential) signInWithGoogleCredential(response.credential);
+		},
+	});
+}
 </script>
 
 <template>

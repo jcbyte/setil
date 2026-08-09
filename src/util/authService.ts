@@ -1,6 +1,8 @@
 import { app } from "@/firebase/firebase";
 import { initialiseUserData } from "@/firebase/firestore/user";
 import { requestNotifications } from "@/firebase/messaging";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
+import { Capacitor } from "@capacitor/core";
 import {
 	signOut as firebaseSignOut,
 	getAuth,
@@ -26,8 +28,12 @@ onAuthStateChanged(auth, (currentUser) => {
 });
 
 function errorDescription(error: unknown): string {
-	if (typeof error === "object" && error !== null && "code" in error) return String(error.code);
 	if (error instanceof Error) return error.message;
+	if (typeof error === "object" && error !== null) {
+		if ("message" in error && error.message) return String(error.message);
+		if ("code" in error && error.code) return String(error.code);
+	}
+	if (typeof error === "string") return error;
 	return "An unknown error occurred";
 }
 
@@ -47,7 +53,22 @@ async function completeSignIn(signInOperation: () => Promise<UserCredential>, de
 	}
 }
 
+async function signInNativeApp() {
+	const result = await FirebaseAuthentication.signInWithGoogle();
+	const idToken = result.credential?.idToken;
+
+	if (!idToken) throw new Error("Google did not return an ID token");
+
+	const credential = GoogleAuthProvider.credential(idToken, result.credential?.accessToken);
+	return signInWithCredential(auth, credential);
+}
+
 async function signInWithGooglePopup(): Promise<void> {
+	if (Capacitor.isNativePlatform()) {
+		await completeSignIn(signInNativeApp, "Please continue in the credential manager");
+		return;
+	}
+
 	const provider = new GoogleAuthProvider();
 	await completeSignIn(() => signInWithPopup(auth, provider), "Please continue in the popup window");
 }
