@@ -96,60 +96,64 @@ const { handleSubmit, resetForm, values, meta } = useForm({
 });
 
 onMounted(async () => {
-	const paymentDetails = await getPaymentDetails();
+	try {
+		const paymentDetails = await getPaymentDetails();
 
-	if (paymentDetails) {
-		if (paymentDetails.type === "UK") {
+		if (paymentDetails) {
+			if (paymentDetails.type === "UK") {
+				resetForm({
+					values: {
+						system: "UK",
+						name: paymentDetails.name,
+						UK_accountNumber: paymentDetails.accountNumber,
+						UK_sortCode: paymentDetails.sortCode,
+					},
+				});
+			} else if (paymentDetails.type === "US") {
+				resetForm({
+					values: {
+						system: "US",
+						name: paymentDetails.name,
+						US_routingNumber: paymentDetails.routingNumber,
+						US_accountNumber: paymentDetails.accountNumber,
+					},
+				});
+			} else if (paymentDetails.type === "SEPA") {
+				resetForm({
+					values: {
+						system: "SEPA",
+						name: paymentDetails.name,
+						SEPA_IBAN: paymentDetails.IBAN,
+						SEPA_BIC: paymentDetails.BIC ?? undefined,
+					},
+				});
+			} else if (paymentDetails.type === "SWIFT") {
+				resetForm({
+					values: {
+						system: "SWIFT",
+						name: paymentDetails.name,
+						SWIFT_SWIFT: paymentDetails.SWIFT,
+						SWIFT_IBAN: paymentDetails.IBAN,
+						SWIFT_bankName: paymentDetails.bankName ?? undefined,
+						SWIFT_bankAddress: paymentDetails.bankAddress ?? undefined,
+					},
+				});
+			}
+			hasDetailsSaved.value = true;
+		} else {
 			resetForm({
 				values: {
 					system: "UK",
-					name: paymentDetails.name,
-					UK_accountNumber: paymentDetails.accountNumber,
-					UK_sortCode: paymentDetails.sortCode,
+					name: getUser().displayName ?? undefined,
 				},
 			});
-		} else if (paymentDetails.type === "US") {
-			resetForm({
-				values: {
-					system: "US",
-					name: paymentDetails.name,
-					US_routingNumber: paymentDetails.routingNumber,
-					US_accountNumber: paymentDetails.accountNumber,
-				},
-			});
-		} else if (paymentDetails.type === "SEPA") {
-			resetForm({
-				values: {
-					system: "SEPA",
-					name: paymentDetails.name,
-					SEPA_IBAN: paymentDetails.IBAN,
-					SEPA_BIC: paymentDetails.BIC ?? undefined,
-				},
-			});
-		} else if (paymentDetails.type === "SWIFT") {
-			resetForm({
-				values: {
-					system: "SWIFT",
-					name: paymentDetails.name,
-					SWIFT_SWIFT: paymentDetails.SWIFT,
-					SWIFT_IBAN: paymentDetails.IBAN,
-					SWIFT_bankName: paymentDetails.bankName ?? undefined,
-					SWIFT_bankAddress: paymentDetails.bankAddress ?? undefined,
-				},
-			});
+			hasDetailsSaved.value = false;
 		}
-		hasDetailsSaved.value = true;
-	} else {
-		resetForm({
-			values: {
-				system: "UK",
-				name: getUser().displayName ?? undefined,
-			},
-		});
-		hasDetailsSaved.value = false;
-	}
 
-	hasDataLoaded.value = true;
+		hasDataLoaded.value = true;
+	} catch (e) {
+		toast.error("Error Fetching Bank Details", { description: String(e) });
+	}
 });
 
 const onSubmit = handleSubmit(async (values) => {
