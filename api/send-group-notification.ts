@@ -7,6 +7,7 @@ import type { GroupData, GroupUserData, PublicUserData, Transaction } from "./_t
 import { authenticateUser } from "./_utils/auth.js";
 
 import "./_init/firebaseAdmin.js";
+import { handlePreflight } from "./_utils/cors.js";
 
 const db = getFirestore();
 const messaging = getMessaging();
@@ -26,11 +27,7 @@ async function getGroupUserName(groupId: string, userId: string) {
 }
 
 export default async function (req: VercelRequest, res: VercelResponse) {
-	// Required as cross-origin clients send a preflight request
-	// before requests that include the Authorization header
-	if (req.method === "OPTIONS") {
-		return res.status(204).end();
-	}
+	if (handlePreflight(req, res)) return;
 
 	if (req.method !== "POST") {
 		res.setHeader("Allow", "POST, OPTIONS");

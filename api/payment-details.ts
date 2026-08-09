@@ -6,15 +6,12 @@ import { authenticateUser } from "./_utils/auth.js";
 import { decrypt, encrypt, EncryptedData } from "./_utils/crypt.js";
 
 import "./_init/firebaseAdmin.js";
+import { handlePreflight } from "./_utils/cors.js";
 
 const db = getFirestore();
 
 export default async function (req: VercelRequest, res: VercelResponse) {
-	// Required as cross-origin clients send a preflight request
-	// before requests that include the Authorization header
-	if (req.method === "OPTIONS") {
-		return res.status(204).end();
-	}
+	if (handlePreflight(req, res)) return;
 
 	if (req.method !== "GET" && req.method !== "POST" && req.method !== "DELETE") {
 		res.setHeader("Allow", "GET, POST, DELETE, OPTIONS");
