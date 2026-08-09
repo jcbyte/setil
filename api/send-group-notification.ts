@@ -26,8 +26,14 @@ async function getGroupUserName(groupId: string, userId: string) {
 }
 
 export default async function (req: VercelRequest, res: VercelResponse) {
+	// Required as cross-origin clients send a preflight request
+	// before requests that include the Authorization header
+	if (req.method === "OPTIONS") {
+		return res.status(204).end();
+	}
+
 	if (req.method !== "POST") {
-		res.setHeader("Allow", "POST");
+		res.setHeader("Allow", "POST, OPTIONS");
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 	const user = await authenticateUser(req.headers.authorization, res);

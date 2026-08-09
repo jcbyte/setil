@@ -10,7 +10,14 @@ import "./_init/firebaseAdmin.js";
 const db = getFirestore();
 
 export default async function (req: VercelRequest, res: VercelResponse) {
+	// Required as cross-origin clients send a preflight request
+	// before requests that include the Authorization header
+	if (req.method === "OPTIONS") {
+		return res.status(204).end();
+	}
+
 	if (req.method !== "POST" && req.method !== "DELETE") {
+		res.setHeader("Allow", "POST, DELETE, OPTIONS");
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 
