@@ -19,6 +19,7 @@ import { toast } from "vue-sonner";
 const auth = getAuth(app);
 const user = ref<User | null>(auth.currentUser);
 const isAuthReady = ref(false);
+const isCurrentlyInteracting = ref(false);
 
 onAuthStateChanged(auth, (currentUser) => {
 	user.value = currentUser;
@@ -39,6 +40,7 @@ function errorDescription(error: unknown): string {
 
 async function completeSignIn(signInOperation: () => Promise<UserCredential>, description: string): Promise<void> {
 	const persistentToast = toast.loading("Signing In", { description });
+	isCurrentlyInteracting.value = true;
 
 	try {
 		await signInOperation();
@@ -51,6 +53,8 @@ async function completeSignIn(signInOperation: () => Promise<UserCredential>, de
 	} catch (error) {
 		toast.error("Error Signing In", { description: errorDescription(error), id: persistentToast });
 	}
+
+	isCurrentlyInteracting.value = false;
 }
 
 async function signInNativeApp() {
@@ -89,6 +93,7 @@ async function signOut(): Promise<void> {
 const authService = {
 	user: readonly(user),
 	isAuthReady: readonly(isAuthReady),
+	isCurrentlyInteracting: readonly(isCurrentlyInteracting),
 	signInWithGooglePopup,
 	signInWithGoogleCredential,
 	signOut,

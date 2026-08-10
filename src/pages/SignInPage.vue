@@ -7,7 +7,7 @@ import { Capacitor } from "@capacitor/core";
 import { useOneTap } from "vue3-google-signin";
 
 const version = __APP_VERSION__;
-const { signInWithGooglePopup, signInWithGoogleCredential } = authService;
+const { signInWithGooglePopup, signInWithGoogleCredential, isCurrentlyInteracting } = authService;
 
 if (!Capacitor.isNativePlatform()) {
 	// Do not run Google One Tap if in a native app
@@ -31,7 +31,7 @@ if (!Capacitor.isNativePlatform()) {
 
 				<Separator />
 
-				<ThemedContinueButton @click="signInWithGooglePopup" />
+				<ThemedContinueButton @click="signInWithGooglePopup" :disabled="isCurrentlyInteracting" />
 
 				<span class="text-sm text-muted-foreground">Setil v{{ version }} by Joel Cutler</span>
 			</CardContent>
