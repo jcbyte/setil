@@ -11,6 +11,10 @@ const config: CapacitorConfig = {
       // Native Google Sign-In only supplies the credential to that SDK.
       skipNativeAuth: true,
     },
+    PushNotifications: {
+      // Foreground notifications are presented as in-app toasts.
+      presentationOptions: [],
+    },
   },
 };
 
