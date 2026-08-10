@@ -24,8 +24,8 @@ onBackgroundMessage(messaging, (payload) => {
 	const { title, body, route } = payload.data;
 	const notificationOptions: NotificationOptions = {
 		body,
-		icon: "https://setil.vercel.app/icon/icon-192.png",
-		badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
+		icon: "/icon/icon-192.png",
+		badge: "/icon/mask-monochrome-96.png",
 		data: {
 			route,
 		},
