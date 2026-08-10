@@ -30,7 +30,7 @@ export async function initialiseUserData(): Promise<boolean> {
 	if (userDocSnap.exists()) return false;
 
 	// Create the users data area
-	const userData: UserData = { groups: [], fids: [] };
+	const userData: UserData = { groups: [], fids: [], androidPushTokens: [] };
 	await setDoc(userRef, userData);
 
 	const userPublicRef = doc(userRef, "public", "data") as DocumentReference<PublicUserData>;
@@ -110,6 +110,19 @@ export async function addFid(fid: string): Promise<void> {
 	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
 	await updateDoc(userRef, {
 		fids: arrayUnion(fid),
+	});
+}
+
+/**
+ * Add an Android FCM registration token to the current user.
+ * Native registration tokens are stored separately from web Firebase Installation IDs.
+ */
+export async function addAndroidPushToken(token: string): Promise<void> {
+	const user = getUser();
+	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
+
+	await updateDoc(userRef, {
+		androidPushTokens: arrayUnion(token),
 	});
 }
 
