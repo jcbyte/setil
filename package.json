@@ -11,6 +11,7 @@
 		"dev:web": "vite --mode web",
 		"dev:web-full": "vercel dev",
 		"preview": "npm run preview:web-full",
+		"preview:web": "vite preview --mode web",
 		"preview:web-full": "vercel",
 		"check": "vue-tsc -b",
 		"build": "npm run build:web",
@@ -18,7 +19,9 @@
 		"build:android": "npm run check && vite build --mode android",
 		"build-dev:android": "vite build --mode android",
 		"android:run": "npm run build-dev:android && cap sync android && cap run android",
-		"android:assemble": "npm run build:android && cap sync android && cd android && gradlew assembleDebug"
+		"android:assemble-debug": "npm run build-dev:android && cap sync android && cd android && gradlew assembleDebug",
+		"android:assemble-release": "npm run build:android && cap sync android && cd android && gradlew assembleRelease",
+		"android:bundle": "npm run build:android && cap sync android && cd android && gradlew bundleRelease"
 	},
 	"dependencies": {
 		"@capacitor-firebase/authentication": "^8.3.0",
