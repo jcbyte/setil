@@ -24,7 +24,6 @@ onBackgroundMessage(messaging, (payload) => {
 	const { title, body, route } = payload.data;
 	const notificationOptions: NotificationOptions = {
 		body,
-		icon: "/icon/icon-192.png",
 		badge: "/icon/mask-monochrome-96.png",
 		data: {
 			route,
