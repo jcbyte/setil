@@ -26,8 +26,9 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
 ## Features
 
 - 💸 **Smart Settlement**: Uses a greedy algorithm to simplify complex debts into the fewest possible payments.
-- 🔥 **Real-time**: Powered by Firestore; balances and transactions update instantly across all devices.
+- 🔥 **Real-time**: Balances and transactions update instantly across all devices powered by Firestore.
 - 🍰 **Flexible Splitting**: Split a single transaction between multiple people equally, or define specific amounts.
+- 🤖 **Native Android**: Fully native android experience packaged using Capacitor.
 - 📱 **PWA Support**: Installable on iOS, Android, and Desktop for a native experience.
 - 🔔 **Notifications**: Real-time alerts for new members, transactions, and payments.
 - 🎨 **Modern UI**: Built using shadcn/vue, and Tailwind CSS for a clean and accessible mobile-first interface.
@@ -149,11 +150,26 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Or, to run Vercel Edge Functions locally:
+Or, to run without local Vercel Edge Functions:
 
 ```bash
-npx vercel dev
+npm run dev:web
 ```
+
+## Native App Development
+
+The native app shell is built using [Capacitor](https://capacitorjs.com/).
+
+To build check the [Android Project README](android/README.md).
+
+## Build Modes & Environments
+
+The repository uses custom Vite modes targeting different build outputs:
+
+- `web` for the web app and PWA.
+- `android` for the native Android shell.
+
+This allows defining target-specific environments by creating `.env.{mode}.local` files.
 
 ## Licence
 

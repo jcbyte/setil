@@ -1,5 +1,7 @@
 export type NotificationType = "joined-group" | "new-transaction" | "new-payment";
 
+export const DEFAULT_NOTIFICATION_CHANNEL = "general";
+
 export interface JoinedGroup_Data {
 	userId: string;
 }

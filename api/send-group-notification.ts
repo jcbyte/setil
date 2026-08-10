@@ -1,12 +1,14 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { DocumentReference, getFirestore } from "firebase-admin/firestore";
-import { FidMulticastMessage, getMessaging } from "firebase-admin/messaging";
+import { getMessaging, type FidMulticastMessage, type MulticastMessage } from "firebase-admin/messaging";
 import { formatCurrency } from "../shared/currency.js";
 import type { SendGroupNotificationPostBody } from "../shared/types/api.js";
+import { DEFAULT_NOTIFICATION_CHANNEL } from "../shared/types/notification.js";
 import type { GroupData, GroupUserData, PublicUserData, Transaction } from "./_types/firestore.js";
 import { authenticateUser } from "./_utils/auth.js";
 
 import "./_init/firebaseAdmin.js";
+import { handlePreflight } from "./_utils/cors.js";
 
 const db = getFirestore();
 const messaging = getMessaging();
@@ -26,8 +28,10 @@ async function getGroupUserName(groupId: string, userId: string) {
 }
 
 export default async function (req: VercelRequest, res: VercelResponse) {
+	if (handlePreflight(req, res)) return;
+
 	if (req.method !== "POST") {
-		res.setHeader("Allow", "POST");
+		res.setHeader("Allow", "POST, OPTIONS");
 		return res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 	const user = await authenticateUser(req.headers.authorization, res);
@@ -96,11 +100,22 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
 		const userRefs = [...activeUserIds].map((userId) => db.doc(`users/${userId}`));
 		const userSnaps = await db.getAll(...userRefs);
-		const fids = userSnaps.flatMap((snap) => snap.get("fids") ?? []);
 
+		const fids = [...new Set<string>(userSnaps.flatMap((snap) => snap.get("fids") ?? []))];
 		if (fids.length > 0) {
-			const message: FidMulticastMessage = { fids, data: { title: group.name, body, route } };
-			await messaging.sendEachForMulticast(message);
+			const webMessage: FidMulticastMessage = { fids, data: { title: group.name, body, route } };
+			await messaging.sendEachForMulticast(webMessage);
+		}
+
+		const androidPushTokens = [...new Set<string>(userSnaps.flatMap((snap) => snap.get("androidPushTokens") ?? []))];
+		if (androidPushTokens.length > 0) {
+			const androidMessage: MulticastMessage = {
+				tokens: androidPushTokens,
+				notification: { title: group.name, body },
+				data: { route },
+				android: { notification: { channelId: DEFAULT_NOTIFICATION_CHANNEL } },
+			};
+			await messaging.sendEachForMulticast(androidMessage);
 		}
 
 		return res.status(200).json({ success: true });

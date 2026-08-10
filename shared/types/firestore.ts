@@ -4,7 +4,8 @@ export type TransactionCategory = "expense" | "food" | "transport" | "fuel" | "e
 
 export interface UserData {
 	groups: string[];
-	fids: string[];
+	fids?: string[];
+	androidPushTokens?: string[];
 }
 
 export interface PublicUserData {

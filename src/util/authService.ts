@@ -1,6 +1,8 @@
 import { app } from "@/firebase/firebase";
 import { initialiseUserData } from "@/firebase/firestore/user";
 import { requestNotifications } from "@/firebase/messaging";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
+import { Capacitor } from "@capacitor/core";
 import {
 	signOut as firebaseSignOut,
 	getAuth,
@@ -17,6 +19,7 @@ import { toast } from "vue-sonner";
 const auth = getAuth(app);
 const user = ref<User | null>(auth.currentUser);
 const isAuthReady = ref(false);
+const isCurrentlyInteracting = ref(false);
 
 onAuthStateChanged(auth, (currentUser) => {
 	user.value = currentUser;
@@ -26,13 +29,18 @@ onAuthStateChanged(auth, (currentUser) => {
 });
 
 function errorDescription(error: unknown): string {
-	if (typeof error === "object" && error !== null && "code" in error) return String(error.code);
 	if (error instanceof Error) return error.message;
+	if (typeof error === "object" && error !== null) {
+		if ("message" in error && error.message) return String(error.message);
+		if ("code" in error && error.code) return String(error.code);
+	}
+	if (typeof error === "string") return error;
 	return "An unknown error occurred";
 }
 
 async function completeSignIn(signInOperation: () => Promise<UserCredential>, description: string): Promise<void> {
 	const persistentToast = toast.loading("Signing In", { description });
+	isCurrentlyInteracting.value = true;
 
 	try {
 		await signInOperation();
@@ -45,16 +53,32 @@ async function completeSignIn(signInOperation: () => Promise<UserCredential>, de
 	} catch (error) {
 		toast.error("Error Signing In", { description: errorDescription(error), id: persistentToast });
 	}
+
+	isCurrentlyInteracting.value = false;
+}
+
+async function signInNativeApp() {
+	const result = await FirebaseAuthentication.signInWithGoogle();
+	const idToken = result.credential?.idToken;
+
+	if (!idToken) throw new Error("Google did not return an ID token");
+
+	const credential = GoogleAuthProvider.credential(idToken, result.credential?.accessToken);
+	return signInWithCredential(auth, credential);
 }
 
 async function signInWithGooglePopup(): Promise<void> {
-	const provider = new GoogleAuthProvider();
-	await completeSignIn(() => signInWithPopup(auth, provider), "Please continue in the popup window");
+	if (Capacitor.isNativePlatform()) {
+		await completeSignIn(signInNativeApp, "Continue in the Credential Manager");
+	} else {
+		const provider = new GoogleAuthProvider();
+		await completeSignIn(() => signInWithPopup(auth, provider), "Continue in the Popup Window");
+	}
 }
 
 async function signInWithGoogleCredential(credential: string): Promise<void> {
 	const firebaseCredential = GoogleAuthProvider.credential(credential);
-	await completeSignIn(() => signInWithCredential(auth, firebaseCredential), "Retrieving credentials from Google");
+	await completeSignIn(() => signInWithCredential(auth, firebaseCredential), "Retrieving Credentials from Google");
 }
 
 async function signOut(): Promise<void> {
@@ -69,6 +93,7 @@ async function signOut(): Promise<void> {
 const authService = {
 	user: readonly(user),
 	isAuthReady: readonly(isAuthReady),
+	isCurrentlyInteracting: readonly(isCurrentlyInteracting),
 	signInWithGooglePopup,
 	signInWithGoogleCredential,
 	signOut,

@@ -1,8 +1,13 @@
 import { createApp } from "vue";
 import GoogleSignInPlugin from "vue3-google-signin";
 import AppWrapper from "./AppWrapper.vue";
+import { initialiseNotifications } from "./firebase/messaging";
 import router from "./router";
 import "./style.css";
+import { initialiseNativeNavigation } from "./util/app.js";
+
+initialiseNativeNavigation();
+initialiseNotifications();
 
 const app = createApp(AppWrapper);
 

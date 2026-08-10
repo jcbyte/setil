@@ -20,6 +20,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserData, setName } from "@/firebase/firestore/user";
+import { Camera as CapacitorCamera, MediaTypeSelection } from "@capacitor/camera";
+import { Capacitor } from "@capacitor/core";
 import {
 	ArrowLeft,
 	Camera,
@@ -42,6 +44,9 @@ import "vue-advanced-cropper/dist/style.css";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import * as z from "zod";
+
+const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 5;
+const formattedMaxAvatarSize = `${Number((MAX_AVATAR_FILE_SIZE / (1024 * 1024)).toFixed(1))} MB`;
 
 const router = useRouter();
 
@@ -114,16 +119,49 @@ async function updateName() {
 	isNameUpdating.value = false;
 }
 
+async function selectAvatar() {
+	avatarErrorMessage.value = undefined;
+
+	if (!Capacitor.isNativePlatform()) {
+		avatarFileInput.value?.click();
+	} else {
+		try {
+			const { results } = await CapacitorCamera.chooseFromGallery({
+				mediaType: MediaTypeSelection.Photo,
+				allowMultipleSelection: false,
+				limit: 1,
+				includeMetadata: true,
+				quality: 100,
+			});
+			const image = results[0];
+			if (!image) return;
+
+			if (image.metadata?.size && image.metadata.size > MAX_AVATAR_FILE_SIZE) {
+				avatarErrorMessage.value = `The selected file exceeds ${formattedMaxAvatarSize}`;
+				return;
+			}
+
+			newAvatarSrc.value = image.webPath;
+			isCropperReady.value = false;
+			isCropperOpen.value = true;
+		} catch (e) {
+			// This is the error for when the user closes their gallery
+			if (typeof e === "object" && e !== null && "code" in e && e.code === "OS-PLUG-CAMR-0020") return;
+			avatarErrorMessage.value = "The selected image could not be read";
+			toast.error("Error Reading Photo", { description: String(e) });
+		}
+	}
+}
+
 async function handleAvatarFileChange(event: Event) {
 	const file = (event.target as HTMLInputElement).files?.[0];
 	if (!file) return;
 
 	// Check file size
-	if (file.size > 1024 * 1024 * 5) {
-		avatarErrorMessage.value = "The selected file exceeds 5 MB";
+	if (file.size > MAX_AVATAR_FILE_SIZE) {
+		avatarErrorMessage.value = `The selected file exceeds ${formattedMaxAvatarSize}`;
 		return;
 	}
-	avatarErrorMessage.value = undefined;
 
 	newAvatarSrc.value = URL.createObjectURL(file);
 	if (avatarFileInput.value) avatarFileInput.value.value = "";
@@ -133,11 +171,11 @@ async function handleAvatarFileChange(event: Event) {
 }
 
 function cleanupCloseCropper() {
-	if (newAvatarSrc.value) {
+	if (!Capacitor.isNativePlatform() && newAvatarSrc.value) {
 		URL.revokeObjectURL(newAvatarSrc.value);
-		newAvatarSrc.value = undefined;
 	}
 
+	newAvatarSrc.value = undefined;
 	isCropperOpen.value = false;
 }
 
@@ -147,20 +185,21 @@ async function handleAvatarSave() {
 	const { canvas } = avatarCropper.value.getResult();
 	if (!canvas) return;
 
-	const file = await new Promise<File>((resolve, reject) => {
-		canvas.toBlob((blob) => {
-			if (!blob) {
-				reject(new Error("Cannot extract bloc from canvas"));
-				return;
-			}
-			resolve(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
-		}, "image/jpeg");
-	});
-
 	isAvatarUpdating.value = true;
-	cleanupCloseCropper();
 
 	try {
+		const file = await new Promise<File>((resolve, reject) => {
+			canvas.toBlob((blob) => {
+				if (!blob) {
+					reject(new Error("Cannot extract blob from canvas"));
+					return;
+				}
+				resolve(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
+			}, "image/jpeg");
+		});
+
+		cleanupCloseCropper();
+
 		const savedPhotoUrl = await uploadAvatar(file);
 		avatarSrc.value = savedPhotoUrl;
 
@@ -246,7 +285,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 									<Button
 										type="button"
 										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
-										@click="() => avatarFileInput?.click()"
+										@click="selectAvatar"
 									>
 										<LoaderIcon :icon="Camera" :loading="isAvatarUpdating" />
 										<span>Upload</span>
@@ -255,7 +294,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 									<input
 										type="file"
 										ref="avatarFileInput"
-										accept="image/*"
+										accept="image/jpeg,image/png,image/webp"
 										style="display: none"
 										@change="handleAvatarFileChange"
 									/>
@@ -270,7 +309,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 										<span>Remove</span>
 									</Button>
 								</div>
-								<FieldDescription>Select an image under 5 MB</FieldDescription>
+								<FieldDescription>Select an image under {{ formattedMaxAvatarSize }}</FieldDescription>
 
 								<FieldError v-if="avatarErrorMessage">{{ avatarErrorMessage }}</FieldError>
 							</Field>
@@ -341,15 +380,23 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 					<DialogDescription>Adjust to frame your profile picture</DialogDescription>
 				</DialogHeader>
 
-				<div class="flex items-center justify-center w-full max-h-[60vh] overflow-hidden rounded-md">
+				<div class="relative flex items-center justify-center w-full max-h-[60vh] overflow-hidden rounded-md">
 					<Cropper
 						ref="avatarCropper"
 						@ready="() => (isCropperReady = true)"
+						@error="(e: any) => toast.error('e', { description: String(e) })"
+						:check-orientation="false"
 						:src="newAvatarSrc"
 						:stencil-component="CircleStencil"
 						:stencil-props="{ aspectRatio: 1 }"
 					/>
 					<Skeleton class="w-full h-92" v-if="!isCropperReady" />
+					<div
+						v-if="isAvatarUpdating"
+						class="absolute inset-0 flex justify-center items-center bg-black/40 backdrop-blur-[3px]"
+					>
+						<LoaderCircle class="size-10 animate-spin text-white" />
+					</div>
 				</div>
 
 				<DialogFooter>
