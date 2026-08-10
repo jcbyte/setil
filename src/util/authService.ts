@@ -65,17 +65,16 @@ async function signInNativeApp() {
 
 async function signInWithGooglePopup(): Promise<void> {
 	if (Capacitor.isNativePlatform()) {
-		await completeSignIn(signInNativeApp, "Please continue in the credential manager");
-		return;
+		await completeSignIn(signInNativeApp, "Continue in the Credential Manager");
+	} else {
+		const provider = new GoogleAuthProvider();
+		await completeSignIn(() => signInWithPopup(auth, provider), "Continue in the Popup Window");
 	}
-
-	const provider = new GoogleAuthProvider();
-	await completeSignIn(() => signInWithPopup(auth, provider), "Please continue in the popup window");
 }
 
 async function signInWithGoogleCredential(credential: string): Promise<void> {
 	const firebaseCredential = GoogleAuthProvider.credential(credential);
-	await completeSignIn(() => signInWithCredential(auth, firebaseCredential), "Retrieving credentials from Google");
+	await completeSignIn(() => signInWithCredential(auth, firebaseCredential), "Retrieving Credentials from Google");
 }
 
 async function signOut(): Promise<void> {

@@ -79,7 +79,9 @@ async function requestWebNotifications() {
 
 export async function requestNotifications() {
 	try {
-		if (Capacitor.isNativePlatform()) {
+		if (!Capacitor.isNativePlatform()) {
+			await requestWebNotifications();
+		} else {
 			try {
 				await requestNativeNotifications();
 			} catch (error) {
@@ -87,8 +89,6 @@ export async function requestNotifications() {
 					description: error instanceof Error ? error.message : String(error),
 				});
 			}
-		} else {
-			await requestWebNotifications();
 		}
 	} catch (e) {
 		toast.error("Notifications Could not be enabled", {
