@@ -1,5 +1,5 @@
 <template>
-	<button class="gsi-material-button" style="width: 100%">
+	<button class="gsi-material-button" style="width: 100%" v-bind="$attrs">
 		<div class="gsi-material-button-state"></div>
 		<div class="gsi-material-button-content-wrapper">
 			<div class="gsi-material-button-icon">

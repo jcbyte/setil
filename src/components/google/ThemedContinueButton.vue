@@ -10,6 +10,5 @@ const resolvedTheme = useColorMode().state;
 </script>
 
 <template>
-	<ContinueDark v-if="resolvedTheme === 'dark'" />
-	<ContinueLight v-else />
+	<component :is="resolvedTheme === 'dark' ? ContinueDark : ContinueLight" v-bind="$attrs" />
 </template>
