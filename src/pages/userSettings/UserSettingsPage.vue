@@ -114,23 +114,6 @@ async function updateName() {
 	isNameUpdating.value = false;
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-
-		reader.onload = () => {
-			if (typeof reader.result === "string") {
-				resolve(reader.result);
-			} else {
-				reject(new Error("The image could not be read"));
-			}
-		};
-		reader.onerror = () => reject(reader.error);
-
-		reader.readAsDataURL(file);
-	});
-}
-
 async function handleAvatarFileChange(event: Event) {
 	const file = (event.target as HTMLInputElement).files?.[0];
 	if (!file) return;
@@ -142,15 +125,20 @@ async function handleAvatarFileChange(event: Event) {
 	}
 	avatarErrorMessage.value = undefined;
 
-	try {
-		newAvatarSrc.value = await fileToDataUrl(file);
+	newAvatarSrc.value = URL.createObjectURL(file);
+	if (avatarFileInput.value) avatarFileInput.value.value = "";
 
-		if (avatarFileInput.value) avatarFileInput.value.value = "";
-		isCropperReady.value = false;
-		isCropperOpen.value = true;
-	} catch (error) {
-		avatarErrorMessage.value = "The selected image could not be read";
+	isCropperReady.value = false;
+	isCropperOpen.value = true;
+}
+
+function cleanupCloseCropper() {
+	if (newAvatarSrc.value) {
+		URL.revokeObjectURL(newAvatarSrc.value);
+		newAvatarSrc.value = undefined;
 	}
+
+	isCropperOpen.value = false;
 }
 
 async function handleAvatarSave() {
@@ -172,7 +160,7 @@ async function handleAvatarSave() {
 			}, "image/jpeg");
 		});
 
-		isCropperOpen.value = false;
+		cleanupCloseCropper();
 
 		const savedPhotoUrl = await uploadAvatar(file);
 		avatarSrc.value = savedPhotoUrl;
@@ -347,7 +335,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 			</NavCard>
 		</div>
 
-		<Dialog v-model:open="isCropperOpen">
+		<Dialog :open="isCropperOpen" @update:open="(opened) => !opened && cleanupCloseCropper()">
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Crop Profile Picture</DialogTitle>
