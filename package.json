@@ -17,11 +17,13 @@
 		"build:web": "npm run check && vite build --mode web",
 		"build:android": "npm run check && vite build --mode android",
 		"build-dev:android": "vite build --mode android",
-		"android:run": "npm run build-dev:android && cap sync android && cap run android"
+		"android:run": "npm run build-dev:android && cap sync android && cap run android",
+		"android:assemble": "npm run build:android && cap sync android && cd android && gradlew assembleDebug"
 	},
 	"dependencies": {
 		"@capacitor-firebase/authentication": "^8.3.0",
 		"@capacitor/android": "^8.5.0",
+		"@capacitor/app": "^8.1.1",
 		"@capacitor/core": "^8.5.0",
 		"@capacitor/push-notifications": "^8.1.2",
 		"@internationalized/date": "^3.12.2",

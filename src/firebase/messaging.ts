@@ -9,13 +9,14 @@ import { toast } from "vue-sonner";
 import { addAndroidPushToken, addFid } from "./firestore/user";
 import { getUser } from "./firestore/util";
 
-let nativeNotificationInitialisation: Promise<void> | undefined;
+let nativeNotificationInit: Promise<void> | undefined;
 
 /** Set up native notification listeners once, early in application startup. */
-export async function initialiseNotifications() {
+export function initialiseNotifications() {
 	if (!Capacitor.isNativePlatform()) return;
+	if (nativeNotificationInit) return;
 
-	nativeNotificationInitialisation ??= (async () => {
+	nativeNotificationInit = (async () => {
 		if (Capacitor.getPlatform() === "android") {
 			await PushNotifications.createChannel({
 				id: DEFAULT_NOTIFICATION_CHANNEL,
@@ -38,8 +39,6 @@ export async function initialiseNotifications() {
 			if (route && typeof route === "string") void router.push(route);
 		});
 	})();
-
-	return nativeNotificationInitialisation;
 }
 
 async function requestNativeNotifications() {
