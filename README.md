@@ -160,13 +160,9 @@ npm run dev:web
 
 The native app shell is built using [Capacitor](https://capacitorjs.com/).
 
-To build the Android project:
+Before building check the [Android Project README](android/README.md), including supplying your own Firebase configuration.
 
-```bash
-npm run build:android
-```
-
-To run and test the app on a connected Android device or emulator:
+To build assets, synchronise and run the app on a connected Android device or emulator:
 
 ```bash
 npm run android:run
