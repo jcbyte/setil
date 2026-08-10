@@ -4,7 +4,7 @@ import { routes, type VercelConfig } from "@vercel/config/v1";
 const isDev = process.env.__VERCEL_DEV_RUNNING === "1";
 
 export const config: VercelConfig = {
-	devCommand: "npm run dev:web",
+	devCommand: "npm run dev:web -- --port $PORT",
 	buildCommand: "npm run build:web",
 	rewrites: !isDev ? [routes.rewrite("/(.*)", "/index.html")] : [],
 	headers: [
