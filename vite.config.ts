@@ -27,11 +27,21 @@ const manifest: Partial<ManifestOptions> = {
 };
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
 	plugins: [
 		vue(),
 		tailwindcss(),
-		VitePWA({ strategies: "injectManifest", srcDir: "src", filename: "sw.ts", registerType: "autoUpdate", manifest }),
+		...(mode === "web"
+			? [
+					VitePWA({
+						strategies: "injectManifest",
+						srcDir: "src",
+						filename: "sw.ts",
+						registerType: "autoUpdate",
+						manifest,
+					}),
+				]
+			: []),
 	],
 	resolve: {
 		alias: {
@@ -42,4 +52,4 @@ export default defineConfig({
 	define: {
 		__APP_VERSION__: JSON.stringify(pkg.version),
 	},
-});
+}));
