@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import ThemedContinueButton from "@/components/google/ThemedContinueButton.vue";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { legalLinks } from "@/constants/legal";
 import authService from "@/util/authService";
 import { Capacitor } from "@capacitor/core";
+import { Dot } from "@lucide/vue";
 import { useOneTap } from "vue3-google-signin";
 
 const version = __APP_VERSION__;
@@ -20,7 +23,7 @@ if (!Capacitor.isNativePlatform()) {
 </script>
 
 <template>
-	<div class="flex h-full w-full items-center justify-center">
+	<div class="flex flex-col h-full w-full items-center justify-center gap-1">
 		<Card class="-translate-y-8 w-full max-w-md">
 			<CardContent class="flex flex-col items-center gap-6 p-8 sm:p-10 text-center">
 				<img src="/icon/icon-192.png" alt="Setil" class="size-16 rounded-2xl shadow-2xl shadow-primary/25" />
@@ -36,5 +39,19 @@ if (!Capacitor.isNativePlatform()) {
 				<span class="text-sm text-muted-foreground">Setil v{{ version }} by Joel Cutler</span>
 			</CardContent>
 		</Card>
+
+		<div class="fixed bottom-2 right-0 left-0 flex items-center justify-center gap-0">
+			<RouterLink :to="legalLinks.about" class="justify-self-end">
+				<Button variant="link" class="text-xs leading-relaxed px-2 text-muted-foreground">About</Button>
+			</RouterLink>
+			<Dot class="size-4 text-muted-foreground" />
+			<RouterLink :to="legalLinks.privacy" class="justify-self-end">
+				<Button variant="link" class="text-xs leading-relaxed px-2 text-muted-foreground">Privacy Policy</Button>
+			</RouterLink>
+			<Dot class="size-4 text-muted-foreground" />
+			<RouterLink :to="legalLinks.support" class="justify-self-start">
+				<Button variant="link" class="text-xs leading-relaxed px-2 text-muted-foreground">Support</Button>
+			</RouterLink>
+		</div>
 	</div>
 </template>
