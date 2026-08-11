@@ -98,7 +98,9 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 				return res.status(400).json({ success: false, error: "Unknown notification type" });
 		}
 
-		const userRefs = [...activeUserIds].map((userId) => db.doc(`users/${userId}`));
+		const userRefs = [...activeUserIds]
+			.filter((userId) => userId !== user.uid)
+			.map((userId) => db.doc(`users/${userId}`));
 		const userSnaps = await db.getAll(...userRefs);
 
 		const fids = [...new Set<string>(userSnaps.flatMap((snap) => snap.get("fids") ?? []))];
