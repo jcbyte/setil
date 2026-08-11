@@ -36,19 +36,22 @@ const resolvedTheme = useColorMode().state;
 
 <template>
 	<Transition name="loader-anim">
-		<div v-if="isAuthReady" class="min-h-dvh flex justify-center p-4 pb-10 sm:p-6 sm:pb-12 lg:p-8 lg:pb-14">
+		<div
+			v-if="isAuthReady || route.meta.public"
+			class="min-h-dvh flex justify-center p-4 pb-10 sm:p-6 sm:pb-12 lg:p-8 lg:pb-14"
+		>
 			<Transition name="fade-slide" mode="out-in">
-				<div v-if="!currentUser" class="w-full">
-					<SignInPage />
-				</div>
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
-				<div v-else class="w-full">
+				<div v-if="currentUser || route.meta.public" class="w-full">
 					<router-view v-slot="{ Component }">
 						<!-- Ensure mode is not 'out-in' when disabling css, as we do not want a transition lifecycle -->
 						<Transition name="fade-slide" :mode="!skipPageTransition ? 'out-in' : 'default'" :css="!skipPageTransition">
 							<component :is="Component" class="overflow-visible" />
 						</Transition>
 					</router-view>
+				</div>
+				<div v-else class="w-full">
+					<SignInPage />
 				</div>
 			</Transition>
 		</div>
