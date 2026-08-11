@@ -35,26 +35,3 @@ export function noGroup(router: Router) {
 
 	router.replace("/");
 }
-
-import { App } from "@capacitor/app";
-import { Capacitor } from "@capacitor/core";
-import router from "../router";
-
-let androidBackInit: Promise<void> | undefined;
-
-/** Route Android's system back button through Vue Router. */
-export function initialiseNativeNavigation() {
-	if (Capacitor.getPlatform() !== "android") return;
-	if (androidBackInit) return;
-
-	androidBackInit = (async () => {
-		await App.addListener("backButton", ({ canGoBack }) => {
-			if (canGoBack) {
-				router.back();
-				return;
-			}
-
-			void App.exitApp();
-		});
-	})();
-}

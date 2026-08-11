@@ -39,6 +39,10 @@ export default defineConfig(({ mode }) => ({
 						filename: "sw.ts",
 						registerType: "autoUpdate",
 						manifest,
+						devOptions: {
+							enabled: true,
+							type: "module",
+						},
 					}),
 				]
 			: []),
