@@ -3,7 +3,7 @@ import ThemedContinueButton from "@/components/google/ThemedContinueButton.vue";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { legalLinks } from "@/constants/legal";
+import { publicLinks } from "@/constants/public";
 import authService from "@/util/authService";
 import { Capacitor } from "@capacitor/core";
 import { Dot } from "@lucide/vue";
@@ -41,15 +41,15 @@ if (!Capacitor.isNativePlatform()) {
 		</Card>
 
 		<div class="fixed bottom-2 right-0 left-0 flex items-center justify-center gap-0">
-			<RouterLink :to="legalLinks.about" class="justify-self-end">
+			<RouterLink :to="publicLinks.about" class="justify-self-end">
 				<Button variant="link" class="text-xs leading-relaxed px-2 text-muted-foreground">About</Button>
 			</RouterLink>
 			<Dot class="size-4 text-muted-foreground" />
-			<RouterLink :to="legalLinks.privacy" class="justify-self-end">
+			<RouterLink :to="publicLinks.privacy" class="justify-self-end">
 				<Button variant="link" class="text-xs leading-relaxed px-2 text-muted-foreground">Privacy Policy</Button>
 			</RouterLink>
 			<Dot class="size-4 text-muted-foreground" />
-			<RouterLink :to="legalLinks.support" class="justify-self-start">
+			<RouterLink :to="publicLinks.support" class="justify-self-start">
 				<Button variant="link" class="text-xs leading-relaxed px-2 text-muted-foreground">Support</Button>
 			</RouterLink>
 		</div>

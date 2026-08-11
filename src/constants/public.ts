@@ -1,6 +1,5 @@
-export const legalLinks = {
+export const publicLinks = {
 	about: "/about",
 	privacy: "/privacy",
 	support: "/support",
-	deleteAccount: "/delete-account",
 };
