@@ -18,7 +18,7 @@ const NotificationPlugin: Plugin = {
 export default NotificationPlugin;
 
 function displayNotificationInApp(title: string, description?: string, route?: unknown) {
-	toast(title, {
+	toast.info(title, {
 		description,
 		icon: h(Bell, { class: "size-4" }),
 		position: "top-center",
