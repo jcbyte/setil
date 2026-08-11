@@ -6,7 +6,6 @@ import GroupPage from "./pages/groupPage/GroupPage.vue";
 import InvitePage from "./pages/InvitePage.vue";
 import NotFoundPage from "./pages/NotFoundPage.vue";
 import AboutPage from "./pages/public/AboutPage.vue";
-import DeleteAccountPage from "./pages/public/DeleteAccountPage.vue";
 import PrivacyPage from "./pages/public/PrivacyPage.vue";
 import SupportPage from "./pages/public/SupportPage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
@@ -32,12 +31,6 @@ const routes = [
 		path: "/support",
 		component: SupportPage,
 		name: "SupportPage",
-		meta: { public: true },
-	},
-	{
-		path: "/delete-account",
-		component: DeleteAccountPage,
-		name: "DeleteAccountPage",
 		meta: { public: true },
 	},
 	{
