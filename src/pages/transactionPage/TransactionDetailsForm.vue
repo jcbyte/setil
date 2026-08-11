@@ -14,9 +14,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSelect from "@/components/UserSelect.vue";
 import type { GroupUserDataWithPublic, GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
+import { CategorySettings } from "@/constants/category";
 import type { Transaction, TransactionCategory } from "@/types/firestore";
 import authService from "@/util/authService";
-import { CategorySettings } from "@/util/category";
 import { splitAmountEven, splitAmountRatio } from "@/util/split";
 import {
 	CalendarDate,
