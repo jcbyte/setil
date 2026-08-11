@@ -2,48 +2,74 @@ import { fetchApiJson } from "@/api/api";
 import router from "@/router";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
+import { Bell } from "@lucide/vue";
 import type { SendGroupNotificationPostBody } from "@shared/types/api";
 import { DEFAULT_NOTIFICATION_CHANNEL, type NotificationDetail } from "@shared/types/notification";
-import { getMessaging, isSupported, onRegistered, register } from "firebase/messaging";
+import { getMessaging, isSupported, onMessage, onRegistered, register } from "firebase/messaging";
+import { h } from "vue";
 import { toast } from "vue-sonner";
 import { addAndroidPushToken, addFid } from "./firestore/user";
 import { getUser } from "./firestore/util";
 
-let nativeNotificationInit: Promise<void> | undefined;
+let notificationInit: Promise<void> | undefined;
 
-/** Set up native notification listeners once, early in application startup. */
-export function initialiseNotifications() {
-	if (!Capacitor.isNativePlatform()) return;
-	if (nativeNotificationInit) return;
+function displayNotificationInApp(title: string, description?: string, route?: unknown) {
+	toast(title, {
+		description,
+		icon: h(Bell, { class: "size-4" }),
+		position: "top-center",
+		...(route && typeof route === "string"
+			? {
+					action: {
+						label: "View",
+						onClick: () => router.push(route),
+					},
+				}
+			: {}),
+	});
+}
 
-	nativeNotificationInit = (async () => {
-		if (Capacitor.getPlatform() === "android") {
-			await PushNotifications.createChannel({
-				id: DEFAULT_NOTIFICATION_CHANNEL,
-				name: "General notifications",
-				description: "Group activity and payment notifications",
-				importance: 4,
-				vibration: true,
-			});
-		}
-
-		await PushNotifications.addListener("registration", ({ value }) => addAndroidPushToken(value));
-		await PushNotifications.addListener("registrationError", ({ error }) =>
-			toast.error("Notifications could not be enabled", { description: error }),
-		);
-		await PushNotifications.addListener("pushNotificationReceived", (notification) =>
-			toast(notification.title ?? "Setil", { description: notification.body, position: "top-center" }),
-		);
-		await PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
-			const route = notification.data?.route;
-			if (route && typeof route === "string") void router.push(route);
+async function initialiseNativeNotifications() {
+	if (Capacitor.getPlatform() === "android") {
+		await PushNotifications.createChannel({
+			id: DEFAULT_NOTIFICATION_CHANNEL,
+			name: "General notifications",
+			description: "Group activity and payments",
+			importance: 4,
+			vibration: true,
 		});
-	})();
+	}
+
+	await PushNotifications.addListener("registration", ({ value }) => addAndroidPushToken(value));
+	await PushNotifications.addListener("registrationError", (e) =>
+		toast.error("Error Enabling Notifications", { description: String(e) }),
+	);
+	await PushNotifications.addListener("pushNotificationReceived", (notification) =>
+		displayNotificationInApp(notification.title ?? "Setil", notification.body, notification.data?.route),
+	);
+	await PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
+		const route = notification.data?.route;
+		if (route && typeof route === "string") router.push(route);
+	});
+}
+
+async function initialiseWebNotifications() {
+	const messagingSupported = await isSupported();
+	if (!messagingSupported) return;
+
+	const messaging = getMessaging();
+	onMessage(messaging, (payload) =>
+		displayNotificationInApp(payload.data?.title ?? "Setil", payload.data?.body, payload.data?.route),
+	);
+}
+
+/** Set up notification listeners once, early in application startup. */
+export function initialiseNotifications() {
+	if (notificationInit) return;
+	notificationInit = (Capacitor.isNativePlatform() ? initialiseNativeNotifications : initialiseWebNotifications)();
 }
 
 async function requestNativeNotifications() {
-	await initialiseNotifications();
-
 	let permission = await PushNotifications.checkPermissions();
 	if (permission.receive === "prompt" || permission.receive === "prompt-with-rationale") {
 		permission = await PushNotifications.requestPermissions();
@@ -82,16 +108,10 @@ export async function requestNotifications() {
 		if (!Capacitor.isNativePlatform()) {
 			await requestWebNotifications();
 		} else {
-			try {
-				await requestNativeNotifications();
-			} catch (error) {
-				toast.error("Notifications could not be enabled", {
-					description: error instanceof Error ? error.message : String(error),
-				});
-			}
+			await requestNativeNotifications();
 		}
 	} catch (e) {
-		toast.error("Notifications Could not be enabled", {
+		toast.error("Notifications Could not be Enabled", {
 			description: String(e),
 		});
 	}
