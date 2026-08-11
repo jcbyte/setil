@@ -3,6 +3,7 @@ import { removeAvatar, uploadAvatar } from "@/cloudinary/avatar";
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import NavCard from "@/components/NavCard.vue";
+import PublicLinks from "@/components/PublicLinks.vue";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -371,6 +372,8 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 					<CardDescription>Add or update your payment details</CardDescription>
 				</CardHeader>
 			</NavCard>
+
+			<PublicLinks :omitted-pages="['about']" />
 		</div>
 
 		<Dialog :open="isCropperOpen" @update:open="(opened) => !opened && cleanupCloseCropper()">
