@@ -26,12 +26,12 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
 ## Features
 
 - 💸 **Smart Settlement**: Uses a greedy algorithm to simplify complex debts into the fewest possible payments.
-- 🔥 **Real-time**: Balances and transactions update instantly across all devices powered by Firestore.
-- 🍰 **Flexible Splitting**: Split a single transaction between multiple people equally, or define specific amounts.
+- 🔥 **Real-time**: Balances and transactions update instantly across all devices, powered by Firestore.
+- 🍰 **Flexible Splitting**: Split transactions between multiple people equally, by ratio, or define specific amounts.
+- 🔔 **Notifications**: Push notifications for new members, transactions, and payments.
+- 🎨 **Modern UI**: Built using shadcn/vue, and Tailwind CSS for a clean and accessible mobile-first interface.
 - 🤖 **Native Android**: Fully native android experience packaged using Capacitor.
 - 📱 **PWA Support**: Installable on iOS, Android, and Desktop for a native experience.
-- 🔔 **Notifications**: Real-time alerts for new members, transactions, and payments.
-- 🎨 **Modern UI**: Built using shadcn/vue, and Tailwind CSS for a clean and accessible mobile-first interface.
 - 🔒 **Secure Auth**: Seamless and secure login via Google Authentication.
 - ☁️ **Serverless**: Hosted on Vercel utilising Edge functions for high-performance API.
 
