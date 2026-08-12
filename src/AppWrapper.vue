@@ -15,6 +15,17 @@ useColorMode({
 </script>
 
 <template>
-	<App v-if="!showMaintenance" />
-	<MaintenancePage v-else />
+	<div class="min-h-dvh p-safe flex">
+		<div class="flex-1">
+			<App v-if="!showMaintenance" />
+			<MaintenancePage v-else />
+		</div>
+	</div>
 </template>
+
+<style>
+.p-safe {
+	padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+		env(safe-area-inset-left, 0px);
+}
+</style>

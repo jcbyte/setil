@@ -36,7 +36,7 @@ const resolvedTheme = useColorMode().state;
 
 <template>
 	<Transition name="loader-anim">
-		<div v-if="isAuthReady || route.meta.public" class="min-h-dvh flex justify-center p-4 pb-10 sm:p-6 lg:p-8">
+		<div v-if="isAuthReady || route.meta.public" class="h-full flex justify-center p-4 pb-10 sm:p-6 lg:p-8">
 			<Transition name="fade-slide" mode="out-in">
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-if="currentUser || route.meta.public" class="w-full">

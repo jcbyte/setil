@@ -7,13 +7,13 @@ import PublicLinks from "@/components/PublicLinks.vue";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -24,17 +24,17 @@ import { getUserData, setName } from "@/firebase/firestore/user";
 import { Camera as CapacitorCamera, MediaTypeSelection } from "@capacitor/camera";
 import { Capacitor } from "@capacitor/core";
 import {
-	ArrowLeft,
-	Camera,
-	Check,
-	CircleX,
-	Crop,
-	LoaderCircle,
-	Monitor,
-	Moon,
-	SunMedium,
-	UserRound,
-	type LucideProps,
+  ArrowLeft,
+  Camera,
+  Check,
+  CircleX,
+  Crop,
+  LoaderCircle,
+  Monitor,
+  Moon,
+  SunMedium,
+  UserRound,
+  type LucideProps,
 } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useColorMode, type BasicColorSchema } from "@vueuse/core";
@@ -383,7 +383,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 					<DialogDescription>Adjust to frame your profile picture</DialogDescription>
 				</DialogHeader>
 
-				<div class="relative flex items-center justify-center w-full max-h-[60vh] overflow-hidden rounded-md">
+				<div class="relative flex items-center justify-center w-full max-h-[60dvh] overflow-hidden rounded-md">
 					<Cropper
 						ref="avatarCropper"
 						@ready="() => (isCropperReady = true)"
