@@ -69,17 +69,19 @@ import PublicPageLayout from "./PublicPageLayout.vue";
 				<div
 					class="col-span-full flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm"
 				>
-					<ShieldAlert class="size-5 text-amber-600 dark:text-amber-400" />
-					<span class="font-semibold">Keep sensitive information private.</span>
-					<span>Do not email passwords, bank details, or sign-in codes.</span>
+					<ShieldAlert class="shrink-0 size-5 text-amber-600 dark:text-amber-400" />
+					<span>
+						<span class="font-semibold">Keep sensitive information private.</span>
+						Do not email passwords, bank details, or sign-in codes.
+					</span>
 				</div>
 			</div>
 
 			<span class="text-sm text-muted-foreground">
 				For data-handling information, check the
 				<RouterLink to="/privacy">
-					<Button variant="link" class="p-0 text-foreground"> Privacy Policy </Button> </RouterLink
-				>.
+					<Button variant="link" class="p-0 text-foreground">Privacy Policy</Button>
+				</RouterLink>
 			</span>
 		</div>
 	</PublicPageLayout>
