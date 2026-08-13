@@ -2,9 +2,9 @@ import { VercelRequest, VercelResponse } from "@vercel/node";
 import { DocumentReference, getFirestore } from "firebase-admin/firestore";
 import { GroupData } from "./_types/firestore.js";
 import { authenticateUser } from "./_utils/auth.js";
+import { handlePreflight } from "./_utils/cors.js";
 
 import "./_init/firebaseAdmin.js";
-import { handlePreflight } from "./_utils/cors.js";
 
 const db = getFirestore();
 
