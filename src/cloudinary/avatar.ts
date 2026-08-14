@@ -5,6 +5,18 @@ import type { PublicUserData } from "@/types/firestore";
 import { doc, DocumentReference, updateDoc } from "firebase/firestore";
 import type { CloudinaryDetails } from "./types";
 
+export async function uploadGoogleAvatar(): Promise<string> {
+	const user = getUser();
+	const res = await fetchApiJson<{ avatarUrl: string }>("/api/avatar/import", {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${await user.getIdToken()}`,
+		},
+	});
+
+	return res.avatarUrl;
+}
+
 export async function uploadAvatar(avatarFile: File): Promise<string> {
 	const user = getUser();
 

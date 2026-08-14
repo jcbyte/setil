@@ -1,15 +1,10 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { v2 as cloudinary } from "cloudinary";
-import { DocumentReference, getFirestore } from "firebase-admin/firestore";
-import { PublicUserData } from "../_types/firestore.js";
 import { authenticateUser } from "../_utils/auth.js";
 import { handlePreflight } from "../_utils/cors.js";
 import { avatarApiOptions, getAvatarPublicId } from "./_shared.js";
 
 import "../_init/cloudinary.js";
-import "../_init/firebaseAdmin.js";
-
-const db = getFirestore();
 
 export default async function (req: VercelRequest, res: VercelResponse) {
 	if (handlePreflight(req, res)) return;
@@ -33,10 +28,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 			...avatarApiOptions,
 		});
 
-		// Update photoUrl field
-		const userPublicDataRef = db.doc(`/users/${user.uid}/public/data`) as DocumentReference<PublicUserData>;
-		await userPublicDataRef.update({ photoUrl: uploadResult.secure_url });
-
-		return res.status(200).json({ success: true });
+		return res.status(200).json({ success: true, avatarUrl: uploadResult.secure_url });
 	}
 }
