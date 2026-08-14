@@ -1,5 +1,5 @@
 import { fetchApiJson } from "@/api/api";
-import { uploadGoogleAvatar } from "@/cloudinary/avatar";
+import { importGoogleAvatar } from "@/cloudinary/avatar";
 import type { GroupUserData, PublicUserData, UserData } from "@/types/firestore";
 import type { PaymentDetails } from "@/types/paymentDetails";
 import type { PaymentDetailsPostBody } from "@shared/types/api";
@@ -35,7 +35,7 @@ export async function initialiseUserData(): Promise<boolean> {
 	const userData: UserData = { groups: [], fids: [], androidPushTokens: [] };
 	batch.set(userRef, userData);
 
-	const photoUrl = await uploadGoogleAvatar().catch(() => undefined);
+	const photoUrl = await importGoogleAvatar().catch(() => undefined);
 	const userPublicRef = doc(userRef, "public", "data") as DocumentReference<PublicUserData>;
 	const publicUserData: PublicUserData = {
 		name: user.displayName ?? "Unknown User",
