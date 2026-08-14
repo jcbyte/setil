@@ -23,10 +23,11 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 			return res.status(422).json({ success: false, error: "User does not have a profile image to import" });
 		}
 
-		const uploadResult = await cloudinary.uploader.upload(googleSourceUrl, {
-			public_id: getAvatarPublicId(user.uid),
-			...avatarApiOptions,
-		});
+			const uploadResult = await cloudinary.uploader.upload(googleSourceUrl, {
+				public_id: getAvatarPublicId(user.uid),
+				...avatarApiOptions,
+				transformation: avatarTransformation,
+			});
 
 		return res.status(200).json({ success: true, avatarUrl: uploadResult.secure_url });
 	}
