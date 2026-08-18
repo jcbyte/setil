@@ -18,15 +18,16 @@ const currentUserData = useLiveCurrentUserData();
 <template>
 	<DropdownMenu>
 		<DropdownMenuTrigger as-child>
-			<Avatar
-				v-if="currentUser && currentUserData.public"
-				v-bind="$attrs"
-				class="size-9"
-				:src="currentUserData.public.photoUrl ?? null"
-				:name="currentUserData.public.name"
-				:uid="currentUser.uid"
-			/>
-			<Skeleton v-else class="size-9 rounded-full" />
+			<div class="size-9">
+				<Avatar
+					v-if="currentUser && currentUserData.public"
+					class="size-full"
+					:src="currentUserData.public.photoUrl ?? null"
+					:name="currentUserData.public.name"
+					:uid="currentUser.uid"
+				/>
+				<Skeleton v-else class="size-full rounded-full" />
+			</div>
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
 			<RouterLink to="/settings">
