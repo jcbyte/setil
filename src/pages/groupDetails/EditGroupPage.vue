@@ -394,9 +394,10 @@ async function deleteGroup() {
 				<CardContent class="flex flex-col gap-4">
 					<div v-if="currentGroupUser" class="flex items-center gap-3">
 						<Avatar
-							v-if="currentGroupUser.computed.name"
+							v-if="currentUser && currentGroupUser.computed.name"
 							:src="currentGroupUser.public?.photoUrl ?? null"
 							:name="currentGroupUser.computed.name"
+							:uid="currentUser.uid"
 							class="size-9"
 						/>
 						<Skeleton v-else class="size-9 rounded-full" />
@@ -473,6 +474,7 @@ async function deleteGroup() {
 										v-if="user.computed.name"
 										:src="user.public?.photoUrl ?? null"
 										:name="user.computed.name"
+										:uid="userId"
 										:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
 									/>
 									<Skeleton v-else class="size-9 rounded-full" />

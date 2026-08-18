@@ -45,9 +45,10 @@ const yourBalanceStr = computed(() => {
 					:avatars="
 						group.topUsers
 							.filter(([, topUserData]) => topUserData.computed.name)
-							.map(([, topUserData]) => ({
+							.map(([topUserId, topUserData]) => ({
 								src: topUserData.public?.photoUrl ?? null,
 								name: topUserData.computed.name!,
+								uid: topUserId,
 							}))
 					"
 					:total-count="group.userCount"

@@ -17,6 +17,7 @@ defineProps<{
 			:key="avatarIdx"
 			:src="avatar.src"
 			:name="avatar.name"
+			:uid="avatar.uid"
 		/>
 		<Avatar :class="avatarClass" v-if="totalCount && totalCount > avatars.length">
 			<AvatarFallback>+{{ totalCount - avatars.length }}</AvatarFallback>

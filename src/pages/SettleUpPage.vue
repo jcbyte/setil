@@ -222,6 +222,7 @@ async function openBankDetailsDialog() {
 											v-if="group.users[payment.from].computed.name"
 											:src="group.users[payment.from].public?.photoUrl ?? null"
 											:name="group.users[payment.from].computed.name!"
+											:uid="payment.from"
 											class="size-10"
 										/>
 										<Skeleton v-else class="size-10 rounded-full" />
@@ -246,6 +247,7 @@ async function openBankDetailsDialog() {
 											v-if="group.users[payment.to].computed.name"
 											:src="group.users[payment.to].public?.photoUrl ?? null"
 											:name="group.users[payment.to].computed.name!"
+											:uid="payment.to"
 											class="size-10"
 										/>
 										<Skeleton v-else class="size-10 rounded-full" />

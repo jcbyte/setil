@@ -20,6 +20,7 @@ const props = defineProps<{
 						v-if="users[selectedUser]?.computed.name"
 						:src="users[selectedUser]?.public?.photoUrl ?? null"
 						:name="users[selectedUser].computed.name!"
+						:uid="selectedUser"
 						class="size-6"
 					/>
 					<Skeleton v-else class="size-6 rounded-full" />
@@ -37,6 +38,7 @@ const props = defineProps<{
 						v-if="user.computed.name"
 						:src="user.public?.photoUrl ?? null"
 						:name="user.computed.name"
+						:uid="userId"
 						:class="`size-5 ${user.status !== 'active' && 'opacity-70'}`"
 					/>
 					<Skeleton v-else class="size-5 rounded-full" />

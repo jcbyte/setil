@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserData, setName } from "@/firebase/firestore/user";
+import authService from "@/util/authService";
 import { Camera as CapacitorCamera, MediaTypeSelection } from "@capacitor/camera";
 import { Capacitor } from "@capacitor/core";
 import {
@@ -50,6 +51,7 @@ import * as z from "zod";
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 5;
 const formattedMaxAvatarSize = `${Number((MAX_AVATAR_FILE_SIZE / (1024 * 1024)).toFixed(1))} MB`;
 
+const { user: currentUser } = authService;
 const router = useRouter();
 
 onMounted(() => {
@@ -344,9 +346,10 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 							</Field>
 							<div class="relative flex justify-center items-center">
 								<Avatar
-									v-if="hasDataLoaded"
+									v-if="currentUser && hasDataLoaded"
 									:src="avatarSrc ?? null"
 									:name="name ?? ''"
+									:uid="currentUser.uid"
 									class="size-20 border-2 border-background ring-1 ring-border"
 								/>
 								<Skeleton v-else class="size-20 rounded-full" />

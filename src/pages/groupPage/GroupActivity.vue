@@ -2,30 +2,30 @@
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationNext,
-    PaginationPrevious,
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useControlledDialog } from "@/composables/useControlledDialog";
@@ -151,6 +151,7 @@ async function handleDeleteTransaction() {
 														v-if="props.group.users && props.group.users[transaction.from].computed.name"
 														:src="props.group.users[transaction.from].public?.photoUrl ?? null"
 														:name="props.group.users[transaction.from].computed.name!"
+                            :uid="transaction.from"
 													/>
 													<Skeleton v-else class="size-10 rounded-full" />
 													<div
@@ -176,6 +177,7 @@ async function handleDeleteTransaction() {
 													v-if="props.group.users && props.group.users[transaction.from].computed.name"
 													:src="props.group.users[transaction.from].public?.photoUrl ?? null"
 													:name="props.group.users[transaction.from].computed.name!"
+                          :uid="transaction.from"
 													class="-mr-0.5"
 												/>
 												<Skeleton v-else class="size-10 rounded-full -mr-0.5" />
@@ -188,6 +190,7 @@ async function handleDeleteTransaction() {
 													v-if="props.group.users && props.group.users[transaction.to].computed.name"
 													:src="props.group.users[transaction.to].public?.photoUrl ?? null"
 													:name="props.group.users[transaction.to].computed.name!"
+                          :uid="transaction.to"
 													class="-ml-0.5"
                           />
 												<Skeleton v-else class="size-10 rounded-full -ml-0.5" />
