@@ -6,9 +6,9 @@ import type { SendGroupNotificationPostBody } from "../shared/types/api.js";
 import { DEFAULT_NOTIFICATION_CHANNEL } from "../shared/types/notification.js";
 import type { GroupData, GroupUserData, PublicUserData, Transaction } from "./_types/firestore.js";
 import { authenticateUser } from "./_utils/auth.js";
+import { handlePreflight } from "./_utils/cors.js";
 
 import "./_init/firebaseAdmin.js";
-import { handlePreflight } from "./_utils/cors.js";
 
 const db = getFirestore();
 const messaging = getMessaging();

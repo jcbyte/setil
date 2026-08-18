@@ -9,6 +9,7 @@ import {
 import { useLiveCurrentUserData } from "@/composables/useLiveCurrentUserData";
 import authService from "@/util/authService";
 import { LogOut, Settings } from "@lucide/vue";
+import { Skeleton } from "./ui/skeleton";
 
 const { user: currentUser, signOut } = authService;
 const currentUserData = useLiveCurrentUserData();
@@ -17,12 +18,16 @@ const currentUserData = useLiveCurrentUserData();
 <template>
 	<DropdownMenu>
 		<DropdownMenuTrigger as-child>
-			<Avatar
-				v-bind="$attrs"
-				class="size-9"
-				:src="currentUserData.public?.photoUrl ?? null"
-				:name="currentUserData.public?.name ?? currentUser!.displayName ?? 'Me'"
-			/>
+			<div class="size-9">
+				<Avatar
+					v-if="currentUser && currentUserData.public"
+					class="size-full"
+					:src="currentUserData.public.photoUrl ?? null"
+					:name="currentUserData.public.name"
+					:uid="currentUser.uid"
+				/>
+				<Skeleton v-else class="size-full rounded-full" />
+			</div>
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
 			<RouterLink to="/settings">
@@ -42,4 +47,3 @@ const currentUserData = useLiveCurrentUserData();
 		</DropdownMenuContent>
 	</DropdownMenu>
 </template>
-import { useAuth } from "@/auth/useAuth";

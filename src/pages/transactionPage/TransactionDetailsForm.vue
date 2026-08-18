@@ -365,6 +365,7 @@ defineExpose<TransactionDetailsFormExposed>({
 													v-if="user.computed.name"
 													:src="user.public?.photoUrl ?? null"
 													:name="user.computed.name"
+													:uid="userId"
 													:class="`size-6 ${user.status !== 'active' && 'opacity-70'}`"
 												/>
 												<Skeleton v-else class="size-6 rounded-full" />

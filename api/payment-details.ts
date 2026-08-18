@@ -3,10 +3,10 @@ import { DocumentReference, getFirestore } from "firebase-admin/firestore";
 import { PaymentDetailsPostBody } from "../shared/types/api.js";
 import { PublicUserData } from "./_types/firestore.js";
 import { authenticateUser } from "./_utils/auth.js";
+import { handlePreflight } from "./_utils/cors.js";
 import { decrypt, encrypt, EncryptedData } from "./_utils/crypt.js";
 
 import "./_init/firebaseAdmin.js";
-import { handlePreflight } from "./_utils/cors.js";
 
 const db = getFirestore();
 

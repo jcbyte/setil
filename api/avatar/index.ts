@@ -1,12 +1,13 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { v2 as cloudinary, SignApiOptions } from "cloudinary";
 import { DocumentReference, FieldValue, getFirestore } from "firebase-admin/firestore";
-import { PublicUserData } from "./_types/firestore.js";
-import { authenticateUser } from "./_utils/auth.js";
+import { PublicUserData } from "../_types/firestore.js";
+import { authenticateUser } from "../_utils/auth.js";
+import { handlePreflight } from "../_utils/cors.js";
+import { avatarApiOptions, avatarTransformationString, getAvatarPublicId } from "./_shared.js";
 
-import "./_init/cloudinary.js";
-import "./_init/firebaseAdmin.js";
-import { handlePreflight } from "./_utils/cors.js";
+import "../_init/cloudinary.js";
+import "../_init/firebaseAdmin.js";
 
 const db = getFirestore();
 
@@ -21,17 +22,15 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 	const user = await authenticateUser(req.headers.authorization, res);
 	if (!user) return;
 
-	const avatarPublicId = `users/${user.uid}/avatar`;
-
 	if (req.method === "POST") {
 		// Return a signature for the client to upload the file directly
 		const timestamp = Math.round(new Date().getTime() / 1000);
 
 		const toSignParams: SignApiOptions = {
 			timestamp,
-			public_id: avatarPublicId,
-			overwrite: true,
-			transformation: "c_fill,h_150,w_150/r_max",
+			public_id: getAvatarPublicId(user.uid),
+			...avatarApiOptions,
+			transformation: avatarTransformationString,
 		};
 		const signature = cloudinary.utils.api_sign_request(toSignParams, process.env.CLOUDINARY_API_SECRET!);
 
@@ -50,7 +49,9 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 	if (req.method === "DELETE") {
 		// Remove the avatar from cloudinary
 		try {
-			await cloudinary.uploader.destroy(avatarPublicId);
+			await cloudinary.uploader.destroy(getAvatarPublicId(user.uid), {
+				invalidate: true,
+			});
 			// If this fails it should be okay, as we may not have previously uploaded an avatar i.e. still using Initial Google avatar
 		} catch {}
 

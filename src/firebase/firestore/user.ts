@@ -1,4 +1,5 @@
 import { fetchApiJson } from "@/api/api";
+import { importGoogleAvatar } from "@/cloudinary/avatar";
 import type { GroupUserData, PublicUserData, UserData } from "@/types/firestore";
 import type { PaymentDetails } from "@/types/paymentDetails";
 import type { PaymentDetailsPostBody } from "@shared/types/api";
@@ -9,8 +10,8 @@ import {
 	doc,
 	DocumentReference,
 	getDoc,
-	setDoc,
 	updateDoc,
+	writeBatch,
 	WriteBatch,
 } from "firebase/firestore";
 import { db } from "../firebase";
@@ -29,18 +30,21 @@ export async function initialiseUserData(): Promise<boolean> {
 	// Do nothing if the user already exists
 	if (userDocSnap.exists()) return false;
 
-	// Create the users data area
-	const userData: UserData = { groups: [], fids: [], androidPushTokens: [] };
-	await setDoc(userRef, userData);
+	const batch = writeBatch(db);
 
+	const userData: UserData = { groups: [], fids: [], androidPushTokens: [] };
+	batch.set(userRef, userData);
+
+	const photoUrl = await importGoogleAvatar().catch(() => undefined);
 	const userPublicRef = doc(userRef, "public", "data") as DocumentReference<PublicUserData>;
 	const publicUserData: PublicUserData = {
 		name: user.displayName ?? "Unknown User",
-		photoUrl: user.photoURL ?? undefined,
+		photoUrl,
 		hasBankDetails: false,
 	};
-	await setDoc(userPublicRef, publicUserData);
+	batch.set(userPublicRef, publicUserData);
 
+	await batch.commit();
 	return true;
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { removeAvatar, uploadAvatar } from "@/cloudinary/avatar";
+import { removeAvatar, resyncGoogleAvatar, uploadAvatar } from "@/cloudinary/avatar";
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import NavCard from "@/components/NavCard.vue";
@@ -7,13 +7,13 @@ import PublicLinks from "@/components/PublicLinks.vue";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -21,20 +21,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserData, setName } from "@/firebase/firestore/user";
+import authService from "@/util/authService";
 import { Camera as CapacitorCamera, MediaTypeSelection } from "@capacitor/camera";
 import { Capacitor } from "@capacitor/core";
 import {
-  ArrowLeft,
-  Camera,
-  Check,
-  CircleX,
-  Crop,
-  LoaderCircle,
-  Monitor,
-  Moon,
-  SunMedium,
-  UserRound,
-  type LucideProps,
+	ArrowLeft,
+	Camera,
+	Check,
+	CircleX,
+	Crop,
+	Dot,
+	LoaderCircle,
+	Monitor,
+	Moon,
+	SunMedium,
+	UserRound,
+	type LucideProps,
 } from "@lucide/vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useColorMode, type BasicColorSchema } from "@vueuse/core";
@@ -49,6 +51,7 @@ import * as z from "zod";
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 5;
 const formattedMaxAvatarSize = `${Number((MAX_AVATAR_FILE_SIZE / (1024 * 1024)).toFixed(1))} MB`;
 
+const { user: currentUser } = authService;
 const router = useRouter();
 
 onMounted(() => {
@@ -88,6 +91,7 @@ const avatarErrorMessage = ref<string | undefined>();
 const avatarFileInput = ref<HTMLInputElement | null>(null);
 const isAvatarUpdating = ref<boolean>(false);
 const isAvatarClearing = ref<boolean>(false);
+const isAvatarSyncing = ref<boolean>(false);
 const isCropperOpen = ref(false);
 const newAvatarSrc = ref<string | undefined>();
 const isCropperReady = ref(false);
@@ -227,6 +231,19 @@ async function handleClearAvatar() {
 	isAvatarClearing.value = false;
 }
 
+async function handleAvatarResync() {
+	isAvatarSyncing.value = true;
+
+	try {
+		avatarSrc.value = await resyncGoogleAvatar();
+		toast("Profile Picture Synced", { description: "Your Google mugshot is locked in" });
+	} catch (e) {
+		toast.error("Error Syncing Google Profile Picture", { description: String(e) });
+	}
+
+	isAvatarSyncing.value = false;
+}
+
 const selectedTheme = useColorMode().store;
 const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComponent<LucideProps, {}, any, {}> }> = {
 	light: { name: "Light", icon: SunMedium },
@@ -281,11 +298,24 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 
 						<div class="flex justify-between items-center gap-2">
 							<Field>
-								<FieldLabel>Profile Picture</FieldLabel>
-								<div class="flex gap-2">
+								<div class="flex items-center gap-1">
+									<FieldLabel>Profile Picture</FieldLabel>
+									<Dot class="size-4 text-muted-foreground" />
 									<Button
 										type="button"
-										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
+										variant="link"
+										:disabled="isAvatarUpdating || isAvatarClearing || isAvatarSyncing"
+										class="h-5 p-0 text-sm text-muted-foreground"
+										@click="handleAvatarResync"
+									>
+										Sync Google
+									</Button>
+									<LoaderCircle v-if="isAvatarSyncing" class="size-4 text-muted-foreground animate-spin" />
+								</div>
+								<div class="flex flex-wrap gap-2">
+									<Button
+										type="button"
+										:disabled="isAvatarUpdating || isAvatarClearing || isAvatarSyncing || !hasDataLoaded"
 										@click="selectAvatar"
 									>
 										<LoaderIcon :icon="Camera" :loading="isAvatarUpdating" />
@@ -303,7 +333,7 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 										v-if="avatarSrc || isAvatarClearing"
 										type="button"
 										variant="secondary"
-										:disabled="isAvatarUpdating || isAvatarClearing || !hasDataLoaded"
+										:disabled="isAvatarUpdating || isAvatarClearing || isAvatarSyncing || !hasDataLoaded"
 										@click="handleClearAvatar"
 									>
 										<LoaderIcon :icon="CircleX" :loading="isAvatarClearing" />
@@ -316,14 +346,15 @@ const themeDetail: Record<BasicColorSchema, { name: string; icon: FunctionalComp
 							</Field>
 							<div class="relative flex justify-center items-center">
 								<Avatar
-									v-if="hasDataLoaded"
+									v-if="currentUser && hasDataLoaded"
 									:src="avatarSrc ?? null"
 									:name="name ?? ''"
+									:uid="currentUser.uid"
 									class="size-20 border-2 border-background ring-1 ring-border"
 								/>
 								<Skeleton v-else class="size-20 rounded-full" />
 								<div
-									v-if="isAvatarUpdating || isAvatarClearing"
+									v-if="isAvatarUpdating || isAvatarClearing || isAvatarSyncing"
 									class="absolute inset-0 flex justify-center items-center rounded-full bg-black/40 backdrop-blur-[3px]"
 								>
 									<LoaderCircle class="size-6 animate-spin text-white" />

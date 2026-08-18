@@ -184,6 +184,7 @@ watch(currentTab, (newTab, oldTab) => {
 									v-if="user.computed.name"
 									:src="user.public?.photoUrl ?? null"
 									:name="user.computed.name"
+									:uid="userId"
 									class="size-7"
 								/>
 								<Skeleton v-else class="size-7 rounded-full" />
