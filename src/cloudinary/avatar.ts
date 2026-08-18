@@ -17,6 +17,15 @@ export async function importGoogleAvatar(): Promise<string> {
 	return res.avatarUrl;
 }
 
+export async function resyncGoogleAvatar(): Promise<string> {
+	const user = getUser();
+	const avatarUrl = await importGoogleAvatar();
+	const userPublicDataRef = doc(db, "users", user.uid, "public", "data") as DocumentReference<PublicUserData>;
+	await updateDoc(userPublicDataRef, { photoUrl: avatarUrl });
+
+	return avatarUrl;
+}
+
 export async function uploadAvatar(avatarFile: File): Promise<string> {
 	const user = getUser();
 
