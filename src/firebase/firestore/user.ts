@@ -1,8 +1,8 @@
 import { fetchApiJson } from "@/api/api";
 import { importGoogleAvatar } from "@/cloudinary/avatar";
-import type { GroupUserData, PublicUserData, PushToken, UserData } from "@/types/firestore";
+import type { DeviceType, GroupUserData, PublicUserData, PushToken, UserData } from "@/types/firestore";
 import type { PaymentDetails } from "@/types/paymentDetails";
-import { getDeviceId, getDeviceType } from "@/util/util";
+import { getDeviceId } from "@/util/util";
 import type { PaymentDetailsPostBody } from "@shared/types/api";
 import {
 	arrayRemove,
@@ -109,19 +109,16 @@ export async function updateLeftUsersStatus(
  * Add a push token to our user.
  * @param token push token registered from the users device.
  */
-export async function addPushToken(token: string) {
+export async function addPushToken(token: string, deviceType: DeviceType) {
 	const user = getUser();
-
-	const deviceType = getDeviceType();
-	const deviceId = await getDeviceId();
 
 	const pushToken: PushToken = {
 		token,
 		type: deviceType,
-		deviceId,
-		createdAt: Timestamp.now(),
+		updatedAt: Timestamp.now(),
 	};
 
+	const deviceId = await getDeviceId();
 	const deviceTokenRef = doc(db, "users", user.uid, "pushTokens", deviceId) as DocumentReference<PushToken>;
 	await setDoc(deviceTokenRef, pushToken, { merge: true });
 }

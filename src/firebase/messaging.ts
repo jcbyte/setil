@@ -5,7 +5,7 @@ import type { SendGroupNotificationPostBody } from "@shared/types/api";
 import { type NotificationDetail } from "@shared/types/notification";
 import { getMessaging, isSupported, onRegistered, register } from "firebase/messaging";
 import { toast } from "vue-sonner";
-import { addFid } from "./firestore/user";
+import { addPushToken } from "./firestore/user";
 import { getUser } from "./firestore/util";
 
 async function requestNativeNotifications() {
@@ -32,7 +32,7 @@ async function requestWebNotifications() {
 
 	// On registered, store the fid
 	onRegistered(messaging, async (fid) => {
-		await addFid(fid);
+		await addPushToken(fid, "web");
 	});
 
 	const serviceWorkerRegistration = await navigator.serviceWorker.ready;

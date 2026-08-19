@@ -57,6 +57,5 @@ export type DeviceType = "web" | "android" | "ios";
 export interface PushToken<TTimestamp> {
 	token: string;
 	type: DeviceType;
-	deviceId: string;
-	createdAt: TTimestamp;
+	updatedAt: TTimestamp;
 }

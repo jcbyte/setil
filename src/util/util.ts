@@ -1,5 +1,5 @@
 import type { BalanceStr } from "@/components/BalanceStrBadge.vue";
-import type { Currency, DeviceType, GroupUserData, GroupUserStatus, Transaction } from "@/types/firestore";
+import type { Currency, GroupUserData, GroupUserStatus, Transaction } from "@/types/firestore";
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import { formatCurrency } from "@shared/currency";
@@ -52,16 +52,6 @@ export function getBalanceStr(
 	}
 
 	return { str, status };
-}
-
-export function getDeviceType(): DeviceType {
-	const platform = Capacitor.getPlatform();
-
-	if (platform === "android") return "android";
-	if (platform === "ios") return "ios";
-
-	// Default to "web" for PWA
-	return "web";
 }
 
 export async function getDeviceId(): Promise<string> {
