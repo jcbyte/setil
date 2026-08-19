@@ -1,4 +1,4 @@
-import { addAndroidPushToken } from "@/firebase/firestore/user";
+import { addPushToken } from "@/firebase/firestore/user";
 import router from "@/router";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
@@ -44,7 +44,14 @@ async function initialiseNativeNotifications() {
 		});
 	}
 
-	await PushNotifications.addListener("registration", ({ value }) => addAndroidPushToken(value));
+	await PushNotifications.addListener("registration", ({ value }) => {
+		const deviceType = Capacitor.getPlatform();
+		if (deviceType !== "android" && deviceType !== "ios") {
+			toast.error("Error Enabling Notifications", { description: "Device type is not 'android' | 'ios'" });
+			return;
+		}
+		addPushToken(value, deviceType);
+	});
 	await PushNotifications.addListener("registrationError", (e) =>
 		toast.error("Error Enabling Notifications", { description: String(e) }),
 	);

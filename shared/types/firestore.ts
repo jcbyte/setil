@@ -4,8 +4,6 @@ export type TransactionCategory = "expense" | "food" | "transport" | "fuel" | "e
 
 export interface UserData {
 	groups: string[];
-	fids?: string[];
-	androidPushTokens?: string[];
 }
 
 export interface PublicUserData {
@@ -52,4 +50,12 @@ export type Transaction<TTimestamp> =
 
 export interface Invite<TTimestamp> {
 	expiry: TTimestamp;
+}
+
+export type DeviceType = "web" | "android" | "ios";
+
+export interface PushToken<TTimestamp> {
+	token: string;
+	type: DeviceType;
+	updatedAt: TTimestamp;
 }

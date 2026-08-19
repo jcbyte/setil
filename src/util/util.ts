@@ -1,5 +1,7 @@
 import type { BalanceStr } from "@/components/BalanceStrBadge.vue";
 import type { Currency, GroupUserData, GroupUserStatus, Transaction } from "@/types/firestore";
+import { Capacitor } from "@capacitor/core";
+import { Device } from "@capacitor/device";
 import { formatCurrency } from "@shared/currency";
 
 export function getRouteParam(qp: string | string[]): string | null {
@@ -50,4 +52,20 @@ export function getBalanceStr(
 	}
 
 	return { str, status };
+}
+
+export async function getDeviceId(): Promise<string> {
+	if (Capacitor.isNativePlatform()) {
+		const { identifier } = await Device.getId();
+		return identifier;
+	} else {
+		const LOCALSTORAGE_DEVICE_ID = "app_device_id";
+
+		let deviceId = localStorage.getItem(LOCALSTORAGE_DEVICE_ID);
+		if (!deviceId) {
+			deviceId = crypto.randomUUID();
+			localStorage.setItem(LOCALSTORAGE_DEVICE_ID, deviceId);
+		}
+		return deviceId;
+	}
 }

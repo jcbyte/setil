@@ -10,3 +10,4 @@ export type PaymentTransaction = Shared.PaymentTransaction<Timestamp>;
 export type ExpenseTransaction = Shared.ExpenseTransaction<Timestamp>;
 export type Transaction = Shared.Transaction<Timestamp>;
 export type Invite = Shared.Invite<Timestamp>;
+export type PushToken = Shared.PushToken<Timestamp>;

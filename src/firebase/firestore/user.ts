@@ -1,15 +1,17 @@
 import { fetchApiJson } from "@/api/api";
 import { importGoogleAvatar } from "@/cloudinary/avatar";
-import type { GroupUserData, PublicUserData, UserData } from "@/types/firestore";
+import type { DeviceType, GroupUserData, PublicUserData, PushToken, UserData } from "@/types/firestore";
 import type { PaymentDetails } from "@/types/paymentDetails";
+import { getDeviceId } from "@/util/util";
 import type { PaymentDetailsPostBody } from "@shared/types/api";
 import {
 	arrayRemove,
-	arrayUnion,
 	CollectionReference,
 	doc,
 	DocumentReference,
 	getDoc,
+	setDoc,
+	Timestamp,
 	updateDoc,
 	writeBatch,
 	WriteBatch,
@@ -32,7 +34,7 @@ export async function initialiseUserData(): Promise<boolean> {
 
 	const batch = writeBatch(db);
 
-	const userData: UserData = { groups: [], fids: [], androidPushTokens: [] };
+	const userData: UserData = { groups: [] };
 	batch.set(userRef, userData);
 
 	const photoUrl = await importGoogleAvatar().catch(() => undefined);
@@ -104,30 +106,21 @@ export async function updateLeftUsersStatus(
 }
 
 /**
- * Add a fid to our user, so the server knows which devices to send push notifications too.
- * @param fid the fid for our device given by firestore cloud messaging.
+ * Add a push token to our user.
+ * @param token push token registered from the users device.
  */
-export async function addFid(fid: string): Promise<void> {
+export async function addPushToken(token: string, deviceType: DeviceType) {
 	const user = getUser();
 
-	// Add the fid to the user if it is not already there
-	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
-	await updateDoc(userRef, {
-		fids: arrayUnion(fid),
-	});
-}
+	const pushToken: PushToken = {
+		token,
+		type: deviceType,
+		updatedAt: Timestamp.now(),
+	};
 
-/**
- * Add an Android FCM registration token to the current user.
- * Native registration tokens are stored separately from web Firebase Installation IDs.
- */
-export async function addAndroidPushToken(token: string): Promise<void> {
-	const user = getUser();
-	const userRef = doc(db, "users", user.uid) as DocumentReference<UserData>;
-
-	await updateDoc(userRef, {
-		androidPushTokens: arrayUnion(token),
-	});
+	const deviceId = await getDeviceId();
+	const deviceTokenRef = doc(db, "users", user.uid, "pushTokens", deviceId) as DocumentReference<PushToken>;
+	await setDoc(deviceTokenRef, pushToken, { merge: true });
 }
 
 /**

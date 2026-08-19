@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { DocumentReference, getFirestore } from "firebase-admin/firestore";
+import { CollectionReference, DocumentReference, getFirestore } from "firebase-admin/firestore";
 import { getMessaging, type FidMulticastMessage, type MulticastMessage } from "firebase-admin/messaging";
 import { formatCurrency } from "../shared/currency.js";
 import type { SendGroupNotificationPostBody } from "../shared/types/api.js";
 import { DEFAULT_NOTIFICATION_CHANNEL } from "../shared/types/notification.js";
-import type { GroupData, GroupUserData, PublicUserData, Transaction } from "./_types/firestore.js";
+import type { GroupData, GroupUserData, PublicUserData, PushToken, Transaction } from "./_types/firestore.js";
 import { authenticateUser } from "./_utils/auth.js";
 import { handlePreflight } from "./_utils/cors.js";
 
@@ -98,26 +98,38 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 				return res.status(400).json({ success: false, error: "Unknown notification type" });
 		}
 
-		const userRefs = [...activeUserIds]
-			.filter((userId) => userId !== user.uid)
-			.map((userId) => db.doc(`users/${userId}`));
-		const userSnaps = await db.getAll(...userRefs);
+		const targetUsers = [...activeUserIds].filter((userId) => userId !== user.uid);
+		const userTokenSnaps = await Promise.all(
+			targetUsers.map((userId) => {
+				const userPushTokensRef = db.collection(`users/${userId}/pushTokens`) as CollectionReference<PushToken>;
+				return userPushTokensRef.get();
+			}),
+		);
+		const tokens = userTokenSnaps.flatMap((snap) => snap.docs.map((doc) => doc.data()));
 
-		const fids = [...new Set<string>(userSnaps.flatMap((snap) => snap.get("fids") ?? []))];
-		if (fids.length > 0) {
-			const webMessage: FidMulticastMessage = { fids, data: { title: group.name, body, route } };
+		const webTokens = tokens.filter((token) => token.type === "web").map((token) => token.token);
+		if (webTokens.length > 0) {
+			const webMessage: FidMulticastMessage = {
+				fids: webTokens,
+				data: { title: group.name, body, route },
+			};
 			await messaging.sendEachForMulticast(webMessage);
 		}
 
-		const androidPushTokens = [...new Set<string>(userSnaps.flatMap((snap) => snap.get("androidPushTokens") ?? []))];
-		if (androidPushTokens.length > 0) {
+		const androidTokens = tokens.filter((token) => token.type === "android").map((token) => token.token);
+		if (androidTokens.length > 0) {
 			const androidMessage: MulticastMessage = {
-				tokens: androidPushTokens,
+				tokens: androidTokens,
 				notification: { title: group.name, body },
 				data: { route },
 				android: { notification: { channelId: DEFAULT_NOTIFICATION_CHANNEL } },
 			};
 			await messaging.sendEachForMulticast(androidMessage);
+		}
+
+		const iosTokens = tokens.filter((token) => token.type === "ios").map((token) => token.token);
+		if (iosTokens.length > 0) {
+			console.warn(`${iosTokens.length} iOS push tokens received, but iOS notifications are not supported`);
 		}
 
 		return res.status(200).json({ success: true });
