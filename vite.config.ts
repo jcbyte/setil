@@ -3,7 +3,7 @@ import vue from "@vitejs/plugin-vue";
 import path from "node:path";
 import { defineConfig } from "vite";
 import { ManifestOptions, VitePWA } from "vite-plugin-pwa";
-import pkg from "./package.json";
+import pkg from "./package.json" with { type: "json" };
 
 const manifest: Partial<ManifestOptions> = {
 	name: "Setil",
@@ -49,8 +49,8 @@ export default defineConfig(({ mode }) => ({
 	],
 	resolve: {
 		alias: {
-			"@": path.resolve(__dirname, "./src"),
-			"@shared": path.resolve(__dirname, "./shared"),
+			"@": path.resolve(import.meta.dirname, "./src"),
+			"@shared": path.resolve(import.meta.dirname, "./shared"),
 		},
 	},
 	define: {
