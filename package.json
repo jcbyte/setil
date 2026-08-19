@@ -72,6 +72,11 @@
 		"workbox-precaching": "^7.4.1"
 	},
 	"overrides": {
-		"jose": "^5.10.0"
+		"firebase-admin": {
+			"jose": "^5.10.0"
+		},
+		"vercel": {
+			"tar": "^7.5.21"
+		}
 	}
 }
