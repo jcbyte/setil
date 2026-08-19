@@ -46,7 +46,8 @@ const usersBalanceStr = computed<Record<string, BalanceStr> | null>(() => {
 					:key="userId"
 					class="flex justify-between items-center gap-2"
 				>
-					<div class="flex justify-center items-center gap-2 min-w-0">
+					<!-- Wrapper with `flex-1 w-0` forces strict width calculation -->
+					<div class="flex items-center gap-2 flex-1 w-0 min-w-0">
 						<Avatar
 							v-if="user.computed.name"
 							:src="user.public?.photoUrl ?? null"
@@ -59,7 +60,7 @@ const usersBalanceStr = computed<Record<string, BalanceStr> | null>(() => {
 							<span :class="`${user.status !== 'active' && 'text-muted-foreground'} truncate`">
 								{{ user.computed.name }}
 							</span>
-							<span v-if="user.status !== 'active'" class="text-xs text-muted-foreground italic">(Left)</span>
+							<span v-if="user.status !== 'active'" class="text-xs text-muted-foreground italic -ml-0.5">Left</span>
 						</div>
 						<Skeleton v-else class="w-22 h-6" />
 					</div>
