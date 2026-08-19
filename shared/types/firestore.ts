@@ -52,9 +52,11 @@ export interface Invite<TTimestamp> {
 	expiry: TTimestamp;
 }
 
+export type DeviceType = "web" | "android" | "ios";
+
 export interface PushToken<TTimestamp> {
 	token: string;
-	type: "web" | "android" | "ios";
+	type: DeviceType;
 	deviceId: string;
 	createdAt: TTimestamp;
 }
