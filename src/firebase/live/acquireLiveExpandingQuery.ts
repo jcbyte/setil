@@ -1,33 +1,46 @@
-import { query as firestoreQuery, limit, startAfter, type Query } from "firebase/firestore";
-import { computed, ref, type Ref, type UnwrapRef } from "vue";
-import { acquireLiveQuery } from "./acquireLiveQuery";
-
-type LiveQueryResult<T> = ReturnType<typeof acquireLiveQuery<T>>;
+import { query as firestoreQuery, limit, onSnapshot, type DocumentSnapshot, type Query } from "firebase/firestore";
+import { computed, ref, shallowRef, type Ref } from "vue";
 
 export function acquireLiveExpandingQuery<T>(
 	query: Query<T>,
 	onError?: (network: boolean) => void,
 ): { tupleItems: Ref<[string, T][]>; expandBy: (amount: number) => void; loaded: Ref<boolean>; release: () => void } {
-	const queries = ref<LiveQueryResult<T>[]>([]);
+	const rawDocs = shallowRef<DocumentSnapshot<T>[]>([]);
+	const loaded = ref(false);
+
+	let requestedLimit = 0;
+	let unsubscribe: (() => void) | undefined;
 
 	function expandBy(amount: number) {
-		const startQueryConstraint = [];
-		const lastQuery = queries.value.at(-1);
-		if (lastQuery && !lastQuery?.loaded) return;
-		const lastDoc = lastQuery?.rawDocs.at(-1);
-		if (lastDoc) startQueryConstraint.push(startAfter(lastDoc));
+		if (amount <= 0) return;
 
-		const newQuery = firestoreQuery(query, ...startQueryConstraint, limit(amount));
-		queries.value.push(acquireLiveQuery(newQuery, onError) as unknown as UnwrapRef<LiveQueryResult<T>>);
+		requestedLimit += amount;
+
+		loaded.value = false;
+
+		unsubscribe?.();
+		// Use a single resubscribing expanding query, letting Firestore rebalance the complete loaded set itself
+		// This uses n(n+1)d/2 reads for pagination (inefficient!), but saves rebalancing new new documents (difficult)
+		// ! Therefore only use when we assume pages are not often traversed! (and pick page size accordingly)
+		unsubscribe = onSnapshot(
+			firestoreQuery(query, limit(requestedLimit)),
+			(snapshot) => {
+				rawDocs.value = snapshot.docs;
+				loaded.value = true;
+			},
+			(error) => {
+				if (error.code === "not-found" || error.code === "permission-denied") onError?.(false);
+				else onError?.(true);
+			},
+		);
 	}
 
 	function release() {
-		queries.value.forEach((q) => q.release());
-		queries.value = [];
+		unsubscribe?.();
+		unsubscribe = undefined;
 	}
 
-	const tupleItems = computed(() => queries.value.flatMap((q) => q.tupleItems));
-	const loaded = computed(() => queries.value.every((q) => q.loaded));
+	const tupleItems = computed(() => rawDocs.value.map((doc): [string, T] => [doc.id, doc.data() as T]));
 
 	return { tupleItems, expandBy, loaded, release };
 }
