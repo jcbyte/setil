@@ -55,8 +55,8 @@ export function useLiveGroup(groupId: Ref<string | null>, onError?: (network: bo
 			const stopWatchEffect = watchEffect(() => {
 				activeGroupData.value = {
 					data: liveGroupData.value,
-					users: liveGroupUsersLoaded.value ? liveGroupUsers : null,
-					transactions: liveGroupTransactionsLoaded.value ? liveGroupTransactions : null,
+					users: liveGroupUsersLoaded.value ? liveGroupUsers.value : null,
+					transactions: liveGroupTransactionsLoaded.value ? liveGroupTransactions.value : null,
 				};
 			});
 

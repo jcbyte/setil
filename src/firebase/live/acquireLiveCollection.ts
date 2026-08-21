@@ -1,11 +1,11 @@
 import { CollectionReference } from "firebase/firestore";
-import { type Ref } from "vue";
+import { computed, type Ref } from "vue";
 import { acquireLiveQuery } from "./acquireLiveQuery";
 
 type ErrorHandler = (network: boolean) => void;
 
 interface CachedLiveCollection {
-	rec: Record<string, any>;
+	rec: Ref<Record<string, any>>;
 	loaded: Ref<boolean>;
 	release: () => void;
 	refCount: number;
@@ -33,7 +33,7 @@ const liveCollections = new Map<string, CachedLiveCollection>();
 export function acquireLiveCollection<T>(
 	colRef: CollectionReference<T>,
 	onError?: ErrorHandler,
-): { items: Record<string, T>; loaded: Ref<boolean>; release: () => void } {
+): { items: Ref<Record<string, T>>; loaded: Ref<boolean>; release: () => void } {
 	const colKey = colRef.path;
 
 	let released = false;
@@ -67,10 +67,11 @@ export function acquireLiveCollection<T>(
 
 	// Get a live query of this collection
 	const {
-		items,
+		tupleItems,
 		loaded,
 		release: releaseQuery,
 	} = acquireLiveQuery(colRef, (nw) => errorHandlers.forEach((handler) => handler(nw)));
+	const items = computed<Record<string, T>>(() => Object.fromEntries(tupleItems.value));
 	liveCollections.set(colKey, { rec: items, loaded, release: releaseQuery, refCount: 1, errorHandlers });
 
 	return { items, loaded, release };

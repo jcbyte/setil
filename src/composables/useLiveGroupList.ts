@@ -72,7 +72,7 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 				const groupUsersRef = collection(groupRef, "users") as CollectionReference<GroupUserData>;
 				const activeUsersQuery = query(groupUsersRef, where("status", "==", "active"));
 				const {
-					items: groupActiveUsers,
+					tupleItems: tupleGroupActiveUsers,
 					loaded: groupActiveUsersLoaded,
 					release: releaseGroupActiveUsers,
 				} = acquireLiveQuery(activeUsersQuery, (nw) => onError?.(nw, groupId));
@@ -80,6 +80,8 @@ export default function useLiveGroupList(onError?: (network: boolean, groupId?: 
 				const groupListData = computed(() => {
 					if (!groupData.value) return null;
 					if (!groupActiveUsersLoaded.value) return null;
+
+					const groupActiveUsers = Object.fromEntries(tupleGroupActiveUsers.value);
 
 					// Compute user count
 					const userCount = Object.keys(groupActiveUsers).length;

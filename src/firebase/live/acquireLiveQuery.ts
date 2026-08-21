@@ -1,5 +1,5 @@
-import { onSnapshot, Query } from "firebase/firestore";
-import { reactive, ref, type Ref } from "vue";
+import { DocumentSnapshot, onSnapshot, Query } from "firebase/firestore";
+import { computed, ref, shallowRef, type Ref } from "vue";
 
 /**
  * Composable for subscribing to a Firestore query with live updates.
@@ -19,24 +19,20 @@ import { reactive, ref, type Ref } from "vue";
 export function acquireLiveQuery<T>(
 	query: Query<T>,
 	onError?: (network: boolean) => void,
-): { items: Record<string, T>; loaded: Ref<boolean>; release: () => void } {
-	const items = reactive<Record<string, T>>({});
+): {
+	tupleItems: Ref<[string, T][]>;
+	rawDocs: Ref<DocumentSnapshot<T>[]>;
+	loaded: Ref<boolean>;
+	release: () => void;
+} {
+	const rawDocs = shallowRef<DocumentSnapshot<T>[]>([]);
 	const loaded = ref<boolean>(false);
 
 	// Create a live listener for the query
 	const unsubscribe = onSnapshot(
 		query,
 		(snapshot) => {
-			// For each change perform the correct action to synchronise our ref with firestore
-			snapshot.docChanges().forEach((change) => {
-				const docId = change.doc.id;
-				if (change.type === "added" || change.type === "modified") {
-					items[docId] = change.doc.data();
-				} else {
-					delete items[docId];
-				}
-			});
-
+			rawDocs.value = snapshot.docs;
 			// Once this is performed once the data has been loaded
 			loaded.value = true;
 		},
@@ -47,5 +43,7 @@ export function acquireLiveQuery<T>(
 		},
 	);
 
-	return { items: items, loaded: loaded, release: unsubscribe };
+	const tupleItems = computed(() => rawDocs.value.map((doc): [string, T] => [doc.id, doc.data() as T]));
+
+	return { tupleItems, rawDocs, loaded, release: unsubscribe };
 }
