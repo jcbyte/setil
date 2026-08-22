@@ -120,10 +120,19 @@ async function handleDeleteTransaction() {
 				<CardDescription>Transactions in this group</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<Transition :name="pageTransition" mode="out-in">
-					<div :key="paginatedTransactions?.currentPage ?? 'initial'">
-            <template v-if="paginatedTransactions && groupedPagedTransactions">
-              <div v-if="groupedPagedTransactions.length > 0" class="flex flex-col gap-4">
+        <Empty v-if="paginatedTransactions && groupedPagedTransactions?.length === 0">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileText />
+            </EmptyMedia>
+            <EmptyTitle>No activity</EmptyTitle>
+            <EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+        <div v-else class="flex flex-col gap-4">
+          <Transition :name="pageTransition" mode="out-in">
+            <div :key="paginatedTransactions?.currentPage ?? 'initial'">
+              <div v-if="groupedPagedTransactions" class="flex flex-col gap-4">
                 <div class="flex flex-col gap-3.5">
                     <div
                       v-for="groupedTransactions in groupedPagedTransactions"
@@ -260,50 +269,43 @@ async function handleDeleteTransaction() {
                       </div>
                     </div>
                   </div>
-                <Pagination
-                  :page="paginatedTransactions.currentPage"
-                  @update:page="(pg) => paginatedTransactions?.goToPage(pg)"
-                  :items-per-page="1"
-                  :total="paginatedTransactions.totalPages ?? 10"
+                </div>
+                <div v-else class="flex flex-col gap-4">
+                  <div v-for="i in 3" :key="i" class="flex flex-col gap-1">
+                    <Skeleton class="w-34 h-5" />
+                    <Skeleton v-for="item in Math.trunc(i * 1.5)" :key="item" class="w-full h-15" />
+                  </div>
+                </div>
+              </div>
+            </Transition>
+            <!-- Use pagination with "1" item per page (1 page per page) -->
+            <Pagination
+              v-if="paginatedTransactions?.totalPages && paginatedTransactions.totalPages > 1"
+              :page="paginatedTransactions.currentPage"
+              @update:page="(pg) => paginatedTransactions?.goToPage(pg)"
+              :items-per-page="1"
+              :total="paginatedTransactions.totalPages"
+            >
+            <PaginationContent v-slot="{ items }">
+              <PaginationPrevious />
+
+              <template v-for="(item, index) in items" :key="index">
+                <PaginationItem
+                  v-if="item.type === 'page'"
+                  :value="item.value"
+                  :is-active="item.value === paginatedTransactions.currentPage"
                 >
-                  <PaginationContent v-slot="{ items }">
-                    <PaginationPrevious />
+                  {{ item.value }}
+                </PaginationItem>
 
-                    <template v-for="(item, index) in items" :key="index">
-                      <PaginationItem
-                        v-if="item.type === 'page'"
-                        :value="item.value"
-                        :is-active="item.value === paginatedTransactions.currentPage"
-                      >
-                        {{ item.value }}
-                      </PaginationItem>
+                <PaginationEllipsis v-else :index="index" />
+              </template>
 
-                      <PaginationEllipsis v-else :index="index" />
-                    </template>
-
-                    <PaginationNext />
-                  </PaginationContent>
-                </Pagination>
-              </div>
-              <Empty v-else>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <FileText />
-                  </EmptyMedia>
-                  <EmptyTitle>No activity</EmptyTitle>
-                  <EmptyDescription>Create an expense to start splitting expenses</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            </template>
-            <div v-else class="flex flex-col gap-4">
-              <div v-for="i in 3" class="flex flex-col gap-1">
-                <Skeleton class="w-34 h-5" />
-                <Skeleton v-for="_ in Math.trunc(i * 1.5)" class="w-full h-15" />
-              </div>
-            </div>
-					</div>
-				</Transition>
-			</CardContent>
+              <PaginationNext />
+            </PaginationContent>
+          </Pagination>
+        </div>
+      </CardContent>
 		</Card>
 
 		<AlertDialog v-model:open="deleteConfirmDialogOpen">
