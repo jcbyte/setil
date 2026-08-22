@@ -82,14 +82,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
 					const total = Object.values(transaction.to).reduce((sum, amount) => sum + amount, 0);
 					body = `${fromName} added expense ${transaction.title} for ${formatCurrency(total, group.currency, true)}.`;
-					route = `/group/${groupId}?tab=activity`;
+					route = `/group/${groupId}`;
 				} else {
 					if (transaction.type !== "payment")
 						return res.status(422).json({ success: false, error: "Transaction is not a payment" });
 
 					const toName = await getGroupUserName(groupId, transaction.to);
 					body = `${fromName} paid ${toName} ${formatCurrency(transaction.amount, group.currency, true)}.`;
-					route = `/group/${groupId}?tab=summary`;
+					route = `/group/${groupId}`;
 				}
 
 				break;
