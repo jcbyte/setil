@@ -1,5 +1,5 @@
 import { db } from "@/firebase/firebase";
-import type { GroupData, GroupUserData, Transaction } from "@/types/firestore";
+import type { GroupData, GroupUserData } from "@/types/firestore";
 import { collection, CollectionReference, doc, DocumentReference } from "firebase/firestore";
 import { ref, watch, watchEffect, type Ref } from "vue";
 import { acquireLiveCollection } from "../firebase/live/acquireLiveCollection";
@@ -8,7 +8,6 @@ import { acquireLiveDoc } from "../firebase/live/acquireLiveDoc";
 export interface Group {
 	data: GroupData | null;
 	users: Record<string, GroupUserData> | null;
-	transactions: Record<string, Transaction> | null;
 }
 
 /**
@@ -44,19 +43,11 @@ export function useLiveGroup(groupId: Ref<string | null>, onError?: (network: bo
 				release: releaseGroupUsers,
 			} = acquireLiveCollection(groupUsersRef, onError);
 
-			const groupTransactionsRef = collection(groupRef, "transactions") as CollectionReference<Transaction>;
-			const {
-				items: liveGroupTransactions,
-				loaded: liveGroupTransactionsLoaded,
-				release: releaseGroupTransactions,
-			} = acquireLiveCollection(groupTransactionsRef, onError);
-
 			// Collapse the group data into a single value
 			const stopWatchEffect = watchEffect(() => {
 				activeGroupData.value = {
 					data: liveGroupData.value,
 					users: liveGroupUsersLoaded.value ? liveGroupUsers.value : null,
-					transactions: liveGroupTransactionsLoaded.value ? liveGroupTransactions.value : null,
 				};
 			});
 
@@ -65,7 +56,6 @@ export function useLiveGroup(groupId: Ref<string | null>, onError?: (network: bo
 				stopWatchEffect();
 				releaseGroupData();
 				releaseGroupUsers();
-				releaseGroupTransactions();
 			});
 		},
 		{ immediate: true },
