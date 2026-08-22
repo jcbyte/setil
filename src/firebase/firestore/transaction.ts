@@ -159,3 +159,9 @@ export async function deleteTransaction(groupId: string, transactionId: string, 
 		await leftUserBatch.commit();
 	}
 }
+
+export async function getTransaction(groupId: string, transactionId: string): Promise<Transaction | undefined> {
+	const transactionRef = doc(db, "groups", groupId, "transactions", transactionId) as DocumentReference<Transaction>;
+	const transactionSnap = await getDoc(transactionRef);
+	return transactionSnap.data();
+}

@@ -2,7 +2,7 @@
 import Button from "@/components/ui/button/Button.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
-import { updateTransaction as firestoreUpdateTransaction } from "@/firebase/firestore/transaction";
+import { updateTransaction as firestoreUpdateTransaction, getTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/types/firestore";
 import { noGroup } from "@/util/app";
 import { gcdN } from "@/util/math";
@@ -23,65 +23,74 @@ const groupId = computed(() => getRouteParam(route.params.groupId));
 const group = useLiveGroupWithUserPublic(groupId, () => noGroup(router));
 const transactionId = computed(() => getRouteParam(route.params.transactionId));
 
+const transaction = ref<Extract<Transaction, { type: "expense" }> | null>(null);
 const hasThisTransactionLoaded = ref(false);
-
 const transactionDetailsForm = ref<TransactionDetailsFormExposed | null>(null);
 
 watch(
-	group,
-	(groupValue) => {
-		if (!groupValue) {
-			hasThisTransactionLoaded.value = false;
-			return;
-		}
+	[groupId, transactionId],
+	async ([currentGroupId, currentTransactionId]) => {
+		transaction.value = null;
+		hasThisTransactionLoaded.value = false;
+		if (!currentGroupId || !currentTransactionId) return;
 
-		if (!hasThisTransactionLoaded.value && groupValue.data && groupValue.transactions && transactionId.value) {
-			const transaction = groupValue.transactions[transactionId.value];
-			if (!transaction || transaction.type !== "expense") {
-				toast.error("Expense Not Found", {
-					description: "Ensure this expense exists.",
-				});
-
-				router.replace(`/group/${groupId.value}`);
+		try {
+			const loadedTransaction = await getTransaction(currentGroupId, currentTransactionId);
+			if (!loadedTransaction || loadedTransaction.type !== "expense") {
+				toast.error("Expense Not Found", { description: "Ensure this expense exists." });
+				await router.replace(`/group/${currentGroupId}`);
 				return;
 			}
 
-			const transactionGcd = gcdN(Object.values(transaction.to).filter((v) => v));
-			const transactionPeople = Object.fromEntries(
-				Object.entries(transaction.to).map(([userId, amount]) => {
-					return [userId, { selected: !!amount, num: amount / transactionGcd }];
-				}),
-			);
-
-			const dateTime = fromDate(transaction.date.toDate(), getLocalTimeZone());
-
-			transactionDetailsForm.value?.reset({
-				title: transaction.title,
-				date: toCalendarDate(dateTime),
-				time: new Time(dateTime.hour, dateTime.minute).toString().slice(0, 5),
-				from: transaction.from,
-				amount: fromFirestoreAmount(sumRecordValues(transaction.to), groupValue.data.currency),
-				category: transaction.category,
-				to: {
-					type: "ratio",
-					people: transactionPeople,
-				},
-			});
-
-			hasThisTransactionLoaded.value = true;
+			transaction.value = loadedTransaction;
+		} catch (e) {
+			toast.error("Error Loading Transaction", { description: String(e) });
+			await router.replace(`/group/${currentGroupId}`);
 		}
 	},
 	{ immediate: true },
 );
 
-const shownUsers = computed(() => {
-	if (!transactionId.value || !group.value?.users) return {};
+watch(
+	[group, transaction, transactionDetailsForm],
+	([groupValue, transactionValue, form]) => {
+		if (!groupValue?.data || !transactionValue || !form || hasThisTransactionLoaded.value) return;
 
-	const transaction = group.value?.transactions?.[transactionId.value];
-	if (!transaction || transaction.type !== "expense") return {};
+		const transactionGcd = gcdN(Object.values(transactionValue.to).filter((v) => v));
+		const transactionPeople = Object.fromEntries(
+			Object.entries(transactionValue.to).map(([userId, amount]) => {
+				return [userId, { selected: !!amount, num: amount / transactionGcd }];
+			}),
+		);
+		const dateTime = fromDate(transactionValue.date.toDate(), getLocalTimeZone());
+
+		form.reset({
+			title: transactionValue.title,
+			date: toCalendarDate(dateTime),
+			time: new Time(dateTime.hour, dateTime.minute).toString().slice(0, 5),
+			from: transactionValue.from,
+			amount: fromFirestoreAmount(sumRecordValues(transactionValue.to), groupValue.data.currency),
+			category: transactionValue.category,
+			to: {
+				type: "ratio",
+				people: transactionPeople,
+			},
+		});
+
+		hasThisTransactionLoaded.value = true;
+	},
+	{ immediate: true },
+);
+
+const shownUsers = computed(() => {
+	if (!transactionId.value || !group.value?.users || !transaction.value) return {};
 
 	const activeUsers = getStatusUsers(group.value.users, new Set(["active"]));
-	const shownUserIds = new Set([...Object.keys(activeUsers), transaction.from, ...Object.keys(transaction.to)]);
+	const shownUserIds = new Set([
+		...Object.keys(activeUsers),
+		transaction.value.from,
+		...Object.keys(transaction.value.to),
+	]);
 
 	return Object.fromEntries(Object.entries(group.value.users).filter(([userId]) => shownUserIds.has(userId)));
 });
@@ -92,12 +101,10 @@ async function updateTransaction(transaction: Transaction) {
 	if (!groupId.value || !transactionId.value || !group.value?.users) return;
 
 	isTransactionUpdating.value = true;
-
 	const leftUsers = getLeftUsersInTransaction(transaction, group.value.users);
 
 	try {
 		await firestoreUpdateTransaction(groupId.value, transactionId.value, transaction, leftUsers);
-
 		toast("Expense Details Updated", {
 			description: "Your expense got a makeover, and it's ready to slay.",
 		});

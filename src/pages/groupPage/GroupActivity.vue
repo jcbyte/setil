@@ -45,8 +45,8 @@ const props = defineProps<{
 	group: GroupWithUserPublic;
 }>();
 
-const groupIdRef = computed(() => props.groupId)
-const paginatedTransactions = useLivePaginatedGroupTransactions(groupIdRef);
+const groupId = computed(() => props.groupId)
+const paginatedTransactions = useLivePaginatedGroupTransactions(groupId);
 
 const {
 	open: deleteConfirmDialogOpen,
