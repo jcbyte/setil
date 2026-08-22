@@ -147,7 +147,7 @@ async function handleDeleteTransaction() {
                         :key="transactionId"
                         class="flex items-center justify-between gap-4 border-b last:border-b-0 border-border/60 px-1 sm:px-2 py-2 transition-colors hover:bg-muted/35"
                       >
-                        <div v-if="transaction.type === 'expense'" class="flex items-center gap-2 min-w-0" >
+                        <div v-if="transaction.type === 'expense'" class="flex-1 w-0 min-w-0 flex items-center gap-2" >
                           <div class="relative flex justify-center items-center">
                             <Avatar
                               v-if="props.group.users && props.group.users[transaction.from].computed.name"
@@ -166,14 +166,14 @@ async function handleDeleteTransaction() {
                             <span class="truncate">{{ transaction.title }}</span>
                               <span
                                 v-if="props.group.users && props.group.users[transaction.from].computed.name"
-                                class="text-sm text-muted-foreground min-w-0 truncate"
+                                class="text-sm text-muted-foreground truncate"
                               >
                                 by {{ props.group.users[transaction.from].computed.name }}
                               </span>
                               <Skeleton v-else class="w-18 h-5" />
                           </div>
                         </div>
-                        <div v-else class="flex items-center gap-2 min-w-0">
+                        <div v-else class="flex-1 w-0 min-w-0 flex items-center gap-2">
                           <div class="relative flex justify-center items-center bg-muted rounded-full">
                             <Avatar
                             v-if="props.group.users && props.group.users[transaction.from].computed.name"
@@ -197,20 +197,20 @@ async function handleDeleteTransaction() {
                             />
                           <Skeleton v-else class="size-10 rounded-full -ml-0.5" />
                         </div>
-                        <div class="flex flex-col min-w-0">
+                        <div class="flex flex-col flex-1 w-0 min-w-0">
                           <span class="truncate">Setil Up</span>
                           <div class="flex items-center gap-1 min-w-0">
                             <span
                             v-if="props.group.users && props.group.users[transaction.from].computed.name"
-                            class="text-sm text-muted-foreground min-w-0 truncate"
+                            class="text-sm text-muted-foreground truncate"
                             >
                               {{ props.group.users[transaction.from].computed.name }}
                             </span>
                             <Skeleton v-else class="w-18 h-5" />
-                            <ArrowRight class="text-muted-foreground size-3 shrink-0" />
+                            <ArrowRight class="text-muted-foreground size-3 shrink-0 -mx-0.5" />
                                                       <span
                             v-if="props.group.users && props.group.users[transaction.to].computed.name"
-                            class="text-sm text-muted-foreground min-w-0 truncate flex-1"
+                            class="text-sm text-muted-foreground truncate flex-1"
                             >
                               {{ props.group.users[transaction.to].computed.name }}
                             </span>
