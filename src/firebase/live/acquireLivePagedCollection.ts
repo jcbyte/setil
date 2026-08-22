@@ -7,8 +7,9 @@ import {
 } from "firebase/firestore";
 import { computed, ref, type Ref } from "vue";
 import { acquireLiveExpandingQuery } from "./acquireLiveExpandingQuery";
+import type { ErrorHandler } from "./types";
 
-export interface LivePagedCollection<T> {
+export interface AcquiredLivePagedCollection<T> {
 	tupleItems: Ref<[string, T][]>;
 	currentPage: Ref<number>;
 	totalPages: Ref<number | null>;
@@ -21,8 +22,8 @@ export function acquireLivePagedCollection<T>(
 	colRef: CollectionReference<T>,
 	order: QueryOrderByConstraint,
 	pageSize = 10,
-	onError?: (network: boolean) => void,
-): LivePagedCollection<T> {
+	onError?: ErrorHandler,
+): AcquiredLivePagedCollection<T> {
 	if (pageSize <= 0) throw new RangeError("pageSize must be a positive integer");
 
 	const orderedQuery = query(colRef, order);

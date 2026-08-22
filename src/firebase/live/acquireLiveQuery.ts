@@ -1,5 +1,13 @@
 import { DocumentSnapshot, onSnapshot, Query } from "firebase/firestore";
 import { computed, ref, shallowRef, type Ref } from "vue";
+import type { ErrorHandler } from "./types";
+
+export interface AcquiredLiveQuery<T> {
+	tupleItems: Ref<[string, T][]>;
+	rawDocs: Ref<DocumentSnapshot<T>[]>;
+	loaded: Ref<boolean>;
+	release: () => void;
+}
 
 /**
  * Composable for subscribing to a Firestore query with live updates.
@@ -11,20 +19,12 @@ import { computed, ref, shallowRef, type Ref } from "vue";
  * @param {Query<T>} query - The Firestore query to subscribe to
  * @param {Function} [onError] - Optional callback for error handling. Called with:
  *   - network: boolean - true if error is network related, false if access related
- * @returns {Object} Object containing:
+ * @returns {AcquiredLiveQuery<T>} Object containing:
  *   - items: Reactive ref containing Record of document ids to documents
  *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */
-export function acquireLiveQuery<T>(
-	query: Query<T>,
-	onError?: (network: boolean) => void,
-): {
-	tupleItems: Ref<[string, T][]>;
-	rawDocs: Ref<DocumentSnapshot<T>[]>;
-	loaded: Ref<boolean>;
-	release: () => void;
-} {
+export function acquireLiveQuery<T>(query: Query<T>, onError?: ErrorHandler): AcquiredLiveQuery<T> {
 	const rawDocs = shallowRef<DocumentSnapshot<T>[]>([]);
 	const loaded = ref<boolean>(false);
 

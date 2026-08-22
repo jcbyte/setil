@@ -1,10 +1,15 @@
 import { query as firestoreQuery, limit, onSnapshot, type DocumentSnapshot, type Query } from "firebase/firestore";
 import { computed, ref, shallowRef, type Ref } from "vue";
+import type { ErrorHandler } from "./types";
 
-export function acquireLiveExpandingQuery<T>(
-	query: Query<T>,
-	onError?: (network: boolean) => void,
-): { tupleItems: Ref<[string, T][]>; expandBy: (amount: number) => void; loaded: Ref<boolean>; release: () => void } {
+export interface AcquiredLiveExpandingQuery<T> {
+	tupleItems: Ref<[string, T][]>;
+	expandBy: (amount: number) => void;
+	loaded: Ref<boolean>;
+	release: () => void;
+}
+
+export function acquireLiveExpandingQuery<T>(query: Query<T>, onError?: ErrorHandler): AcquiredLiveExpandingQuery<T> {
 	const rawDocs = shallowRef<DocumentSnapshot<T>[]>([]);
 	const loaded = ref(false);
 

@@ -1,7 +1,6 @@
 import { onSnapshot, type DocumentReference, type Unsubscribe } from "firebase/firestore";
 import { ref, shallowRef, type Ref } from "vue";
-
-type ErrorHandler = (network: boolean) => void;
+import type { ErrorHandler } from "./types";
 
 interface CachedLiveDoc {
 	ref: Ref<any>;
@@ -12,6 +11,12 @@ interface CachedLiveDoc {
 }
 /** Cache for active live document subscriptions across the application. */
 const liveDocs = new Map<string, CachedLiveDoc>();
+
+export interface AcquiredLiveDoc<T> {
+	data: Ref<T | null>;
+	loaded: Ref<boolean>;
+	release: () => void;
+}
 
 /**
  * Composable for subscribing to a single Firestore document with live updates.
@@ -24,15 +29,12 @@ const liveDocs = new Map<string, CachedLiveDoc>();
  * @param {DocumentReference<T>} docRef - Reference to the Firestore document
  * @param {Function} [onError] - Optional callback for error handling. Called with:
  *   - network: boolean - true if error is network related, false if access related
- * @returns {Object} Object containing:
+ * @returns {AcquiredLiveDoc<T>} Object containing:
  *   - data: Reactive ref containing the document data or null if loading
  *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */
-export function acquireLiveDoc<T>(
-	docRef: DocumentReference<T>,
-	onError?: ErrorHandler,
-): { data: Ref<T | null>; loaded: Ref<boolean>; release: () => void } {
+export function acquireLiveDoc<T>(docRef: DocumentReference<T>, onError?: ErrorHandler): AcquiredLiveDoc<T> {
 	const docKey = docRef.path;
 
 	let released = false;
