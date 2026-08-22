@@ -10,7 +10,7 @@ export interface AcquiredLiveQuery<T> {
 }
 
 /**
- * Composable for subscribing to a Firestore query with live updates.
+ * Functions for subscribing to a Firestore query with live updates.
  *
  * Automatically manages query changes and maintains a reactive record of all documents
  * matching the query. The subscription should be cleaned up via the release function.
@@ -20,7 +20,8 @@ export interface AcquiredLiveQuery<T> {
  * @param {Function} [onError] - Optional callback for error handling. Called with:
  *   - network: boolean - true if error is network related, false if access related
  * @returns {AcquiredLiveQuery<T>} Object containing:
- *   - items: Reactive ref containing Record of document ids to documents
+ *   - tupleItems: Reactive ref containing Object entries of document ids to document data (in order)
+ *   - rawDocs: Reactive ref containing the list of all fetched raw firestore documents (in order)
  *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */

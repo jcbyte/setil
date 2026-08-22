@@ -9,6 +9,23 @@ export interface AcquiredLiveExpandingQuery<T> {
 	release: () => void;
 }
 
+/**
+ * Functions for subscribing to a Firestore query with live updates. Only a subset
+ * of documents are fetched at once (initially none).
+ *
+ * Automatically manages query changes and maintains a reactive record of all documents
+ * matching the query. The subscription should be cleaned up via the release function.
+ *
+ * @template T - The type of documents in the query results
+ * @param {Query<T>} query - The Firestore query to subscribe to, you should apply an `orderBy` in order to expand documents deterministically
+ * @param {Function} [onError] - Optional callback for error handling. Called with:
+ *   - network: boolean - true if error is network related, false if access related
+ * @returns {AcquiredLiveExpandingQuery<T>} Object containing:
+ *   - tupleItems: Reactive ref containing Object entries of document ids to document data (in order)
+ *   - expandBy: Function to expand the limit of fetched documents by `n` documents
+ *   - loaded: Reactive ref indicating if the items have been loaded
+ *   - release: Function to unsubscribe and clean up the listener
+ */
 export function acquireLiveExpandingQuery<T>(query: Query<T>, onError?: ErrorHandler): AcquiredLiveExpandingQuery<T> {
 	const rawDocs = shallowRef<DocumentSnapshot<T>[]>([]);
 	const loaded = ref(false);

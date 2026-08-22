@@ -20,7 +20,7 @@ export interface AcquiredLiveCollection<T> {
 }
 
 /**
- * Composable for subscribing to a Firestore collection with live updates.
+ * Functions for subscribing to a Firestore collection with live updates.
  *
  * Implements internal caching with reference counting to avoid duplicate listeners
  * when multiple components use the same collection. The subscription should be

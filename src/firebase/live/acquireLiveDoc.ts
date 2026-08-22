@@ -19,7 +19,7 @@ export interface AcquiredLiveDoc<T> {
 }
 
 /**
- * Composable for subscribing to a single Firestore document with live updates.
+ * Functions for subscribing to a single Firestore document with live updates.
  *
  * Implements internal caching with reference counting to avoid duplicate listeners
  * when multiple components use the same document. The subscription should be cleaned

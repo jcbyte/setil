@@ -18,10 +18,29 @@ export interface AcquiredLivePagedCollection<T> {
 	release: () => void;
 }
 
+/**
+ * Functions for subscribing to a Firestore collection with live updates. Paginating documents in a specific order.
+ *
+ * The subscription should be cleaned up via the release function.
+ *
+ * @template T - The type of documents in the collection
+ * @param {CollectionReference<T>} colRef - Reference to the Firestore collection
+ * @param {QueryOrderByConstraint} order - The ordering of documents to page by
+ * @param {number} pageSize - The size (in documents) of each page
+ * @param {Function} [onError] - Optional callback for error handling.
+ *   - network: boolean - true if error is network related, false if access related
+ * @returns {AcquiredLivePagedCollection<T>} Object containing:
+ *   - tupleItems: Reactive ref containing the pages Object entries of document ids to document data (in order)
+ *   - currentPage: Reactive ref containing the currently viewing page
+ *   - totalPages: Reactive ref containing the total number of pages in the entire collection
+ *   - loaded: Reactive ref indicating if the items have been loaded
+ *   - goToPage: Function to load documents for a specific page
+ *   - release: Function to unsubscribe and clean up the listener
+ */
 export function acquireLivePagedCollection<T>(
 	colRef: CollectionReference<T>,
 	order: QueryOrderByConstraint,
-	pageSize = 10,
+	pageSize: number = 10,
 	onError?: ErrorHandler,
 ): AcquiredLivePagedCollection<T> {
 	if (pageSize <= 0) throw new RangeError("pageSize must be a positive integer");
