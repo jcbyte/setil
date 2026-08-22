@@ -66,10 +66,17 @@ export function acquireLivePagedCollection<T>(
 	// Initially load the first page
 	expandBy(pageSize);
 
-	const loaded = computed(() => itemsLoaded.value && documentCount.value !== null);
 	const tupleItems = computed(() => {
 		const start = (currentPage.value - 1) * pageSize;
 		return expandedItems.value.slice(start, start + pageSize);
+	});
+	const loaded = computed(() => {
+		if (!itemsLoaded.value || documentCount.value === null) return false;
+
+		// Firestore can first emit a cache snapshot containing only the previous query limit (none!).
+		// Do not pronounce loaded until the expected items exist.
+		const requiredItemCount = Math.min(currentPage.value * pageSize, documentCount.value);
+		return expandedItems.value.length >= requiredItemCount;
 	});
 
 	return { tupleItems, currentPage, totalPages, loaded, goToPage, release: releaseQuery };
