@@ -1,11 +1,10 @@
 import { CollectionReference } from "firebase/firestore";
-import { type Ref } from "vue";
+import { computed, type Ref } from "vue";
 import { acquireLiveQuery } from "./acquireLiveQuery";
-
-type ErrorHandler = (network: boolean) => void;
+import type { ErrorHandler } from "./types";
 
 interface CachedLiveCollection {
-	rec: Record<string, any>;
+	rec: Ref<Record<string, any>>;
 	loaded: Ref<boolean>;
 	release: () => void;
 	refCount: number;
@@ -14,8 +13,14 @@ interface CachedLiveCollection {
 /** Cache for active live collection subscriptions across the application. */
 const liveCollections = new Map<string, CachedLiveCollection>();
 
+export interface AcquiredLiveCollection<T> {
+	items: Ref<Record<string, T>>;
+	loaded: Ref<boolean>;
+	release: () => void;
+}
+
 /**
- * Composable for subscribing to a Firestore collection with live updates.
+ * Functions for subscribing to a Firestore collection with live updates.
  *
  * Implements internal caching with reference counting to avoid duplicate listeners
  * when multiple components use the same collection. The subscription should be
@@ -25,7 +30,7 @@ const liveCollections = new Map<string, CachedLiveCollection>();
  * @param {CollectionReference<T>} colRef - Reference to the Firestore collection
  * @param {Function} [onError] - Optional callback for error handling.
  *   - network: boolean - true if error is network related, false if access related
- * @returns {Object} Object containing:
+ * @returns {AcquiredLiveCollection<T>} Object containing:
  *   - items: Reactive ref containing Record of document IDs to documents, or null if loading
  *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
@@ -33,7 +38,7 @@ const liveCollections = new Map<string, CachedLiveCollection>();
 export function acquireLiveCollection<T>(
 	colRef: CollectionReference<T>,
 	onError?: ErrorHandler,
-): { items: Record<string, T>; loaded: Ref<boolean>; release: () => void } {
+): AcquiredLiveCollection<T> {
 	const colKey = colRef.path;
 
 	let released = false;
@@ -67,10 +72,11 @@ export function acquireLiveCollection<T>(
 
 	// Get a live query of this collection
 	const {
-		items,
+		tupleItems,
 		loaded,
 		release: releaseQuery,
 	} = acquireLiveQuery(colRef, (nw) => errorHandlers.forEach((handler) => handler(nw)));
+	const items = computed<Record<string, T>>(() => Object.fromEntries(tupleItems.value));
 	liveCollections.set(colKey, { rec: items, loaded, release: releaseQuery, refCount: 1, errorHandlers });
 
 	return { items, loaded, release };

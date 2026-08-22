@@ -167,7 +167,7 @@ const onSubmit = handleSubmit(async (values) => {
 		toast("Payment Recorded", { description: "Someone's about to be rich!" });
 		sendNotification(groupId.value, { type: "new-payment", transactionId });
 
-		router.push({ path: `/group/${groupId.value}`, query: { tab: "activity" } });
+		router.push(`/group/${groupId.value}`);
 	} catch (e) {
 		toast.error("Error Saving Payment", { description: String(e) });
 	}

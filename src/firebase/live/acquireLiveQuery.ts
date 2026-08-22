@@ -1,8 +1,16 @@
-import { onSnapshot, Query } from "firebase/firestore";
-import { reactive, ref, type Ref } from "vue";
+import { DocumentSnapshot, onSnapshot, Query } from "firebase/firestore";
+import { computed, ref, shallowRef, type Ref } from "vue";
+import type { ErrorHandler } from "./types";
+
+export interface AcquiredLiveQuery<T> {
+	tupleItems: Ref<[string, T][]>;
+	rawDocs: Ref<DocumentSnapshot<T>[]>;
+	loaded: Ref<boolean>;
+	release: () => void;
+}
 
 /**
- * Composable for subscribing to a Firestore query with live updates.
+ * Functions for subscribing to a Firestore query with live updates.
  *
  * Automatically manages query changes and maintains a reactive record of all documents
  * matching the query. The subscription should be cleaned up via the release function.
@@ -11,32 +19,21 @@ import { reactive, ref, type Ref } from "vue";
  * @param {Query<T>} query - The Firestore query to subscribe to
  * @param {Function} [onError] - Optional callback for error handling. Called with:
  *   - network: boolean - true if error is network related, false if access related
- * @returns {Object} Object containing:
- *   - items: Reactive ref containing Record of document ids to documents
+ * @returns {AcquiredLiveQuery<T>} Object containing:
+ *   - tupleItems: Reactive ref containing Object entries of document ids to document data (in order)
+ *   - rawDocs: Reactive ref containing the list of all fetched raw firestore documents (in order)
  *   - loaded: Reactive ref indicating if the items have been loaded
  *   - release: Function to unsubscribe and clean up the listener
  */
-export function acquireLiveQuery<T>(
-	query: Query<T>,
-	onError?: (network: boolean) => void,
-): { items: Record<string, T>; loaded: Ref<boolean>; release: () => void } {
-	const items = reactive<Record<string, T>>({});
+export function acquireLiveQuery<T>(query: Query<T>, onError?: ErrorHandler): AcquiredLiveQuery<T> {
+	const rawDocs = shallowRef<DocumentSnapshot<T>[]>([]);
 	const loaded = ref<boolean>(false);
 
 	// Create a live listener for the query
 	const unsubscribe = onSnapshot(
 		query,
 		(snapshot) => {
-			// For each change perform the correct action to synchronise our ref with firestore
-			snapshot.docChanges().forEach((change) => {
-				const docId = change.doc.id;
-				if (change.type === "added" || change.type === "modified") {
-					items[docId] = change.doc.data();
-				} else {
-					delete items[docId];
-				}
-			});
-
+			rawDocs.value = snapshot.docs;
 			// Once this is performed once the data has been loaded
 			loaded.value = true;
 		},
@@ -47,5 +44,7 @@ export function acquireLiveQuery<T>(
 		},
 	);
 
-	return { items: items, loaded: loaded, release: unsubscribe };
+	const tupleItems = computed(() => rawDocs.value.map((doc): [string, T] => [doc.id, doc.data() as T]));
+
+	return { tupleItems, rawDocs, loaded, release: unsubscribe };
 }
