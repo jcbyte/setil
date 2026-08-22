@@ -30,6 +30,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPublic";
+import { useLivePaginatedGroupTransactions } from "@/composables/useLivePaginatedGroupTransactions";
 import { CategorySettings } from "@/constants/category";
 import { deleteTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/types/firestore";
@@ -39,12 +40,13 @@ import { formatCurrency } from "@shared/currency";
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 
-const ITEMS_PER_PAGE = 10;
-
 const props = defineProps<{
 	groupId: string;
 	group: GroupWithUserPublic;
 }>();
+
+const groupIdRef = computed(() => props.groupId)
+const paginatedTransactions = useLivePaginatedGroupTransactions(groupIdRef);
 
 const {
 	open: deleteConfirmDialogOpen,
@@ -55,25 +57,10 @@ const {
 	data: deleteDialogData,
 } = useControlledDialog<{ transactionId: string }>();
 
-const sortedTransactions = computed(() => {
-	if (!props.group.transactions) return [];
-
-	return Object.entries(props.group.transactions).sort(
-		([, transactionA]: [string, Transaction], [, transactionB]: [string, Transaction]) =>
-			transactionB.date.seconds - transactionA.date.seconds,
-	);
-});
-
-const currentPage = ref(1);
 const pageTransition = ref<"fade-slide" | "fade-slide-right">("fade-slide-right");
-
-watch(currentPage, (newPage, oldPage) => {
-	pageTransition.value = newPage > oldPage ? "fade-slide-right" : "fade-slide";
-});
-
-const pagedTransactions = computed(() => {
-	const transactionIdx = (currentPage.value - 1) * ITEMS_PER_PAGE;
-	return sortedTransactions.value.slice(transactionIdx, transactionIdx + ITEMS_PER_PAGE);
+watch(paginatedTransactions, (newPagination, oldPagination) => {
+  if (!newPagination || !oldPagination) return;
+	pageTransition.value = newPagination.currentPage > oldPagination.currentPage ? "fade-slide-right" : "fade-slide";
 });
 
 interface MonthTransactionGroup {
@@ -82,8 +69,10 @@ interface MonthTransactionGroup {
 }
 
 const groupedPagedTransactions = computed(() => {
+  if (!paginatedTransactions.value?.data) return null;
+
 	const groups: MonthTransactionGroup[] = [];
-	pagedTransactions.value.forEach(([transactionId, transaction]: [string, Transaction]) => {
+	paginatedTransactions.value.data.forEach(([transactionId, transaction]: [string, Transaction]) => {
 		const monthGroup = transaction.date.toDate().toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
 		let lastGroup = groups[groups.length - 1];
@@ -99,15 +88,14 @@ const groupedPagedTransactions = computed(() => {
 });
 
 async function handleDeleteTransaction() {
-	if (!props.group.transactions) return;
+  const transaction = paginatedTransactions.value?.data?.find(([transactionId]) => transactionId === deleteDialogData.value!.transactionId);
+	if (!transaction) return;
 	if (!props.group.users) return;
 
 	startDeleteConfirmDialogProcessing();
-
-	const leftUsers = getLeftUsersInTransaction(
-		props.group.transactions[deleteDialogData.value!.transactionId],
-		props.group.users,
-	);
+  
+  const [_, transactionData] = transaction;
+	const leftUsers = getLeftUsersInTransaction(		transactionData,		props.group.users	);
 	try {
 		await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
 		toast("Expense Deleted", { description: "It's like it never happened." });
@@ -127,11 +115,11 @@ async function handleDeleteTransaction() {
 				<CardDescription>Transactions in this group</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<template v-if="group.transactions">
+				<template v-if="paginatedTransactions && groupedPagedTransactions">
 					<template v-if="groupedPagedTransactions.length > 0">
 						<div class="flex flex-col gap-4">
 							<Transition :name="pageTransition" mode="out-in">
-								<div :key="currentPage" class="flex flex-col gap-3.5">
+								<div :key="paginatedTransactions.currentPage" class="flex flex-col gap-3.5">
 									<div
 										v-for="groupedTransactions in groupedPagedTransactions"
 										:key="groupedTransactions.monthGroup"
@@ -269,9 +257,10 @@ async function handleDeleteTransaction() {
 								</div>
 							</Transition>
 							<Pagination
-								v-model:page="currentPage"
-								:items-per-page="ITEMS_PER_PAGE"
-								:total="sortedTransactions.length"
+								:page="paginatedTransactions.currentPage"
+                @update:page="(pg) => paginatedTransactions?.goToPage(pg)"
+                :items-per-page="1"
+								:total="paginatedTransactions.totalPages ?? 10"
 							>
 								<PaginationContent v-slot="{ items }">
 									<PaginationPrevious />
@@ -280,7 +269,7 @@ async function handleDeleteTransaction() {
 										<PaginationItem
 											v-if="item.type === 'page'"
 											:value="item.value"
-											:is-active="item.value === currentPage"
+											:is-active="item.value === paginatedTransactions.currentPage"
 										>
 											{{ item.value }}
 										</PaginationItem>

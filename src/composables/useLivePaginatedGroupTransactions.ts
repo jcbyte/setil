@@ -26,6 +26,7 @@ export interface PaginatedGroupTransactions {
  */
 export function useLivePaginatedGroupTransactions(
 	groupId: Ref<string | null>,
+	pageSize?: number,
 	onError?: (network: boolean) => void,
 ): Ref<PaginatedGroupTransactions | null> {
 	const activeTransactionsData = ref<PaginatedGroupTransactions | null>(null);
@@ -45,7 +46,7 @@ export function useLivePaginatedGroupTransactions(
 				loaded,
 				goToPage,
 				release: releaseAcquireTransactions,
-			} = acquireLivePagedCollection(groupTransactionsRef, orderBy("date", "asc"), undefined, onError);
+			} = acquireLivePagedCollection(groupTransactionsRef, orderBy("date", "desc"), pageSize, onError);
 
 			// Collapse the group data into a single value
 			const stopWatchEffect = watchEffect(() => {
