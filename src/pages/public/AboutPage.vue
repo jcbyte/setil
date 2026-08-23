@@ -110,7 +110,7 @@ const features: { icon: LucideIcon; title: string; description: string }[] = [
 						Setil is an open source, expense splitting app. Create a group, invite friends, and add expenses in seconds.
 						See everyone's balance in real-time, and settle the group with fewer payments.
 					</span>
-					<div class="flex gap-3">
+					<div class="flex gap-3 mx-auto sm:mx-0">
 						<RouterLink to="/">
 							<Button size="lg">
 								Start Splitting

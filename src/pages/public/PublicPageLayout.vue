@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, ExternalLink } from "@lucide/vue";
+import { getBooleanEnv } from "@/util/util";
+import { ArrowLeft, Coffee, ExternalLink } from "@lucide/vue";
 import { RouterLink } from "vue-router";
+
+const SHOW_TIPPING = !getBooleanEnv(import.meta.env.VITE_DISABLE_TIPPING);
 </script>
 
 <template>
@@ -15,8 +18,16 @@ import { RouterLink } from "vue-router";
 
 			<div class="flex items-center gap-1">
 				<RouterLink to="/about"><Button variant="ghost">About</Button></RouterLink>
-				<a href="https://github.com/jcbyte/setil" target="_blank" rel="noopener noreferrer">
+				<a
+					href="https://github.com/jcbyte/setil"
+					target="_blank"
+					rel="noopener noreferrer"
+					:class="SHOW_TIPPING ? 'hidden sm:inline-flex' : 'inline-flex'"
+				>
 					<Button variant="ghost"><ExternalLink class="size-4" />Source</Button>
+				</a>
+				<a v-if="SHOW_TIPPING" href="https://github.com/jcbyte/setil" target="_blank" rel="noopener noreferrer">
+					<Button variant="secondary"><Coffee class="size-4" />Buy me a Coffee</Button>
 				</a>
 			</div>
 		</header>
