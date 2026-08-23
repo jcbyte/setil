@@ -10,9 +10,13 @@ export async function inviteUser(groupId: string, groupName: string) {
 	// Cleanup old invites
 	await cleanupInvites(groupId);
 
+	const origin = Capacitor.isNativePlatform()
+		? import.meta.env.VITE_PUBLIC_ORIGIN_URL?.replace(/\/+$/, "")
+		: window.location.origin;
+	if (!origin) throw new Error("Missing public origin URL for invite link generation.");
+
 	// Create invite
 	const inviteCode = await invite(groupId, INVITE_VALIDITY_DAYS * 24 * 60 * 60 * 1000);
-	const origin = Capacitor.isNativePlatform() ? import.meta.env.VITE_PUBLIC_ORIGIN_URL : window.location.origin;
 	const inviteLink = `${origin}/invite/${groupId}/${inviteCode}`;
 	const sharedData: ShareOptions = {
 		title: "Setil Invite Link",
