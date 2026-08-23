@@ -14,8 +14,8 @@ const props = defineProps<{
 <template>
 	<Select v-bind="$attrs">
 		<SelectTrigger :id="id">
-			<SelectValue placeholder="Select a member">
-				<div v-if="selectedUser" class="flex items-center gap-2 pr-1">
+			<SelectValue placeholder="Select a member" class="flex-1 w-0 min-w-0">
+				<div v-if="selectedUser" class="flex items-center gap-2 pr-1 min-w-0">
 					<Avatar
 						v-if="users[selectedUser]?.computed.name"
 						:src="users[selectedUser]?.public?.photoUrl ?? null"
@@ -24,7 +24,7 @@ const props = defineProps<{
 						class="size-6"
 					/>
 					<Skeleton v-else class="size-6 rounded-full" />
-					<span v-if="props.users[selectedUser]?.computed.name">
+					<span v-if="props.users[selectedUser]?.computed.name" class="truncate">
 						{{ props.users[selectedUser].computed.name }}
 					</span>
 					<Skeleton v-else class="w-18 h-5" />
