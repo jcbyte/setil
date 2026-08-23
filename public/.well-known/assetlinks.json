@@ -1,0 +1,16 @@
+[
+	{
+		"relation": ["delegate_permission/common.handle_all_urls"],
+		"target": {
+			"namespace": "android_app",
+			"package_name": "dev.joelcutler.setil",
+			"sha256_cert_fingerprints": [
+				"DC:2C:3A:A7:29:0D:95:A0:2C:2A:E1:59:BB:45:7D:C6:23:FE:56:A0:6B:B8:51:B6:B5:2B:EF:F0:1E:C6:8F:B9",
+				"3C:09:41:10:47:AB:5D:32:A9:90:DA:B3:06:6D:15:1F:89:2B:A7:81:2B:55:1A:DE:44:FF:EE:9F:A6:FB:BC:BC",
+				"3E:60:97:87:89:D8:F1:9B:3B:89:FB:FB:9C:FE:7C:A0:39:EE:C7:5C:14:17:77:A9:94:1C:71:41:98:9E:BC:1E",
+				"B9:0D:58:58:B8:C2:92:B3:A2:4E:40:3C:49:0F:C2:8A:63:62:22:EB:B9:BF:32:77:EC:3A:CD:96:78:CC:BF:DB",
+				"62:36:0D:F8:02:D8:F1:7D:96:E0:FA:10:16:71:FE:24:F0:51:F0:FF:5C:93:81:B2:2C:81:BB:F2:25:97:C6:5F"
+			]
+		}
+	}
+]
