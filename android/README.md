@@ -12,9 +12,20 @@ The `google-services.json` file can be downloaded from Firebase after creating a
 
 The committed application ID is `dev.joelcutler.setil`.
 
-If publishing a fork as a separate app, choose an application ID that you control and update the native Android package, Gradle namespace/application ID, and `appId` in [`capacitor.config.ts`](../capacitor.config.ts).
+If publishing a fork as a separate app, choose an application ID that you control and update the `appId` in [`capacitor.config.ts`](../capacitor.config.ts).
 
 **Note:** Changing only `appId` after the Android project has been generated does not rename all native Android files automatically.
+
+The Android package, Gradle namespace/application ID, and all other configuration files (e.g. [.well-known](/public/.well-known)) must be updated respectively.
+
+## Environment Variables
+
+Android builds use Vite's `android` mode and load additional client-side configuration from `.env.android.local`.
+
+At a minimum, configure the URLs used by the native app:
+
+- `VITE_PUBLIC_WEB_ORIGIN`
+- `VITE_API_BASE_URL`
 
 ## Development
 
