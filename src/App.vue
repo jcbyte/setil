@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Toaster } from "@/components/ui/sonner";
-import authService from "@/util/authService.js";
+import authService from "@/util/authService";
 import { LoaderCircle } from "@lucide/vue";
 import { useColorMode } from "@vueuse/core";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";

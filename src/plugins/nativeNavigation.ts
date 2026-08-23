@@ -12,7 +12,15 @@ const NativeNavigationPlugin: Plugin = {
 };
 export default NativeNavigationPlugin;
 
-async function initialiseNativeAndroidNavigation() {
+async function initialiseNativeUrlOpen() {
+	await App.addListener("appUrlOpen", (event) => {
+		const url = new URL(event.url);
+		const targetPath = `${url.pathname}${url.search}${url.hash}`;
+		router.push(targetPath || "/");
+	});
+}
+
+async function initialiseNativeAndroidBackNavigation() {
 	await App.addListener("backButton", ({ canGoBack }) => {
 		if (canGoBack) {
 			router.back();
@@ -25,12 +33,18 @@ async function initialiseNativeAndroidNavigation() {
 
 /** Route Android's system back button through Vue Router. */
 export function initialiseNativeNavigation(): Promise<void> {
-	if (Capacitor.getPlatform() !== "android") return Promise.resolve();
+	if (!Capacitor.isNativePlatform()) return Promise.resolve();
 	if (initPromise) return initPromise;
 
-	initPromise = initialiseNativeAndroidNavigation().catch((e) => {
-		initPromise = undefined;
-		throw e;
-	});
+	const initialisations: Promise<void>[] = [];
+	initialisations.push(initialiseNativeUrlOpen());
+	if (Capacitor.getPlatform() === "android") initialisations.push(initialiseNativeAndroidBackNavigation());
+
+	initPromise = Promise.all(initialisations)
+		.then(() => {})
+		.catch((e) => {
+			initPromise = undefined;
+			throw e;
+		});
 	return initPromise;
 }

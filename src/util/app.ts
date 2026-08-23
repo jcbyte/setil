@@ -1,18 +1,22 @@
 import { cleanupInvites, invite } from "@/firebase/firestore/group";
+import { Capacitor } from "@capacitor/core";
 import { Share, type ShareOptions } from "@capacitor/share";
 import { type Router } from "vue-router";
 import { toast } from "vue-sonner";
+
+const INVITE_VALIDITY_DAYS = 3;
 
 export async function inviteUser(groupId: string, groupName: string) {
 	// Cleanup old invites
 	await cleanupInvites(groupId);
 
 	// Create invite
-	const inviteCode = await invite(groupId, 3 * 24 * 60 * 60 * 1000);
-	const inviteLink = `${window.location.origin}/invite/${groupId}/${inviteCode}`;
+	const inviteCode = await invite(groupId, INVITE_VALIDITY_DAYS * 24 * 60 * 60 * 1000);
+	const origin = Capacitor.isNativePlatform() ? import.meta.env.VITE_PUBLIC_ORIGIN_URL : window.location.origin;
+	const inviteLink = `${origin}/invite/${groupId}/${inviteCode}`;
 	const sharedData: ShareOptions = {
 		title: "Setil Invite Link",
-		text: `Join my Setil Group, ${groupName}! This link will be valid for 3 days.`,
+		text: `Join my Setil Group, ${groupName}! This link will be valid for ${INVITE_VALIDITY_DAYS} days.`,
 		url: inviteLink,
 		dialogTitle: "Share Invite Link",
 	};
