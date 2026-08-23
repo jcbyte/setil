@@ -1,13 +1,15 @@
 # <img src="public/icon/icon-512.png" height="40"> &nbsp; Setil
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20me%20a%20Coffee-5d67f0?style=flat&logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/joelcutler)
+
 **The modern, real-time cost-splitting app built for simplicity.**
 
 Setil is a mobile-first progressive web app designed to simplify group expenses. Create a group, invite friends, and add expenses in seconds. Powered by Vue 3 and Firebase, Setil tracks every transaction in real-time, automatically calculating the most efficient way for everyone to setil up.
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="demo-dark.gif">
     <source media="(prefers-color-scheme: light)" srcset="demo-light.gif">
+    <source media="(prefers-color-scheme: dark)" srcset="demo-dark.gif">
     <img 
       src="demo-light.gif" 
       alt="Setil demo" 

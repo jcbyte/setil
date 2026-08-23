@@ -32,3 +32,5 @@ dev-dist
 
 # Local Firebase Android configuration. Each developer should supply their own
 /android/app/google-services.json
+
+.env*

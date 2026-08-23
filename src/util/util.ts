@@ -4,6 +4,10 @@ import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import { formatCurrency } from "@shared/currency";
 
+export function getBooleanEnv(envValue: any): boolean {
+	return String(envValue ?? "false").toUpperCase() === "TRUE";
+}
+
 export function getRouteParam(qp: string | string[]): string | null {
 	return Array.isArray(qp) ? qp[0] : qp || null;
 }
