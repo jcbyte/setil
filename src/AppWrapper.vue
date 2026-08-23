@@ -3,10 +3,10 @@ import { useColorMode } from "@vueuse/core";
 import "vue-sonner/style.css";
 import App from "./App.vue";
 import MaintenancePage from "./pages/MaintenancePage.vue";
+import { getBooleanEnv } from "./util/util.js";
 
 const dev = import.meta.env.DEV;
-const maintenance = String(import.meta.env.VITE_MAINTENANCE ?? "false").toUpperCase() === "TRUE";
-const showMaintenance = maintenance && !dev;
+const showMaintenance = getBooleanEnv(import.meta.env.VITE_MAINTENANCE) && !dev;
 
 useColorMode({
 	storageKey: "setil-theme",

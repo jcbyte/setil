@@ -39,7 +39,7 @@ if (!Capacitor.isNativePlatform()) {
 		</Card>
 
 		<div class="fixed bottom-4 right-0 left-0">
-			<PublicLinks />
+			<PublicLinks :omitted-pages="['coffee']" />
 		</div>
 	</div>
 </template>
