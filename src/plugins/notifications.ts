@@ -8,8 +8,6 @@ import { getMessaging, isSupported, onMessage } from "firebase/messaging";
 import { h, type Plugin } from "vue";
 import { toast } from "vue-sonner";
 
-let initPromise: Promise<void> | undefined;
-
 const NotificationPlugin: Plugin = {
 	install() {
 		initialiseNotifications();
@@ -74,16 +72,10 @@ async function initialiseWebNotifications() {
 	);
 }
 
-function initialiseNotifications(): Promise<void> {
-	if (initPromise) return initPromise;
-
-	const resolvedNotificationInitialiser = Capacitor.isNativePlatform()
-		? initialiseNativeNotifications
-		: initialiseWebNotifications;
-	initPromise = resolvedNotificationInitialiser().catch((e) => {
-		initPromise = undefined;
-		throw e;
-	});
-
-	return initPromise;
+function initialiseNotifications() {
+	if (Capacitor.isNativePlatform()) {
+		initialiseNativeNotifications;
+	} else {
+		initialiseWebNotifications;
+	}
 }
