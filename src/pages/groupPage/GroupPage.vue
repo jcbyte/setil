@@ -151,16 +151,16 @@ watch(currentTab, (newTab, oldTab) => {
 						:key="groupButton.title"
 						:to="groupButton.link"
 						hide-chevron
-						class="p-3.5 flex flex-row items-center gap-3"
+						class="p-3.5 flex flex-col sm:flex-row items-center gap-2 sm:gap-3"
 					>
 						<div
 							class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
 						>
 							<component :is="groupButton.icon" class="size-5" />
 						</div>
-						<div class="flex min-w-0 flex-col items-start">
-							<span class="w-full truncate font-semibold">{{ groupButton.title }}</span>
-							<span class="w-full truncate text-xs text-muted-foreground">
+						<div class="flex flex-col min-w-0">
+							<span class="w-full truncate font-semibold text-center sm:text-left">{{ groupButton.title }}</span>
+							<span class="w-full truncate text-xs text-muted-foreground text-center sm:text-left">
 								{{ groupButton.description }}
 							</span>
 						</div>
