@@ -3,8 +3,6 @@ import { Capacitor } from "@capacitor/core";
 import { type Plugin } from "vue";
 import router from "../router";
 
-let initPromise: Promise<void> | undefined;
-
 const NativeNavigationPlugin: Plugin = {
 	install() {
 		initialiseNativeNavigation();
@@ -20,6 +18,7 @@ async function initialiseNativeUrlOpen() {
 	});
 }
 
+/** Route Android's system back button through Vue Router. */
 async function initialiseNativeAndroidBackNavigation() {
 	await App.addListener("backButton", ({ canGoBack }) => {
 		if (canGoBack) {
@@ -31,20 +30,9 @@ async function initialiseNativeAndroidBackNavigation() {
 	});
 }
 
-/** Route Android's system back button through Vue Router. */
-export function initialiseNativeNavigation(): Promise<void> {
-	if (!Capacitor.isNativePlatform()) return Promise.resolve();
-	if (initPromise) return initPromise;
+function initialiseNativeNavigation() {
+	if (!Capacitor.isNativePlatform()) return;
 
-	const initialisations: Promise<void>[] = [];
-	initialisations.push(initialiseNativeUrlOpen());
-	if (Capacitor.getPlatform() === "android") initialisations.push(initialiseNativeAndroidBackNavigation());
-
-	initPromise = Promise.all(initialisations)
-		.then(() => {})
-		.catch((e) => {
-			initPromise = undefined;
-			throw e;
-		});
-	return initPromise;
+	initialiseNativeUrlOpen();
+	if (Capacitor.getPlatform() === "android") initialiseNativeAndroidBackNavigation();
 }
