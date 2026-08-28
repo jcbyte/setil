@@ -74,8 +74,8 @@ async function initialiseWebNotifications() {
 
 function initialiseNotifications() {
 	if (Capacitor.isNativePlatform()) {
-		initialiseNativeNotifications;
+		initialiseNativeNotifications();
 	} else {
-		initialiseWebNotifications;
+		initialiseWebNotifications();
 	}
 }
