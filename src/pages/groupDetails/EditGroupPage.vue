@@ -334,7 +334,7 @@ async function leaveGroup() {
 	try {
 		await firestoreLeaveGroup(groupId.value);
 
-		router.push("/");
+		router.replace("/");
 		toast("Group Left", { description: "Your expenses here are now history." });
 	} catch (e) {
 		toast.error("Error Leaving Group", { description: String(e) });
@@ -353,7 +353,7 @@ async function deleteGroup() {
 	try {
 		await firestoreDeleteGroup(groupId.value);
 
-		router.push("/");
+		router.replace("/");
 		toast("Group Deleted", { description: "All data related to this group has been deleted." });
 	} catch (e) {
 		toast.error("Error Deleting Group", { description: String(e) });
