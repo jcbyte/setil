@@ -26,7 +26,7 @@ import { Ghost, House } from "@lucide/vue";
 				<Separator />
 
 				<Button type="button" as-child class="min-w-40">
-					<RouterLink to="/">
+					<RouterLink to="/" replace>
 						<House />
 						<span>Return home</span>
 					</RouterLink>
