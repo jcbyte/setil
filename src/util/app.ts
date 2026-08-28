@@ -25,16 +25,27 @@ export async function inviteUser(groupId: string, groupName: string) {
 		dialogTitle: "Share Invite Link",
 	};
 
-	// If this can be shared then share it
-	if (await Share.canShare()) {
-		await Share.share(sharedData);
-	} else {
-		// Else copy to clipboard and display a confirmation
+	async function copyToClipboard() {
+		// Fallback copy to clipboard
 		await navigator.clipboard.writeText(inviteLink).then(() => {
 			toast("Copied Link to Clipboard", {
 				description: "This link will be valid for 3 days.",
 			});
 		});
+	}
+
+	// If the default share can be used, else clipboard fallback
+	if (await Share.canShare()) {
+		try {
+			await Share.share(sharedData);
+		} catch (err) {
+			// If the user cancelled the share, don't copy
+			if (err instanceof Error && (err.name === "AbortError" || err.message.toLocaleLowerCase().includes("canceled")))
+				return;
+			await copyToClipboard();
+		}
+	} else {
+		await copyToClipboard();
 	}
 }
 
