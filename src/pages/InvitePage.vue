@@ -21,7 +21,7 @@ onMounted(async () => {
 		toast.error("Invalid Link", {
 			description: "Ensure this is a valid link.",
 		});
-		router.push(`/`);
+		router.replace(`/`);
 		return;
 	}
 
@@ -32,13 +32,13 @@ onMounted(async () => {
 			toast("Joined Group", { description: "Time to make cents of things." });
 			sendNotification(groupId, { type: "joined-group", userId: currentUser.value!.uid });
 		}
-		router.push(`/group/${groupId}`);
+		router.replace(`/group/${groupId}`);
 	} catch {
 		toast.error("Couldn't Join Group", {
 			description: "Ensure this link has not expired.",
 			duration: 5000,
 		});
-		router.push(`/`);
+		router.replace(`/`);
 	}
 });
 </script>
