@@ -36,7 +36,7 @@ async function createTransaction(transaction: Transaction) {
 		toast("Expense Created", { description: "It's on the group's tab." });
 		sendNotification(groupId.value, { type: "new-transaction", transactionId });
 
-		router.push(`/group/${groupId.value}`);
+		router.replace(`/group/${groupId.value}`);
 	} catch (e) {
 		toast.error("Error Saving Expense Details", { description: String(e) });
 	}
