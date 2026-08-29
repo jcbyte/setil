@@ -337,7 +337,9 @@ async function leaveGroup() {
 		await firestoreLeaveGroup(groupId.value);
 
 		toast("Group Left", { description: "Your expenses here are now history." });
-		sendNotification(groupId.value, { type: "left-group" });
+		// ! As the user is now no longer `active`, the notification will not be sent.
+		// This is evidence of an architectural shift to server-side writing/updating.
+		// todo sendNotification(groupId.value, { type: "left-group" });
 
 		router.replace("/");
 	} catch (e) {

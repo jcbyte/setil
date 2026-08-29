@@ -179,7 +179,7 @@ export async function renderNotification(
 			if (notification.oldFrom === sendingUser) {
 				body = `${fromName} removed their payment of ${formatCurrency(notification.oldAmount, group.currency, true)} to ${toName}.`;
 			} else if (notification.oldTo === sendingUser) {
-				body = `${toName} removed the payment of ${formatCurrency(notification.oldAmount, group.currency, true)} from ${fromName}.`;
+				body = `${toName} removed their payment of ${formatCurrency(notification.oldAmount, group.currency, true)} from ${fromName}.`;
 			} else {
 				const sendingName = await getGroupUserName(groupId, sendingUser);
 				if (!sendingName) throw new RenderNotificationError(404, "Notification sender user not found");
