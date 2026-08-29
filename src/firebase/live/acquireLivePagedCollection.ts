@@ -5,7 +5,7 @@ import {
 	type FirestoreError,
 	type QueryOrderByConstraint,
 } from "firebase/firestore";
-import { computed, ref, type Ref } from "vue";
+import { computed, ref, watchEffect, type Ref } from "vue";
 import { acquireLiveExpandingQuery } from "./acquireLiveExpandingQuery";
 import type { ErrorHandler } from "./types";
 
@@ -57,16 +57,19 @@ export function acquireLivePagedCollection<T>(
 	const documentCount = ref<number | null>(null);
 	let expandedToPage = 1;
 
-	// Get the document count from server
-	// ! Note that this is a "one-shot", it will not update in realtime
-	void getCountFromServer(orderedQuery)
-		.then((snapshot) => {
-			documentCount.value = snapshot.data().count;
-		})
-		.catch((error: FirestoreError) => {
-			if (error.code === "not-found" || error.code === "permission-denied") onError?.(false);
-			else onError?.(true);
-		});
+	// ! Note: This count wont update when other users delete/add transactions
+	const refreshDocumentCount = async (): Promise<number | null> =>
+		getCountFromServer(orderedQuery)
+			.then((snapshot) => {
+				documentCount.value = snapshot.data().count;
+				return documentCount.value;
+			})
+			.catch((error: FirestoreError) => {
+				if (error.code === "not-found" || error.code === "permission-denied") onError?.(false);
+				else onError?.(true);
+				return null;
+			});
+	refreshDocumentCount();
 
 	const totalPages = computed(() => (documentCount.value !== null ? Math.ceil(documentCount.value / pageSize) : null));
 
@@ -81,6 +84,15 @@ export function acquireLivePagedCollection<T>(
 		}
 
 		currentPage.value = page;
+
+		// The count is not live, so refresh it when navigating.
+		void refreshDocumentCount().then((count) => {
+			if (count === null) return;
+
+			// If a deletion removed the requested last page, move back to the new last page.
+			const lastPage = Math.max(1, Math.ceil(count / pageSize));
+			if (currentPage.value > lastPage) currentPage.value = lastPage;
+		});
 	}
 
 	// Initially load the first page
@@ -90,13 +102,21 @@ export function acquireLivePagedCollection<T>(
 		const start = (currentPage.value - 1) * pageSize;
 		return expandedItems.value.slice(start, start + pageSize);
 	});
-	const loaded = computed(() => {
-		if (!itemsLoaded.value || documentCount.value === null) return false;
 
-		// Firestore can first emit a cache snapshot containing only the previous query limit (none!).
-		// Do not pronounce loaded until the expected items exist.
+	const loaded = ref(false);
+	watchEffect(() => {
+		// Expanding the query means a new page is being fetched.
+		if (!itemsLoaded.value) {
+			loaded.value = false;
+			return;
+		}
+
+		if (documentCount.value === null) return;
+
+		// Firestore can first emit a cache snapshot containing only the previous query limit.
+		// Wait for the requested page to arrive, then keep it loaded if live data later shrinks.
 		const requiredItemCount = Math.min(currentPage.value * pageSize, documentCount.value);
-		return expandedItems.value.length >= requiredItemCount;
+		if (expandedItems.value.length >= requiredItemCount) loaded.value = true;
 	});
 
 	return { tupleItems, currentPage, totalPages, loaded, goToPage, release: releaseQuery };
