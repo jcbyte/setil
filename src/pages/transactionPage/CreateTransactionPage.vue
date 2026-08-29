@@ -34,7 +34,7 @@ async function createTransaction(transaction: Transaction) {
 		const transactionId = await firebaseCreateTransaction(groupId.value, transaction, leftUsers);
 
 		toast("Expense Created", { description: "It's on the group's tab." });
-		sendNotification(groupId.value, { type: "new-transaction", transactionId });
+		sendNotification(groupId.value, { type: "new-expense", transactionId });
 
 		router.replace(`/group/${groupId.value}`);
 	} catch (e) {

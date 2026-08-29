@@ -71,7 +71,7 @@ export async function renderNotification(
 				`joined-group:${groupId}/${notification.userId}`,
 			);
 
-		case "new-transaction":
+		case "new-expense":
 		case "new-payment": {
 			const transactionRef = db.doc(
 				`groups/${groupId}/transactions/${notification.transactionId}`,
@@ -83,7 +83,7 @@ export async function renderNotification(
 			const fromName = await getGroupUserName(groupId, transaction.from);
 			if (!fromName) throw new RenderNotificationError(404, "Transaction user not found");
 
-			if (notification.type === "new-transaction") {
+			if (notification.type === "new-expense") {
 				if (transaction.type !== "expense") throw new RenderNotificationError(422, "Transaction is not an expense");
 
 				const total = Object.values(transaction.to).reduce((sum, amount) => sum + amount, 0);
@@ -101,7 +101,7 @@ export async function renderNotification(
 					group.name,
 					body,
 					`/group/${groupId}`,
-					`new-transaction:${groupId}/${notification.transactionId}`,
+					`new-expense:${groupId}/${notification.transactionId}`,
 				);
 			} else {
 				if (transaction.type !== "payment") throw new RenderNotificationError(422, "Transaction is not a payment");
