@@ -35,6 +35,7 @@ import {
 	promoteUser,
 	removeUser,
 } from "@/firebase/firestore/group";
+import { sendNotification } from "@/firebase/messaging.js";
 import type { Currency } from "@/types/firestore";
 import { inviteUser, noGroup } from "@/util/app";
 import authService from "@/util/authService.js";
@@ -298,6 +299,7 @@ async function removeMember() {
 		toast(`Removed ${group.value?.users?.[removeDialog.data.value.userId].computed.name ?? "Unloaded"}`, {
 			description: "They've been erased from existence... well, at least the group.",
 		});
+		sendNotification(groupId.value, { type: "removed-from-group", userId: removeDialog.data.value.userId });
 	} catch (e) {
 		toast.error(`Error Removing ${group.value?.users?.[removeDialog.data.value.userId].computed.name ?? "Unloaded"}`, {
 			description: String(e),
@@ -334,8 +336,12 @@ async function leaveGroup() {
 	try {
 		await firestoreLeaveGroup(groupId.value);
 
-		router.replace("/");
 		toast("Group Left", { description: "Your expenses here are now history." });
+		// ! As the user is now no longer `active`, the notification will not be sent.
+		// This is evidence of an architectural shift to server-side writing/updating.
+		// todo sendNotification(groupId.value, { type: "left-group" });
+
+		router.replace("/");
 	} catch (e) {
 		toast.error("Error Leaving Group", { description: String(e) });
 	}

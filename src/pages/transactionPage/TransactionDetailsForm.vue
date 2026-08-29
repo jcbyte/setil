@@ -223,7 +223,7 @@ defineExpose<TransactionDetailsFormExposed>({
 						</VeeField>
 
 						<VeeField v-slot="{ componentField, errors }" name="category">
-							<!-- todo could this be a horizontal radio group of icons? Could look nicer -->
+							<!-- todo Cold this be a horizontal radio group of icons, would it look nicer? -->
 							<Field :data-invalid="!!errors.length">
 								<FieldLabel for="category">Category</FieldLabel>
 								<Select v-if="!initialLoading" v-bind="componentField" :disabled="updating">

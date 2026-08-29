@@ -15,11 +15,12 @@ const NotificationPlugin: Plugin = {
 };
 export default NotificationPlugin;
 
-function displayNotificationInApp(title: string, description?: string, route?: unknown) {
+function displayNotificationInApp(title: string, description?: string, route?: unknown, eventId?: unknown) {
 	toast.info(title, {
 		description,
 		icon: h(Bell, { class: "size-4" }),
 		position: "top-center",
+		...(eventId && typeof eventId === "string" ? { id: eventId } : {}),
 		...(route && typeof route === "string"
 			? {
 					action: {
@@ -54,7 +55,12 @@ async function initialiseNativeNotifications() {
 		toast.error("Error Enabling Notifications", { description: String(e) }),
 	);
 	await PushNotifications.addListener("pushNotificationReceived", (notification) =>
-		displayNotificationInApp(notification.title ?? "Setil", notification.body, notification.data?.route),
+		displayNotificationInApp(
+			notification.title ?? "Setil",
+			notification.body,
+			notification.data?.route,
+			notification.data?.eventId,
+		),
 	);
 	await PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
 		const route = notification.data?.route;
@@ -68,14 +74,19 @@ async function initialiseWebNotifications() {
 
 	const messaging = getMessaging();
 	onMessage(messaging, (payload) =>
-		displayNotificationInApp(payload.data?.title ?? "Setil", payload.data?.body, payload.data?.route),
+		displayNotificationInApp(
+			payload.data?.title ?? "Setil",
+			payload.data?.body,
+			payload.data?.route,
+			payload.data?.eventId,
+		),
 	);
 }
 
 function initialiseNotifications() {
 	if (Capacitor.isNativePlatform()) {
-		initialiseNativeNotifications;
+		initialiseNativeNotifications();
 	} else {
-		initialiseWebNotifications;
+		initialiseWebNotifications();
 	}
 }

@@ -3,6 +3,7 @@ import Button from "@/components/ui/button/Button.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import useLiveGroupWithUserPublic from "@/composables/useLiveGroupWithUserPublic";
 import { updateTransaction as firestoreUpdateTransaction, getTransaction } from "@/firebase/firestore/transaction";
+import { sendNotification } from "@/firebase/messaging.js";
 import type { Transaction } from "@/types/firestore";
 import { noGroup } from "@/util/app";
 import { gcdN } from "@/util/math";
@@ -105,9 +106,12 @@ async function updateTransaction(transaction: Transaction) {
 
 	try {
 		await firestoreUpdateTransaction(groupId.value, transactionId.value, transaction, leftUsers);
+
 		toast("Expense Details Updated", {
 			description: "Your expense got a makeover, and it's ready to slay.",
 		});
+		sendNotification(groupId.value, { type: "updated-expense", transactionId: transactionId.value });
+
 		router.push({ path: `/group/${groupId.value}`, query: { tab: "activity" } });
 	} catch (e) {
 		toast.error("Error Saving Expense Details", { description: String(e) });
