@@ -1,6 +1,16 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { CollectionReference, DocumentReference, getFirestore } from "firebase-admin/firestore";
-import { getMessaging, type FidMulticastMessage, type MulticastMessage } from "firebase-admin/messaging";
+import {
+	CollectionReference,
+	DocumentReference,
+	getFirestore,
+	type QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
+import {
+	getMessaging,
+	type BatchResponse,
+	type FidMulticastMessage,
+	type MulticastMessage,
+} from "firebase-admin/messaging";
 import { formatCurrency } from "../shared/currency.js";
 import type { SendGroupNotificationPostBody } from "../shared/types/api.js";
 import { DEFAULT_NOTIFICATION_CHANNEL } from "../shared/types/notification.js";
@@ -12,6 +22,33 @@ import "./_init/firebaseAdmin.js";
 
 const db = getFirestore();
 const messaging = getMessaging();
+
+const INVALID_TOKEN_CODES = new Set([
+	"messaging/invalid-recipient",
+	"messaging/invalid-registration-token",
+	"messaging/registration-token-not-registered",
+]);
+
+async function cleanInvalidPushTokens(
+	tokenDocs: QueryDocumentSnapshot<PushToken>[],
+	multicastRes: BatchResponse,
+): Promise<void> {
+	const invalidTokenDocs = multicastRes.responses
+		.map((res, idx) => {
+			const isValid = res.error && INVALID_TOKEN_CODES.has(res.error.code);
+			return isValid ? tokenDocs[idx] : undefined;
+		})
+		.filter((doc) => doc !== undefined);
+
+	if (invalidTokenDocs.length === 0) return;
+
+	const batch = db.batch();
+	invalidTokenDocs.forEach((doc) => {
+		// Enforce the push token hasn't been updated since
+		batch.delete(doc.ref, { lastUpdateTime: doc.updateTime });
+	});
+	await batch.commit();
+}
 
 async function getGroupUserName(groupId: string, userId: string) {
 	const memberRef = db.doc(`groups/${groupId}/users/${userId}`) as DocumentReference<GroupUserData>;
@@ -105,29 +142,31 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 				return userPushTokensRef.get();
 			}),
 		);
-		const tokens = userTokenSnaps.flatMap((snap) => snap.docs.map((doc) => doc.data()));
+		const tokenDocs = userTokenSnaps.flatMap((snap) => snap.docs);
 
-		const webTokens = tokens.filter((token) => token.type === "web").map((token) => token.token);
-		if (webTokens.length > 0) {
+		const webTokenDocs = tokenDocs.filter((doc) => doc.data().type === "web");
+		if (webTokenDocs.length > 0) {
 			const webMessage: FidMulticastMessage = {
-				fids: webTokens,
+				fids: webTokenDocs.map((doc) => doc.data().token),
 				data: { title: group.name, body, route },
 			};
-			await messaging.sendEachForMulticast(webMessage);
+			const response = await messaging.sendEachForMulticast(webMessage);
+			await cleanInvalidPushTokens(webTokenDocs, response);
 		}
 
-		const androidTokens = tokens.filter((token) => token.type === "android").map((token) => token.token);
-		if (androidTokens.length > 0) {
+		const androidTokenDocs = tokenDocs.filter((doc) => doc.data().type === "android");
+		if (androidTokenDocs.length > 0) {
 			const androidMessage: MulticastMessage = {
-				tokens: androidTokens,
+				tokens: androidTokenDocs.map((doc) => doc.data().token),
 				notification: { title: group.name, body },
 				data: { route },
 				android: { notification: { channelId: DEFAULT_NOTIFICATION_CHANNEL } },
 			};
-			await messaging.sendEachForMulticast(androidMessage);
+			const response = await messaging.sendEachForMulticast(androidMessage);
+			await cleanInvalidPushTokens(androidTokenDocs, response);
 		}
 
-		const iosTokens = tokens.filter((token) => token.type === "ios").map((token) => token.token);
+		const iosTokens = tokenDocs.filter((doc) => doc.data().type === "ios");
 		if (iosTokens.length > 0) {
 			console.warn(`${iosTokens.length} iOS push tokens received, but iOS notifications are not supported`);
 		}
