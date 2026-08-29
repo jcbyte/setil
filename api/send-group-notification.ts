@@ -91,6 +91,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
 		let body: string;
 		let route: string;
+		let eventId: string;
 		switch (notification.type) {
 			case "joined-group":
 				const name = await getGroupUserName(groupId, notification.userId);
@@ -98,6 +99,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
 				body = `${name} just joined the group!`;
 				route = `/group/${groupId}`;
+				eventId = `joined-group:${groupId}/${notification.userId}`;
 
 				break;
 
@@ -120,6 +122,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 					const total = Object.values(transaction.to).reduce((sum, amount) => sum + amount, 0);
 					body = `${fromName} added expense ${transaction.title} for ${formatCurrency(total, group.currency, true)}.`;
 					route = `/group/${groupId}`;
+					eventId = `new-transaction:${groupId}/${notification.transactionId}`;
 				} else {
 					if (transaction.type !== "payment")
 						return res.status(422).json({ success: false, error: "Transaction is not a payment" });
@@ -127,6 +130,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 					const toName = await getGroupUserName(groupId, transaction.to);
 					body = `${fromName} paid ${toName} ${formatCurrency(transaction.amount, group.currency, true)}.`;
 					route = `/group/${groupId}`;
+					eventId = `new-payment:${groupId}/${notification.transactionId}`;
 				}
 
 				break;
@@ -148,7 +152,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 		if (webTokenDocs.length > 0) {
 			const webMessage: FidMulticastMessage = {
 				fids: webTokenDocs.map((doc) => doc.data().token),
-				data: { title: group.name, body, route },
+				data: { title: group.name, body, route, eventId },
 			};
 			const response = await messaging.sendEachForMulticast(webMessage);
 			await cleanInvalidPushTokens(webTokenDocs, response);
@@ -159,8 +163,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 			const androidMessage: MulticastMessage = {
 				tokens: androidTokenDocs.map((doc) => doc.data().token),
 				notification: { title: group.name, body },
-				data: { route },
-				android: { notification: { channelId: DEFAULT_NOTIFICATION_CHANNEL } },
+				data: { route, eventId },
+				android: { notification: { channelId: DEFAULT_NOTIFICATION_CHANNEL, tag: eventId } },
 			};
 			const response = await messaging.sendEachForMulticast(androidMessage);
 			await cleanInvalidPushTokens(androidTokenDocs, response);

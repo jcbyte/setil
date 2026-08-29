@@ -21,12 +21,14 @@ const messaging = getMessaging(app);
 onBackgroundMessage(messaging, (payload) => {
 	if (!payload.data) return;
 
-	const { title, body, route } = payload.data;
+	const { title, body, route, eventId } = payload.data;
 	const notificationOptions: NotificationOptions = {
 		body,
+		tag: eventId,
 		badge: "/icon/mask-monochrome-96.png",
 		data: {
 			route,
+			eventId,
 		},
 	};
 
