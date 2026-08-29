@@ -76,7 +76,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
 		let renderedNotification: RenderedNotification;
 		try {
-			renderedNotification = await renderNotification(notification, groupId, group);
+			renderedNotification = await renderNotification(notification, groupId, group, user.uid);
 		} catch (err) {
 			if (err instanceof RenderNotificationError) {
 				return res.status(err.code).json({ success: false, error: err.message });

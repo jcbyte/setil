@@ -57,6 +57,7 @@ export async function renderNotification(
 	notification: NotificationDetail,
 	groupId: string,
 	group: GroupData,
+	sendingUser: string,
 ): Promise<RenderedNotification> {
 	switch (notification.type) {
 		case "joined-group":
@@ -87,9 +88,18 @@ export async function renderNotification(
 
 				const total = Object.values(transaction.to).reduce((sum, amount) => sum + amount, 0);
 
+				let body: string;
+				if (transaction.from === sendingUser) {
+					body = `${fromName} added expense ${transaction.title} for ${formatCurrency(total, group.currency, true)}.`;
+				} else {
+					const sendingName = await getGroupUserName(groupId, sendingUser);
+					if (!sendingName) throw new RenderNotificationError(404, "Notification sender user not found");
+					body = `${sendingName} added expense ${transaction.title} for ${formatCurrency(total, group.currency, true)}, paid by ${fromName}.`;
+				}
+
 				return new RenderedNotification(
 					group.name,
-					`${fromName} added expense ${transaction.title} for ${formatCurrency(total, group.currency, true)}.`,
+					body,
 					`/group/${groupId}`,
 					`new-transaction:${groupId}/${notification.transactionId}`,
 				);
@@ -97,7 +107,7 @@ export async function renderNotification(
 				if (transaction.type !== "payment") throw new RenderNotificationError(422, "Transaction is not a payment");
 
 				const toName = await getGroupUserName(groupId, transaction.to);
-				if (!toName) throw new RenderNotificationError(404, "Transaction 'to' user not found");
+				if (!toName) throw new RenderNotificationError(404, "Payment transaction 'to' user not found");
 
 				return new RenderedNotification(
 					group.name,
