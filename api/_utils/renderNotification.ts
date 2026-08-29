@@ -61,14 +61,14 @@ export async function renderNotification(
 ): Promise<RenderedNotification> {
 	switch (notification.type) {
 		case "joined-group":
-			const name = await getGroupUserName(groupId, notification.userId);
+			const name = await getGroupUserName(groupId, sendingUser);
 			if (!name) throw new RenderNotificationError(404, "Group user not found");
 
 			return new RenderedNotification(
 				group.name,
 				`${name} just joined the group!`,
 				`/group/${groupId}`,
-				`joined-group:${groupId}/${notification.userId}`,
+				`joined-group:${groupId}/${sendingUser}`,
 			);
 
 		case "new-expense":

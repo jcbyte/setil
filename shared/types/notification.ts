@@ -1,12 +1,8 @@
 export const DEFAULT_NOTIFICATION_CHANNEL = "general";
 
-export interface JoinedGroup_Data {
-	userId: string;
-}
+export interface JoinedGroup_Data {}
 
-export interface LeftGroup_Data {
-	userId: string;
-}
+export interface LeftGroup_Data {}
 
 export interface RemovedFromGroup_Data {
 	userId: string;
@@ -22,7 +18,7 @@ export interface UpdatedExpense_Data {
 
 export interface RemovedExpense_Data {
 	oldTransactionId: string;
-	oldName: string;
+	oldTitle: string;
 	oldAmount: number;
 }
 

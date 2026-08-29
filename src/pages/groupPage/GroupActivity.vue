@@ -33,6 +33,7 @@ import type { GroupWithUserPublic } from "@/composables/useLiveGroupWithUserPubl
 import { useLivePaginatedGroupTransactions } from "@/composables/useLivePaginatedGroupTransactions";
 import { CategorySettings } from "@/constants/category";
 import { deleteTransaction } from "@/firebase/firestore/transaction";
+import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/types/firestore";
 import { getLeftUsersInTransaction, sumRecordValues } from "@/util/util";
 import { ArrowRight, EllipsisVertical, FilePen, FileText, Trash } from "@lucide/vue";
@@ -103,7 +104,13 @@ async function handleDeleteTransaction() {
 	const leftUsers = getLeftUsersInTransaction(		transactionData,		props.group.users	);
 	try {
 		await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
-		toast("Expense Deleted", { description: "It's like it never happened." });
+		
+    toast("Expense Deleted", { description: "It's like it never happened." });
+    
+    if (transactionData.type === "expense")
+      sendNotification(groupId.value, { type: "removed-expense", oldTransactionId: deleteDialogData.value!.transactionId, oldTitle: transactionData.title, oldAmount: sumRecordValues(transactionData.to) });
+    else
+      sendNotification(groupId.value, { type: "removed-payment", oldTransactionId: deleteDialogData.value!.transactionId, oldFrom: transactionData.from, oldTo: transactionData.to, oldAmount: transactionData.amount });
 	} catch (e) {
 		toast.error("Error Deleting Expense", { description: String(e) });
 	}
