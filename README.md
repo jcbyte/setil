@@ -27,7 +27,7 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
 
 ## Features
 
-- 💸 **Smart Settlement**: Uses a greedy algorithm to simplify complex debts into the fewest possible payments.
+- 💸 **Smart Settlement**: Uses a greedy algorithm to simplify complex debts into minimal payments.
 - 🔥 **Real-time**: Balances and transactions update instantly across all devices, powered by Firestore.
 - 🍰 **Flexible Splitting**: Split transactions between multiple people equally, by ratio, or define specific amounts.
 - 🔔 **Notifications**: Push notifications for new members, transactions, and payments.
@@ -47,9 +47,9 @@ Setil is a mobile-first progressive web app designed to simplify group expenses.
 
 ## Setil Logic
 
-Setil uses a greedy algorithm to resolve debts in $O(n)$ time. Instead of tracking individual "who owes who" records for every transaction, it maintains a global balance for each user within the group.
+Setil uses a greedy algorithm to resolve debts in $O(n \log n)$ time. Instead of tracking individual "who owes who" records for every transaction, it maintains a global balance for each user within the group.
 
-The `resolveGroupDebts` function ([split.ts](src/util/split.ts)) categorises users into Creditors and Debtors, then matches them (using a highest absolute value heuristic) to minimise the total number of transfers.
+The `resolveGroupDebts` function ([split.ts](src/util/split.ts)) categorises users into Creditors and Debtors, then matches them (using a highest absolute value heuristic) to get a minimal number of transfers (at most $n - 1$).
 
 Example
 
@@ -59,6 +59,7 @@ Example
 - Charlie pays £20 for parking, split amongst all 5.
 
 ```mermaid
+%%{init: {"theme": "redux-dark-color", "layout": "dagre"}}%%
 graph LR
     %% The People
     Alice((Alice))
@@ -104,6 +105,7 @@ Therefore, recommended payments by matching creditors with debtors:
 - Eve sends £1 to Bob
 
 ```mermaid
+%%{init: {"theme": "redux-dark-color", "layout": "dagre"}}%%
 graph LR
     %% The People
     Alice((Alice))

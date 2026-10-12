@@ -24,7 +24,7 @@ export function resolveGroupDebts(debts: Record<string, number>): SimpleTransact
 
 	// Sort creditors and debtors for heuristics, highest credit/debt first
 	creditors.sort((a, b) => balances[b] - balances[a]);
-	debtors.sort((a, b) => -balances[b] - -balances[a]);
+	debtors.sort((a, b) => balances[a] - balances[b]);
 
 	const newDebts: { from: string; to: string; amount: number }[] = [];
 
@@ -46,7 +46,7 @@ export function resolveGroupDebts(debts: Record<string, number>): SimpleTransact
 		balances[creditor] -= amount;
 		balances[debtor] += amount;
 
-		// If this creditor/debtor is in ballance then move to the next one
+		// If this creditor/debtor is in balance then move to the next one
 		if (balances[creditor] === 0) currentCreditor++;
 		if (balances[debtor] === 0) currentDebtor++;
 	}
